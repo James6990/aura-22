@@ -1,4 +1,7 @@
-'use client'
+'use client';
+
+import { getCycleStats } from "@/app/actions/journal";
+
 
 import { useHeartRate } from '@/lib/use-heart-rate'
 import { useAuraStore } from '@/lib/use-aura-store'
@@ -41,7 +44,7 @@ export function AuraJournal({ userName }: { userName: string }) {
           onUpdate={updateDay}
         />
         <WorkoutLog exercises={day.exercises} onUpdate={updateDay} />
-        <ToolsSection getStats={cycleStats} />
+        <ToolsSection getStats={getCycleStats} />
 
         {!hydrated && (
           <p className="text-center text-[11px] text-muted-foreground" role="status">
