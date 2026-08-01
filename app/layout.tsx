@@ -3,7 +3,13 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Aura Journal",
-  description: "Personal wellness and journaling app",
+  description: "Personal wellness and journaling",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Aura Journal",
+  },
 };
 
 export const viewport: Viewport = {
