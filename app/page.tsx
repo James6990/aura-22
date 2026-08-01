@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Image from "next/image";
 
 export default function Home() {
@@ -63,3 +64,11 @@ export default function Home() {
     </div>
   );
 }
+=======
+import { AuraJournal } from "@/components/aura-journal"
+
+export default function Page() {
+  return <AuraJournal userName="User" />
+}
+
+>>>>>>> feaa5de904cf0bae683fce04f1c38f49707de675

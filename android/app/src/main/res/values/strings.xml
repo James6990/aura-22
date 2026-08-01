@@ -1,7 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
+<<<<<<< HEAD
     <string name="app_name">Aura App</string>
     <string name="title_activity_main">Aura App</string>
     <string name="package_name">com.aura.app</string>
     <string name="custom_url_scheme">com.aura.app</string>
+=======
+    <string name="app_name">Aura</string>
+    <string name="title_activity_main">Aura</string>
+    <string name="package_name">com.yourdomain.aura</string>
+    <string name="custom_url_scheme">com.yourdomain.aura</string>
+>>>>>>> feaa5de904cf0bae683fce04f1c38f49707de675
 </resources>

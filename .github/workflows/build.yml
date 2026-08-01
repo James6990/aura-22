@@ -2,17 +2,23 @@ name: Build Android APK
 
 on:
   push:
+<<<<<<< HEAD
     branches:
       - main
   pull_request:
     branches:
       - main
+=======
+    branches: [ main, master ]
+  workflow_dispatch:
+>>>>>>> feaa5de904cf0bae683fce04f1c38f49707de675
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+<<<<<<< HEAD
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -34,3 +40,51 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+=======
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+
+      - name: Install Dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Next.js App
+        env:
+          BETTER_AUTH_SECRET: "dummy-secret-key-for-build-123456789"
+          BETTER_AUTH_URL: "http://localhost:3000"
+        run: pnpm run build
+
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '21'
+
+      - name: Build Android APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: aura-app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+>>>>>>> feaa5de904cf0bae683fce04f1c38f49707de675

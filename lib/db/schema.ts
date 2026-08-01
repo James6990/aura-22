@@ -1,0 +1,88 @@
+import { pgTable, text, timestamp, boolean, integer, jsonb, unique } from "drizzle-orm/pg-core"
+import type { Exercise } from "@/lib/aura-data"
+
+// --- Better Auth required tables -------------------------------------------
+// Column names are camelCase to match Better Auth's defaults. Do not rename.
+
+export const user = pgTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  emailVerified: boolean("emailVerified").notNull().default(false),
+  image: text("image"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+export const session = pgTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  ipAddress: text("ipAddress"),
+  userAgent: text("userAgent"),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+})
+
+export const account = pgTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("accountId").notNull(),
+  providerId: text("providerId").notNull(),
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text("accessToken"),
+  refreshToken: text("refreshToken"),
+  idToken: text("idToken"),
+  accessTokenExpiresAt: timestamp("accessTokenExpiresAt"),
+  refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("createdAt").notNull().defaultNow(),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow(),
+  updatedAt: timestamp("updatedAt").defaultNow(),
+})
+
+// --- AURA 22 app tables ----------------------------------------------------
+// Scoped per user via a plain `userId` column (no FK, per stack conventions).
+
+// One row per user holding their three 22-day cycle goals.
+export const goals = pgTable("aura_goals", {
+  userId: text("userId").primaryKey(),
+  g1: text("g1").notNull().default(""),
+  g2: text("g2").notNull().default(""),
+  g3: text("g3").notNull().default(""),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
+
+// One row per (user, day) holding that day's journal entry.
+export const dayEntries = pgTable(
+  "aura_day_entries",
+  {
+    userId: text("userId").notNull(),
+    day: integer("day").notNull(),
+    meals: boolean("meals").notNull().default(false),
+    workout: boolean("workout").notNull().default(false),
+    water: boolean("water").notNull().default(false),
+    recovery: boolean("recovery").notNull().default(false),
+    energy: text("energy").notNull().default("7"),
+    sleep: text("sleep").notNull().default(""),
+    notes: text("notes").notNull().default(""),
+    exercises: jsonb("exercises").$type<Exercise[]>().notNull().default([]),
+    updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+  },
+  (t) => ({
+    userDayUnique: unique("aura_day_entries_user_day_unique").on(t.userId, t.day),
+  }),
+)
