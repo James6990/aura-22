@@ -28,7 +28,10 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: Build Next.js App
+      - name: Build Next.js Appname: Build Next.js App
+        env:
+          BETTER_AUTH_SECRET: "dummy-secret-key-for-build-123456789"
+          BETTER_AUTH_URL: "http://localhost:3000"
         run: pnpm run build
 
       - name: Sync Capacitor
