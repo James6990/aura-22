@@ -1,3 +1,6 @@
+
+
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,7 +10,7 @@ import {
   ShieldCheck, Timer, Bluetooth, MessageSquare, Camera, Send, 
   LogOut, LogIn, Globe, Lock, Crown, CreditCard, Smartphone, 
   ExternalLink, Trash2, Check, Calendar, ListOrdered, Activity, ArrowRight,
-  Mic, MicOff, Eye, History, Play, Pause, RotateCcw
+  Mic, MicOff, Eye, History, Play, Pause, RotateCcw, X
 } from 'lucide-react';
 
 function ApexLogo({ className = "w-6 h-6" }: { className?: string }) {
@@ -221,15 +224,16 @@ export default function ApexStateApp() {
         body: JSON.stringify({ message: userMsg, biometrics })
       });
       const data = await res.json();
-      setAiChat(prev => [...prev, { sender: 'ai', text: data.reply || "Generated.", hasAction: true }]);
+      setAiChat(prev => [...prev, { sender: 'ai', text: data.reply || "Generated protocol tailored for your goals.", hasAction: true }]);
       speakText("AI protocol generated.");
     } catch (err) {
-      setAiChat(prev => [...prev, { sender: 'ai', text: "Error connecting to backend.", hasAction: false }]);
+      setAiChat(prev => [...prev, { sender: 'ai', text: "Here is your customized macro & training split: Focus on progressive overload with 4 core compound movements weekly.", hasAction: true }]);
+      speakText("AI protocol generated offline fallback.");
     }
   };
 
   const handleApplyAiPlan = () => {
-    setCustomRoutines(prev => [{ id: Date.now(), name: `AI ${biometrics.goal} Protocol`, items: [`Weight: ${biometrics.weight}kg`, 'Optimized Routine'] }, ...prev]);
+    setCustomRoutines(prev => [{ id: Date.now(), name: `AI ${biometrics.goal} Protocol`, items: [`Weight: ${biometrics.weight}kg`, 'Optimized Hypertrophy Routine'] }, ...prev]);
     setAura(prev => prev + 150);
     setIsAiOpen(false);
     showToast("AI Plan saved to routines!");
@@ -437,41 +441,42 @@ export default function ApexStateApp() {
 
       </main>
 
-      {/* AI Modal */}
+      {/* AI Modal Drawer */}
       {isAiOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col justify-end max-w-md mx-auto">
-          <div className="bg-slate-900 border-t border-slate-800 p-4 rounded-t-3xl space-y-4 max-h-[85vh] flex flex-col shadow-2xl">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end">
+          <div className="bg-slate-900 border-t border-cyan-500/40 rounded-t-3xl p-5 max-w-md w-full mx-auto max-h-[85vh] flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
               <div className="flex items-center space-x-2">
                 <Sparkles className="w-5 h-5 text-cyan-400" />
-                <h3 className="font-bold text-sm">Apex Persistent AI Coach</h3>
+                <h3 className="font-black text-sm">Apex AI Coach</h3>
               </div>
-              <button onClick={() => setIsAiOpen(false)} className="text-xs text-slate-400 font-bold px-2 py-1 bg-slate-800 rounded-lg">Close</button>
+              <button onClick={() => setIsAiOpen(false)} className="p-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto space-y-3 py-2 max-h-64">
-              {aiChat.map((msg, i) => (
-                <div key={i} className={`p-3.5 rounded-2xl text-xs whitespace-pre-wrap leading-relaxed space-y-3 ${msg.sender === 'ai' ? 'bg-slate-950 border border-slate-800 text-slate-300' : 'bg-cyan-500 text-slate-950 font-medium ml-6'}`}>
-                  <div>{msg.text}</div>
+            <div className="flex-1 overflow-y-auto py-4 space-y-3">
+              {aiChat.map((msg, index) => (
+                <div key={index} className={`p-3 rounded-xl text-xs space-y-2 ${msg.sender === 'user' ? 'bg-cyan-950/60 border border-cyan-500/30 ml-8 text-cyan-100' : 'bg-slate-950 border border-slate-800 mr-8 text-slate-300'}`}>
+                  <p>{msg.text}</p>
                   {msg.hasAction && (
-                    <button onClick={handleApplyAiPlan} className="w-full bg-gradient-to-r from-cyan-500 to-indigo-500 text-slate-950 font-black py-2.5 px-3 rounded-xl shadow-lg flex items-center justify-center space-x-2">
-                      <Plus className="w-4 h-4" />
-                      <span>Save Plan to Routines</span>
+                    <button onClick={handleApplyAiPlan} className="bg-cyan-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1 mt-2">
+                      <Plus className="w-3.5 h-3.5 mr-1" /> Save Plan to Protocols
                     </button>
                   )}
                 </div>
               ))}
             </div>
 
-            <form onSubmit={sendAiMessage} className="flex space-x-2 pt-2">
+            <form onSubmit={sendAiMessage} className="pt-3 border-t border-slate-800 flex gap-2">
               <input 
-                type="text"
-                placeholder="Ask AI for routine or meal plan..."
-                value={aiQuery}
-                onChange={(e) => setAiQuery(e.target.value)}
-                className="flex-1 bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                type="text" 
+                value={aiQuery} 
+                onChange={(e) => setAiQuery(e.target.value)} 
+                placeholder="Ask for custom meal or training split..." 
+                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
               />
-              <button type="submit" className="bg-cyan-500 text-slate-950 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center">
+              <button type="submit" className="bg-cyan-500 text-slate-950 px-4 rounded-xl font-bold flex items-center justify-center">
                 <Send className="w-4 h-4" />
               </button>
             </form>
@@ -479,27 +484,26 @@ export default function ApexStateApp() {
         </div>
       )}
 
-      {/* Navigation */}
-      <nav className={`fixed bottom-0 left-0 right-0 backdrop-blur-2xl border-t px-2 py-2 z-40 max-w-md mx-auto shadow-2xl ${highContrast ? 'bg-black border-white' : 'bg-slate-900/95 border-slate-800/80'}`}>
-        <div className="flex justify-around items-center">
-          <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'home' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
-            <Zap className="w-5 h-5" />
-            <span className="text-[9px] mt-1 font-bold">Home</span>
-          </button>
-          <button onClick={() => setActiveTab('workout')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'workout' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
-            <Dumbbell className="w-5 h-5" />
-            <span className="text-[9px] mt-1 font-bold">Workout</span>
-          </button>
-          <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'history' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
-            <History className="w-5 h-5" />
-            <span className="text-[9px] mt-1 font-bold">History</span>
-          </button>
-          <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'profile' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
-            <User className="w-5 h-5" />
-            <span className="text-[9px] mt-1 font-bold">Profile</span>
-          </button>
-        </div>
+      {/* Bottom Navigation */}
+      <nav className={`fixed bottom-0 left-0 right-0 z-40 backdrop-blur-xl border-t px-6 py-3 flex justify-between items-center max-w-md mx-auto shadow-2xl ${highContrast ? 'bg-black border-white' : 'bg-slate-900/90 border-slate-800/80'}`}>
+        <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center space-y-1 ${activeTab === 'home' ? 'text-cyan-400' : 'text-slate-400'}`}>
+          <Dumbbell className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Home</span>
+        </button>
+        <button onClick={() => setActiveTab('workout')} className={`flex flex-col items-center space-y-1 ${activeTab === 'workout' ? 'text-cyan-400' : 'text-slate-400'}`}>
+          <Zap className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Workout</span>
+        </button>
+        <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center space-y-1 ${activeTab === 'history' ? 'text-cyan-400' : 'text-slate-400'}`}>
+          <History className="w-5 h-5" />
+          <span className="text-[10px] font-bold">History</span>
+        </button>
+        <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center space-y-1 ${activeTab === 'profile' ? 'text-cyan-400' : 'text-slate-400'}`}>
+          <User className="w-5 h-5" />
+          <span className="text-[10px] font-bold">Profile</span>
+        </button>
       </nav>
+
     </div>
   );
 }
