@@ -1,746 +1,335 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  Activity,
-  Dumbbell,
-  Utensils,
-  Trophy,
-  Bot,
-  Heart,
-  Bluetooth,
-  Award,
-  MessageSquare,
-  Crown,
-  Flame,
-  Zap,
-  Shield,
-  Footprints,
-  Cpu,
-  Mic,
-  Star,
-  CheckCircle2,
-  Camera,
-  Sparkles,
-  UserPlus,
-  RefreshCw,
-  Send,
-  ShieldAlert,
-  Sword,
-  Filter
+import { 
+  Trophy, Flame, Dumbbell, Utensils, Users, Sparkles, 
+  ChevronRight, Lock, Unlock, Zap, Activity, Award, 
+  TrendingUp, Shield, RefreshCw, CheckCircle2, Heart, 
+  Send, Bot, Globe, Filter, Crown, Cpu, ArrowUpRight,
+  Bluetooth, Footprints, Calendar, BatteryCharging, Radio
 } from "lucide-react";
 
-// ==================== TYPES & INTERFACES ====================
-
-type TabType =
-  | "dashboard"
-  | "workout"
-  | "diet"
-  | "bloodline"
-  | "leaderboard"
-  | "ai-coach"
-  | "biometrics"
-  | "devices"
-  | "badges"
-  | "social"
-  | "pro";
-
-type UserArchetype = "bodybuilder" | "fatloss" | "athlete" | "endurance" | "vitality";
-type DietaryRestriction = "standard" | "plant-based" | "gluten-free" | "keto" | "dairy-free";
+type TabType = "dashboard" | "workout" | "diet" | "leaderboard" | "ai-coach" | "pro" | "biometrics" | "devices";
 
 interface UserProfile {
   name: string;
-  archetype: UserArchetype;
-  primaryGoal: string;
+  isPro: boolean;
   xp: number;
   streak: number;
-  league: string;
-  leagueRank: number;
-  isPro: boolean;
-  proType?: "solo" | "bloodline";
-  dietaryRestriction: DietaryRestriction;
+  weightClass: string;
+  ageGroup: string;
+  region: string;
+  gender: "male" | "female" | "other";
+  menstrualPhase: "follicular" | "ovulatory" | "luteal" | "menstrual" | "n/a";
+  cycleDay: number;
 }
 
-interface Exercise {
-  id: string;
-  name: string;
-  category: string;
-  defaultSets: string;
-  defaultWeight: string;
-  completed?: boolean;
-}
-
-interface WorkoutTemplate {
-  id: string;
-  title: string;
-  targetArchetype: UserArchetype;
-  style: string;
-  guideline: string;
-  exercises: Exercise[];
-}
-
-interface Meal {
-  id: number;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fats: number;
-  mealType: "Breakfast" | "Lunch" | "Snack" | "Dinner";
-}
-
-interface MealPlanTemplate {
-  id: string;
-  title: string;
-  targetArchetype: UserArchetype;
-  goal: string;
-  totalCalories: number;
-  description: string;
-  meals: Omit<Meal, "id">[];
-}
-
-interface LeagueUser {
+interface LeaderboardUser {
   rank: number;
   name: string;
-  xp: number;
+  score: string;
+  region: string;
+  ageGroup: string;
+  weightClass: string;
   isPro: boolean;
-  isUser?: boolean;
+  badge: string;
 }
-
-interface BloodlineMember {
-  id: string;
-  name: string;
-  role: string;
-  streak: number;
-  status: string;
-  avatarBg: string;
-}
-
-interface AchievementBadge {
-  id: string;
-  title: string;
-  description: string;
-  rarity: "Epic" | "Legendary" | "Mythic" | "Rare";
-  icon: string;
-  xpReward: number;
-  unlocked: boolean;
-}
-
-interface SquadMessage {
-  id: string;
-  sender: string;
-  text: string;
-  timestamp: string;
-}
-
-// ==================== MAIN COMPONENT ====================
 
 export default function ApexStateApp() {
-  // Navigation & Core User State
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [user, setUser] = useState<UserProfile>({
-    name: "Alex Mercer",
-    archetype: "bodybuilder",
-    primaryGoal: "Hypertrophy & Strength Optimization",
-    xp: 3250,
-    streak: 14,
-    league: "Ruby",
-    leagueRank: 4,
-    isPro: true,
-    proType: "solo",
-    dietaryRestriction: "standard"
+    name: "Alex Vance",
+    isPro: false,
+    xp: 2450,
+    streak: 12,
+    weightClass: "75-85kg",
+    ageGroup: "25-34",
+    region: "North America",
+    gender: "female",
+    menstrualPhase: "follicular",
+    cycleDay: 8
   });
 
-  // Daily Stats & PvE Boss State
-  const [steps, setSteps] = useState(8420);
-  const [activeCaloriesBurned, setActiveCaloriesBurned] = useState(720);
-  const [recoveryDebtPct, setRecoveryDebtPct] = useState(14);
-  const [bossHp, setBossHp] = useState(42500);
-  const [bossMaxHp] = useState(100000);
+  const [steps, setSteps] = useState<number>(8420);
+  const baseCaloriesBurned = 1850;
+  const stepBurnMultiplier = 0.04; 
+  const activeCaloriesBurned = Math.round(baseCaloriesBurned + (steps * stepBurnMultiplier));
 
-  // Dynamic Workout Tracking State
-  const [exercises, setExercises] = useState<Exercise[]>([
-    { id: "e1", name: "Incline Barbell Bench Press", category: "Chest", defaultSets: "4 Sets x 8-10 Reps", defaultWeight: "225 lbs", completed: true },
-    { id: "e2", name: "Weighted Pull-Ups", category: "Back", defaultSets: "4 Sets x 6-8 Reps", defaultWeight: "+45 lbs", completed: true },
-    { id: "e3", name: "Seated Cable Rows", category: "Back", defaultSets: "3 Sets x 12 Reps", defaultWeight: "180 lbs", completed: false },
-    { id: "e4", name: "Dumbbell Lateral Raises", category: "Shoulders", defaultSets: "4 Sets x 15 Reps", defaultWeight: "35 lbs", completed: false }
+  const [isScanning, setIsScanning] = useState<boolean>(false);
+  const [watchConnected, setWatchConnected] = useState<boolean>(true);
+  const [watchBattery, setWatchBattery] = useState<number>(88);
+  const [watchHeartRate, setWatchHeartRate] = useState<number>(128);
+
+  const [workoutActive, setWorkoutActive] = useState<boolean>(false);
+  const [workoutTimer, setWorkoutTimer] = useState<number>(0);
+  const [exercises, setExercises] = useState([
+    { id: 1, name: "Barbell Bench Press", sets: "4 sets × 8-10 reps", completed: false, weight: "90kg" },
+    { id: 2, name: "Incline Dumbbell Press", sets: "3 sets × 10-12 reps", completed: false, weight: "32kg" },
+    { id: 3, name: "Weighted Dips", sets: "3 sets × 12 reps", completed: false, weight: "+15kg" },
+    { id: 4, name: "Cable Lateral Raises", sets: "4 sets × 15 reps", completed: false, weight: "12kg" },
   ]);
 
-  // Dynamic Nutrition Tracking State
-  const [nutritionLog, setNutritionLog] = useState<Meal[]>([
-    { id: 101, name: "Cybernetic Protein Oats & Whey", calories: 550, protein: 45, carbs: 65, fats: 10, mealType: "Breakfast" },
-    { id: 102, name: "Grilled Chicken & Jasmine Rice Bowl", calories: 720, protein: 60, carbs: 80, fats: 12, mealType: "Lunch" }
-  ]);
+  const [macros, setMacros] = useState({ protein: 165, carbs: 210, fats: 65, baseTarget: 2150 });
+  const netCalorieTarget = Math.round(macros.baseTarget + (steps * 0.02)); 
+  const [dietLogged, setDietLogged] = useState<string[]>(["Oats & Whey Protein Shake", "Grilled Chicken & Rice Bowl"]);
 
-  // AI & Hardware States
-  const [voiceTranscript, setVoiceTranscript] = useState("");
-  const [isListening, setIsListening] = useState(false);
-  const [cameraActive, setCameraActive] = useState(false);
-  const [, setScannedFoodResult] = useState<{ name: string; cals: number; protein: number } | null>(null);
-  const [isScanningDevices, setIsScanningDevices] = useState(false);
-  const [connectedDevice, setConnectedDevice] = useState("Apex Smart Ring v2 (Synched)");
-
-  // Social & Bloodline States
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [bloodlineMembers, setBloodlineMembers] = useState<BloodlineMember[]>([
-    { id: "b1", name: "Sarah Mercer", role: "Bloodline Partner", streak: 12, status: "Crushed Legs Today! 🦵", avatarBg: "from-pink-500 to-rose-500" },
-    { id: "b2", name: "Marcus Mercer", role: "Bloodline Recruit", streak: 6, status: "10k Steps Completed 🏃", avatarBg: "from-blue-500 to-indigo-500" }
-  ]);
-
-  // AI Chat Assistant State
-  const [aiChatInput, setAiChatInput] = useState("");
-  const [aiChatMessages, setAiChatMessages] = useState<{ role: "user" | "bot"; text: string }[]>([
-    { role: "bot", text: "Apex Neural Core online. How can I optimize your biomechanics or macro structure today?" }
-  ]);
-
-  // Squad Chat Messages
-  const [squadInput, setSquadInput] = useState("");
-  const [squadMessages, setSquadMessages] = useState<SquadMessage[]>([
-    { id: "m1", sender: "Valerie Vance", text: "Who is attacking the Goliath Boss today? We have 40k HP left!", timestamp: "10:42 AM" },
-    { id: "m2", sender: "Kurosh_X", text: "Just hit 10k steps. Dealing damage to Goliath now! 💥", timestamp: "11:15 AM" }
-  ]);
-
-  // Achievement Badges
-  const [badges, setBadges] = useState<AchievementBadge[]>([
-    { id: "bg1", title: "Iron Goliath", description: "Deal over 10,000 HP damage to a Raid Boss", rarity: "Legendary", icon: "⚔️", xpReward: 500, unlocked: true },
-    { id: "bg2", title: "Macro Master", description: "Hit your daily macro targets within +/- 2% accuracy 7 days in a row", rarity: "Epic", icon: "🥗", xpReward: 300, unlocked: false },
-    { id: "bg3", title: "Bloodline Sentinel", description: "Maintain a 14-day streak with your Bloodline Squad", rarity: "Mythic", icon: "🛡️", xpReward: 1000, unlocked: true }
-  ]);
-
-  // ==================== DYNAMIC AI NUTRITION & MACRO ENGINE ====================
+  const [lbFilterRegion, setLbFilterRegion] = useState<string>("Global");
+  const [lbFilterWeight, setLbFilterWeight] = useState<string>("All");
   
-  const generateDynamicMealPlan = (archetype: UserArchetype, restriction: DietaryRestriction) => {
-    let baseCals = 2500;
-    let proteinTarget = 180;
-    let carbTarget = 250;
-    let fatTarget = 70;
+  const [chatMessages, setChatMessages] = useState<Array<{role: 'ai' | 'user', text: string}>>([
+    { role: 'ai', text: `Hello Alex! As your Apex AI Coach, I've integrated your current ${user.gender === 'female' ? `${user.menstrualPhase} cycle phase` : 'physiological profile'} and real-time step burn into your daily metrics. How can I optimize your protocol today?` }
+  ]);
+  const [chatInput, setChatInput] = useState<string>("");
+  const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
 
-    if (archetype === "bodybuilder") {
-      baseCals = 3200;
-      proteinTarget = 210;
-      carbTarget = 380;
-      fatTarget = 85;
-    } else if (archetype === "fatloss") {
-      baseCals = 1900;
-      proteinTarget = 190;
-      carbTarget = 140;
-      fatTarget = 55;
-    } else if (archetype === "endurance") {
-      baseCals = 2800;
-      proteinTarget = 140;
-      carbTarget = 420;
-      fatTarget = 65;
-    }
-
-    let stapleIngredients: string[] = [];
-    let restrictionLabel = "Standard Performance";
-
-    if (restriction === "plant-based") {
-      restrictionLabel = "Plant-Based / Vegetarian Bodybuilding";
-      stapleIngredients = ["Tempeh", "Firm Tofu", "Seitan", "Low-Fat Greek Yogurt", "Cottage Cheese", "Lentils", "Edamame", "Hemp Seeds"];
-    } else if (restriction === "gluten-free") {
-      restrictionLabel = "Gluten-Free Clean Energy & Shred";
-      stapleIngredients = ["Certified GF Oats", "Brown Rice", "Quinoa", "Sweet Potatoes", "Buckwheat", "Lean White Fish", "Skinless Poultry"];
-    } else if (restriction === "keto") {
-      restrictionLabel = "Ketogenic & Low-Carb Performance";
-      stapleIngredients = ["Whole Eggs", "Avocados", "Macadamia Nuts", "Olive Oil", "Salmon", "Grass-Fed Beef", "Leafy Greens"];
-      carbTarget = 35;
-      fatTarget = 160;
-    } else if (restriction === "dairy-free") {
-      restrictionLabel = "Dairy-Free / Allergen-Conscious";
-      stapleIngredients = ["Pea-Protein Isolate", "Almond Milk", "Coconut Yogurt", "Canned Sardines", "Nutritional Yeast", "Chicken Breast", "Jasmine Rice"];
+  useEffect(() => {
+    let interval: any;
+    if (workoutActive) {
+      interval = setInterval(() => {
+        setWorkoutTimer(prev => prev + 1);
+      }, 1000);
     } else {
-      stapleIngredients = ["Chicken Breast", "Jasmine Rice", "Whole Eggs", "Broccoli", "Olive Oil", "Oats", "Whey Protein"];
+      clearInterval(interval);
     }
+    return () => clearInterval(interval);
+  }, [workoutActive]);
 
-    const constructedMeals: Omit<Meal, "id">[] = [
-      {
-        name: `Apex ${restrictionLabel} Breakfast (${stapleIngredients[0]} & ${stapleIngredients[1]})`,
-        calories: Math.round(baseCals * 0.25),
-        protein: Math.round(proteinTarget * 0.25),
-        carbs: Math.round(carbTarget * 0.25),
-        fats: Math.round(fatTarget * 0.25),
-        mealType: "Breakfast"
-      },
-      {
-        name: `High-Performance Midday Fuel (${stapleIngredients[2]} & ${stapleIngredients[3] || stapleIngredients[0]})`,
-        calories: Math.round(baseCals * 0.35),
-        protein: Math.round(proteinTarget * 0.35),
-        carbs: Math.round(carbTarget * 0.35),
-        fats: Math.round(fatTarget * 0.35),
-        mealType: "Lunch"
-      },
-      {
-        name: `Cellular Recovery Evening Meal (${stapleIngredients[4] || stapleIngredients[1]} & ${stapleIngredients[5] || stapleIngredients[2]})`,
-        calories: Math.round(baseCals * 0.40),
-        protein: Math.round(proteinTarget * 0.40),
-        carbs: Math.round(carbTarget * 0.40),
-        fats: Math.round(fatTarget * 0.40),
-        mealType: "Dinner"
-      }
-    ];
-
-    return {
-      title: `AI Synthesized: ${restrictionLabel}`,
-      targetArchetype: archetype,
-      totalCalories: baseCals,
-      protein: proteinTarget,
-      carbs: carbTarget,
-      fats: fatTarget,
-      description: `Dynamically generated protocol using strictly ${restrictionLabel} rules for ${archetype.toUpperCase()}.`,
-      meals: constructedMeals
-    };
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Helper Functions & Handlers
-  const toggleExerciseComplete = (id: string) => {
-    setExercises(prev =>
-      prev.map(ex => {
-        if (ex.id === id) {
-          const nextState = !ex.completed;
-          if (nextState) {
-            setUser(u => ({ ...u, xp: u.xp + 50 }));
-            setBossHp(hp => Math.max(0, hp - 500));
-          }
-          return { ...ex, completed: nextState };
-        }
-        return ex;
-      })
-    );
-  };
+  const rawLeaderboard: LeaderboardUser[] = [
+    { rank: 1, name: "Marcus 'The Titan' Vance", score: "14,820 XP", region: "Europe", ageGroup: "25-34", weightClass: "85kg+", isPro: true, badge: "Apex Elite 🏆" },
+    { rank: 2, name: "Elena Rostova", score: "14,100 XP", region: "Europe", ageGroup: "18-24", weightClass: "55-65kg", isPro: true, badge: "Powerhouse 🔥" },
+    { rank: 3, name: "David 'Kage' Miller", score: "13,450 XP", region: "North America", ageGroup: "25-34", weightClass: "75-85kg", isPro: true, badge: "Ghost Runner ⚡" },
+    { rank: 4, name: "Sarah Jenkins", score: "12,900 XP", region: "North America", ageGroup: "25-34", weightClass: "65-75kg", isPro: false, badge: "Consistent 🚀" },
+    { rank: 5, name: "Kenji Sato", score: "12,110 XP", region: "Asia", ageGroup: "35-44", weightClass: "75-85kg", isPro: true, badge: "Master Tactician 🎯" },
+    { rank: 6, name: "Alex Vance (You)", score: "2,450 XP", region: "North America", ageGroup: "25-34", weightClass: "75-85kg", isPro: user.isPro, badge: "Rising Contender 🌱" },
+  ];
 
-  const handleSendAiChat = (e: React.FormEvent) => {
+  const filteredLeaderboard = rawLeaderboard.filter(item => {
+    if (lbFilterRegion !== "Global" && item.region !== lbFilterRegion) return false;
+    if (lbFilterWeight !== "All" && item.weightClass !== lbFilterWeight) return false;
+    return true;
+  });
+
+  const handleSendChat = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!aiChatInput.trim()) return;
+    if (!chatInput.trim()) return;
 
-    const userMsg = aiChatInput;
-    setAiChatMessages(prev => [...prev, { role: "user", text: userMsg }]);
-    setAiChatInput("");
+    const userText = chatInput;
+    setChatMessages(prev => [...prev, { role: 'user', text: userText }]);
+    setChatInput("");
+    setIsAiThinking(true);
 
     setTimeout(() => {
-      let botResponse = `Analysis complete for "${userMsg}". Considering your current ${user.archetype} protocol, maintain your progressive overload while managing recovery debt.`;
-      if (userMsg.toLowerCase().includes("protein") || userMsg.toLowerCase().includes("diet")) {
-        botResponse = `Based on your ${user.dietaryRestriction.toUpperCase()} filter, ensure you target high bioavailability sources. Your current protein goal is optimized for hypertrophy.`;
+      let aiReply = "I've analyzed your biometric telemetry and active step burn. Maintain your current intensity vector!";
+      if (userText.toLowerCase().includes("cycle") || userText.toLowerCase().includes("hormone") || userText.toLowerCase().includes("phase")) {
+        aiReply = `Current phase: ${user.menstrualPhase.toUpperCase()}. Estrogen is rising, which optimizes your pain tolerance and explosive strength output. Great window for heavy compound lifts!`;
+      } else if (userText.toLowerCase().includes("step") || userText.toLowerCase().includes("calorie")) {
+        aiReply = `Your ${steps} daily steps have expanded your energy expenditure budget by roughly ~${Math.round(steps * 0.04)} kcal. You can safely incorporate an extra carbohydrate source today.`;
+      } else if (userText.toLowerCase().includes("watch") || userText.toLowerCase().includes("bluetooth")) {
+        aiReply = watchConnected ? "Smartwatch connection is stable via BLE 5.3. Heart rate telemetry streaming smoothly at 128 BPM peak." : "Smartwatch is currently offline. Navigate to the Devices tab to re-scan.";
       }
-      setAiChatMessages(prev => [...prev, { role: "bot", text: botResponse }]);
-    }, 1000);
+
+      setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
+      setIsAiThinking(false);
+    }, 1200);
   };
-
-  const startVoiceRecognition = () => {
-    setIsListening(true);
-    setVoiceTranscript("Listening to voice command...");
-    setTimeout(() => {
-      setIsListening(false);
-      setVoiceTranscript('Logged: "Logged 1 glass of water & 30 mins cardio (+100 XP)"');
-      setUser(u => ({ ...u, xp: u.xp + 100 }));
-    }, 2500);
-  };
-
-  const claimBadgeReward = (badgeId: string) => {
-    setBadges(prev =>
-      prev.map(b => {
-        if (b.id === badgeId && !b.unlocked) {
-          setUser(u => ({ ...u, xp: u.xp + b.xpReward }));
-          return { ...b, unlocked: true };
-        }
-        return b;
-      })
-    );
-  };
-
-  // Pre-configured Workout Templates
-  const comprehensiveWorkoutTemplates: WorkoutTemplate[] = [
-    {
-      id: "wt-bodybuilder",
-      title: "Hypertrophy Push/Pull Matrix",
-      targetArchetype: "bodybuilder",
-      style: "High Volume & Mechanical Tension",
-      guideline: "Focus on 8-12 reps per set with a 3-second eccentric phase.",
-      exercises: [
-        { id: "e1", name: "Incline Barbell Bench Press", category: "Chest", defaultSets: "4 Sets x 8-10 Reps", defaultWeight: "225 lbs" },
-        { id: "e2", name: "Weighted Pull-Ups", category: "Back", defaultSets: "4 Sets x 6-8 Reps", defaultWeight: "+45 lbs" },
-        { id: "e3", name: "Standing Overhead Press", category: "Shoulders", defaultSets: "3 Sets x 8 Reps", defaultWeight: "155 lbs" }
-      ]
-    },
-    {
-      id: "wt-fatloss",
-      title: "Metabolic Conditioning & Density",
-      targetArchetype: "fatloss",
-      style: "Short Rest Intervals & HIIT",
-      guideline: "Limit rest periods to 45 seconds between sets to optimize caloric burn.",
-      exercises: [
-        { id: "e4", name: "Kettlebell Swings", category: "Full Body", defaultSets: "5 Sets x 20 Reps", defaultWeight: "53 lbs" },
-        { id: "e5", name: "Barbell Thrusters", category: "Full Body", defaultSets: "4 Sets x 12 Reps", defaultWeight: "95 lbs" },
-        { id: "e6", name: "Box Jumps", category: "Legs", defaultSets: "4 Sets x 15 Reps", defaultWeight: "30 inch" }
-      ]
-    },
-    {
-      id: "wt-endurance",
-      title: "Mitochondrial Stamina Protocol",
-      targetArchetype: "endurance",
-      style: "Zone 2 Cardio & High Rep Resistance",
-      guideline: "Keep heart rate steady between 130-145 BPM.",
-      exercises: [
-        { id: "e7", name: "Rowing Machine Intervals", category: "Cardio", defaultSets: "4 Sets x 1000m", defaultWeight: "Pace 1:55/500m" },
-        { id: "e8", name: "Walking Dumbbell Lunges", category: "Legs", defaultSets: "3 Sets x 30 Reps", defaultWeight: "30 lbs each" }
-      ]
-    }
-  ];
-
-  // Meal Templates
-  const mealPlanTemplates: MealPlanTemplate[] = [
-    {
-      id: "hypertrophy-pro",
-      title: "Pro Anabolic Muscle Builder Plan",
-      targetArchetype: "bodybuilder",
-      goal: "Muscle Growth & Recovery (3,200 kcal)",
-      totalCalories: 3200,
-      description: "High protein, high carbohydrate structure for optimal glycogen loading and tissue repair.",
-      meals: [
-        { name: "Cybernetic Oats & Egg White Omelet", calories: 650, protein: 50, carbs: 75, fats: 12, mealType: "Breakfast" },
-        { name: "Lean Beef & Rice Bowl with Broccoli", calories: 850, protein: 65, carbs: 95, fats: 20, mealType: "Lunch" },
-        { name: "Whey Protein Shake & Rice Cakes", calories: 380, protein: 40, carbs: 45, fats: 4, mealType: "Snack" },
-        { name: "Pasta with Lean Ground Turkey & Marinara", calories: 920, protein: 55, carbs: 120, fats: 18, mealType: "Dinner" }
-      ]
-    },
-    {
-      id: "vitality-longevity",
-      title: "Vitality & Anti-Inflammatory Longevity Plan",
-      targetArchetype: "vitality",
-      goal: "Cellular Health & Wellness (2,100 kcal)",
-      totalCalories: 2100,
-      description: "Rich in antioxidants, omega-3 fatty acids, and clean micro-nutrients to promote long-term vitality.",
-      meals: [
-        { name: "Chia Seed Pudding with Berries & Walnuts", calories: 410, protein: 14, carbs: 38, fats: 22, mealType: "Breakfast" },
-        { name: "Wild Caught Salmon Salad with Olive Oil", calories: 580, protein: 46, carbs: 15, fats: 34, mealType: "Lunch" },
-        { name: "Green Tea & Handful of Mixed Raw Nuts", calories: 250, protein: 8, carbs: 12, fats: 20, mealType: "Snack" },
-        { name: "Organic Tofu or Chicken Stir-Fry", calories: 660, protein: 44, carbs: 55, fats: 24, mealType: "Dinner" }
-      ]
-    }
-  ];
-
-  // Dynamic Plan synthesized on demand
-  const dynamicPlan = generateDynamicMealPlan(user.archetype, user.dietaryRestriction);
-
-  // League Rankings Data
-  const leagueUsers: LeagueUser[] = [
-    { rank: 1, name: "Valerie Vance", xp: 4890, isPro: true },
-    { rank: 2, name: "Kurosh_X", xp: 3950, isPro: false },
-    { rank: 3, name: "Sarah Connor", xp: 3420, isPro: true },
-    { rank: 4, name: user.name, xp: user.xp, isPro: user.isPro, isUser: true },
-    { rank: 5, name: "Jaxson Steel", xp: 2650, isPro: false },
-    { rank: 6, name: "Elena Rostova", xp: 2100, isPro: true }
-  ];
-
-  const totalNutritionCals = nutritionLog.reduce((sum, item) => sum + item.calories, 0);
-  const totalNutritionProtein = nutritionLog.reduce((sum, item) => sum + item.protein, 0);
-  const totalNutritionCarbs = nutritionLog.reduce((sum, item) => sum + item.carbs, 0);
-  const totalNutritionFats = nutritionLog.reduce((sum, item) => sum + item.fats, 0);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
-      
-      {/* TOP HEADER NAVIGATION */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Cpu className="w-6 h-6 text-slate-950 font-bold" />
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 flex flex-col">
+      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Cpu className="h-6 w-6 text-slate-950 font-black" />
           </div>
           <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-black text-lg tracking-wider bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">APEX STATE</span>
-              <span className="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">V2.6 PRO</span>
+            <div className="flex items-center gap-2">
+              <span className="font-extrabold tracking-wider text-lg bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+                APEX STATE
+              </span>
+              <span className="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                Gen-Next OS
+              </span>
             </div>
-            <p className="text-xs text-slate-400">Cybernetic Fitness & Bio-Optimization Matrix</p>
+            <p className="text-xs text-slate-400 hidden sm:block">AI-Powered Autonomous Fitness & Longevity</p>
           </div>
         </div>
 
-        {/* User Stats Bar */}
-        <div className="hidden md:flex items-center space-x-6 bg-slate-950/60 border border-slate-800/80 px-4 py-1.5 rounded-2xl">
-          <div className="flex items-center space-x-2">
-            <Flame className="w-4 h-4 text-orange-500 fill-orange-500 animate-pulse" />
-            <span className="text-xs font-bold">{user.streak} Day Streak</span>
+        <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs font-medium">
+            <Flame className="h-4 w-4 text-orange-400 fill-orange-400" />
+            <span>{user.streak} Day Streak</span>
+            <span className="text-slate-600">|</span>
+            <Trophy className="h-4 w-4 text-yellow-400" />
+            <span className="text-emerald-400 font-bold">{user.xp} XP</span>
           </div>
-          <div className="h-4 w-px bg-slate-800" />
-          <div className="flex items-center space-x-2">
-            <Zap className="w-4 h-4 text-amber-400 fill-amber-400" />
-            <span className="text-xs font-bold">{user.xp.toLocaleString()} XP</span>
-          </div>
-          <div className="h-4 w-px bg-slate-800" />
-          <div className="flex items-center space-x-2">
-            <Crown className="w-4 h-4 text-purple-400" />
-            <span className="text-xs font-bold text-purple-400">{user.league} League</span>
-          </div>
-        </div>
-
-        {/* Right Actions */}
-        <div className="flex items-center space-x-3">
-          <button 
-            onClick={startVoiceRecognition}
-            className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-              isListening ? 'bg-red-500/20 border-red-500 text-red-400 animate-pulse' : 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-200'
-            }`}
-          >
-            <Mic className="w-3.5 h-3.5" />
-            <span>{isListening ? "Listening..." : "Voice Log"}</span>
-          </button>
 
           <button 
             onClick={() => setActiveTab("pro")}
-            className="hidden sm:flex items-center space-x-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 px-3.5 py-1.5 rounded-xl text-xs font-black shadow-lg shadow-orange-500/20 hover:brightness-110 transition-all"
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
+              user.isPro 
+                ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-lg shadow-amber-500/20" 
+                : "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 hover:brightness-110 shadow-lg shadow-emerald-500/20"
+            }`}
           >
-            <Star className="w-3.5 h-3.5 fill-slate-950" />
-            <span>UPGRADE PRO</span>
+            <Crown className="h-3.5 w-3.5" />
+            {user.isPro ? "Apex Pro Active" : "Upgrade to Pro"}
           </button>
         </div>
       </header>
 
-      {/* VOICE TRANSCRIPT TOAST NOTIFICATION */}
-      {voiceTranscript && (
-        <div className="bg-emerald-950/80 border-b border-emerald-500/30 px-4 py-2 text-center text-xs text-emerald-300 flex items-center justify-center space-x-2">
-          <Sparkles className="w-4 h-4 animate-spin" />
-          <span>{voiceTranscript}</span>
-        </div>
-      )}
+      <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto">
+        <aside className="w-full lg:w-64 border-r border-slate-800/80 bg-slate-900/30 p-4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible shrink-0">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 hidden lg:block mb-1">
+            Core Modules
+          </div>
 
-      {/* MAIN CONTAINER */}
-      <div className="flex-1 flex flex-col lg:flex-row">
-        
-        {/* SIDEBAR NAVIGATION */}
-        <aside className="w-full lg:w-64 border-r border-slate-800/80 bg-slate-950/40 p-4 flex flex-row lg:flex-col justify-between overflow-x-auto lg:overflow-y-auto">
-          <div className="flex lg:flex-col space-x-2 lg:space-x-0 lg:space-y-1.5 w-full">
+          <nav className="flex lg:flex-col gap-1 w-full">
             {[
-              { id: "dashboard", label: "Dashboard", icon: Activity },
-              { id: "workout", label: "Workout Matrix", icon: Dumbbell },
-              { id: "diet", label: "AI Nutrition", icon: Utensils },
-              { id: "ai-coach", label: "Neural Coach", icon: Bot },
-              { id: "devices", label: "Hardware & BT", icon: Bluetooth },
-              { id: "bloodline", label: "Bloodline", icon: Shield },
-              { id: "leaderboard", label: "Leagues", icon: Trophy },
-              { id: "social", label: "Squad Chat", icon: MessageSquare },
-              { id: "badges", label: "Achievements", icon: Award },
+              { id: "dashboard", label: "Overview", icon: Activity },
+              { id: "workout", label: "Workout & Ghost", icon: Dumbbell },
+              { id: "diet", label: "Nutrition & Steps", icon: Utensils },
+              { id: "biometrics", label: "Biometrics & Cycle", icon: Calendar },
+              { id: "devices", label: "Smartwatch BLE", icon: Bluetooth, badge: watchConnected ? "Live" : "Off" },
+              { id: "leaderboard", label: "Global Arena", icon: Trophy },
+              { id: "ai-coach", label: "Apex AI Coach", icon: Bot, highlight: true },
+              { id: "pro", label: "Pro Membership", icon: Crown, proBadge: !user.isPro },
             ].map((tab) => {
-              const IconComp = tab.icon;
+              const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-left whitespace-nowrap lg:whitespace-normal w-full ${
                     isActive
-                      ? "bg-gradient-to-r from-emerald-500/20 to-teal-500/10 text-emerald-400 border border-emerald-500/30 shadow-lg shadow-emerald-500/5"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-inner"
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent"
                   }`}
                 >
-                  <IconComp className={`w-4 h-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
-                  <span>{tab.label}</span>
+                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+                  <span className="flex-1">{tab.label}</span>
+                  {tab.badge && (
+                    <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold ${watchConnected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
+                      {tab.badge}
+                    </span>
+                  )}
+                  {tab.highlight && (
+                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse hidden lg:block" />
+                  )}
+                  {tab.proBadge && (
+                    <span className="text-[9px] uppercase bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold hidden lg:block">
+                      Unlock
+                    </span>
+                  )}
                 </button>
               );
             })}
-          </div>
+          </nav>
         </aside>
 
-        {/* CONTENT VIEW AREA */}
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto max-w-7xl mx-auto w-full">
-          
-          {/* DASHBOARD TAB */}
+        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              {/* Welcome Banner */}
-              <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/90 to-emerald-950/40 border border-slate-800/80 p-6 lg:p-8 overflow-hidden shadow-2xl">
-                <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div>
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-xs font-extrabold uppercase tracking-widest bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full border border-emerald-500/30">
-                        Archetype: {user.archetype.toUpperCase()}
-                      </span>
-                      <span className="text-xs text-slate-400">Goal: {user.primaryGoal}</span>
-                    </div>
-                    <h1 className="text-2xl lg:text-4xl font-black tracking-tight text-white">
-                      Welcome back, <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">{user.name}</span>
-                    </h1>
-                    <p className="text-slate-400 text-sm mt-1">Your neural connection is optimal. Hardware sync is fully active.</p>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl relative overflow-hidden">
+                <div>
+                  <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold mb-1 uppercase tracking-wider">
+                    <Zap className="h-3.5 w-3.5" /> Welcome back, {user.name}
                   </div>
-                  <div className="flex items-center space-x-3 bg-slate-950/80 border border-slate-800 p-4 rounded-2xl">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-lg">
-                      {user.streak}
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-400 font-bold uppercase tracking-wider">Day Streak</div>
-                      <div className="text-sm font-black text-white">Consistency Matrix High</div>
-                    </div>
-                  </div>
+                  <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
+                    Biometric & Energy Budgets Balanced
+                  </h1>
+                  <p className="text-sm text-slate-400 mt-1 max-w-xl">
+                    {user.gender === 'female' ? `Currently in your ${user.menstrualPhase} phase (Day ${user.cycleDay}). AI has adjusted carbohydrate timing.` : 'Standard endocrine profile active.'} Watch telemetry linked successfully.
+                  </p>
                 </div>
+                <button 
+                  onClick={() => setActiveTab("workout")}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 shrink-0"
+                >
+                  Start Workout <ChevronRight className="h-4 w-4" />
+                </button>
               </div>
 
-              {/* Grid Metrics & Boss Raid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Boss Raid Widget */}
-                <div className="md:col-span-2 rounded-3xl bg-slate-900/60 border border-slate-800/80 p-6 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-2">
-                        <Sword className="w-5 h-5 text-red-500" />
-                        <h2 className="font-black text-base tracking-wide text-white">PvE Raid Boss: Goliath Titan</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                  { label: "Daily Steps", value: steps.toLocaleString(), change: "Auto-synced via BLE", icon: Footprints, color: "text-emerald-400" },
+                  { label: "Active Energy Burn", value: `${activeCaloriesBurned} kcal`, change: `Base + ${steps} steps deduction`, icon: Flame, color: "text-orange-400" },
+                  { label: "Watch Heart Rate", value: `${watchHeartRate} BPM`, change: watchConnected ? "Connected BLE 5.3" : "Disconnected", icon: Radio, color: "text-cyan-400" },
+                  { label: "Endocrine Phase", value: user.gender === 'female' ? user.menstrualPhase : 'Standard', change: user.gender === 'female' ? `Day ${user.cycleDay} of 28` : 'Optimized profile', icon: Calendar, color: "text-teal-400" },
+                ].map((stat, i) => {
+                  const Icon = stat.icon;
+                  return (
+                    <div key={i} className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 relative">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-semibold text-slate-400">{stat.label}</span>
+                        <div className="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50">
+                          <Icon className={`h-4 w-4 ${stat.color}`} />
+                        </div>
                       </div>
-                      <span className="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-2.5 py-1 rounded-full font-bold">
-                        Active Raid
-                      </span>
+                      <div className="text-2xl font-black text-white mb-1 capitalize">{stat.value}</div>
+                      <div className="text-xs text-slate-500">{stat.change}</div>
                     </div>
-                    <p className="text-xs text-slate-400 mb-4">Complete your daily exercises and log steps to deal structural damage to the raid boss alongside your bloodline.</p>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs font-bold mb-2">
-                      <span className="text-slate-400">Boss Integrity HP</span>
-                      <span className="text-red-400">{bossHp.toLocaleString()} / {bossMaxHp.toLocaleString()} HP</span>
-                    </div>
-                    <div className="w-full bg-slate-950 rounded-full h-3.5 p-0.5 border border-slate-800">
-                      <div 
-                        className="bg-gradient-to-r from-red-600 to-orange-500 h-full rounded-full transition-all duration-500 shadow-lg shadow-red-500/20"
-                        style={{ width: `${(bossHp / bossMaxHp) * 100}%` }}
-                      />
-                    </div>
-                  </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "workout" && (
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                <div>
+                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Active Session</span>
+                  <h1 className="text-2xl font-black text-white">Push Hypertrophy & Ghost Racing</h1>
+                  <p className="text-xs text-slate-400 mt-1">AI-guided execution with live watch heart rate integration.</p>
                 </div>
 
-                {/* Hardware Status Widget */}
-                <div className="rounded-3xl bg-slate-900/60 border border-slate-800/80 p-6 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <Bluetooth className="w-5 h-5 text-cyan-400 animate-pulse" />
-                        <h2 className="font-black text-sm tracking-wide text-white">Connected Hardware</h2>
-                      </div>
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-                    </div>
-                    <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-3.5 mb-3">
-                      <div className="text-xs text-slate-400 font-semibold">Active Device</div>
-                      <div className="text-xs font-black text-emerald-400 mt-0.5">{connectedDevice}</div>
-                    </div>
+                <div className="flex items-center gap-4">
+                  <div className="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center font-mono text-xl font-bold text-emerald-400">
+                    {formatTime(workoutTimer)}
                   </div>
                   <button 
-                    onClick={() => setActiveTab("devices")}
-                    className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold transition-all border border-slate-700"
+                    onClick={() => setWorkoutActive(!workoutActive)}
+                    className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+                      workoutActive 
+                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30" 
+                        : "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20"
+                    }`}
                   >
-                    Manage Equipment & BT
+                    {workoutActive ? "Pause Session" : "Start Session"}
                   </button>
                 </div>
               </div>
 
-              {/* Quick Daily Stats Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
-                    <Footprints className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400 font-bold">Daily Steps</div>
-                    <div className="text-lg font-black text-white">{steps.toLocaleString()}</div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400">
-                    <Flame className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400 font-bold">Active Calories</div>
-                    <div className="text-lg font-black text-white">{activeCaloriesBurned} kcal</div>
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-4 flex items-center space-x-4">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-                    <Heart className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-slate-400 font-bold">Recovery Debt</div>
-                    <div className="text-lg font-black text-purple-300">{recoveryDebtPct}% Optimal</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* WORKOUT MATRIX TAB */}
-          {activeTab === "workout" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl">
-                <div>
-                  <h1 className="text-2xl font-black text-white">Dynamic Workout Matrix</h1>
-                  <p className="text-xs text-slate-400 mt-1">Execute your assigned training protocols. Completing exercises damages the Raid Boss and grants XP.</p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-xl font-bold">
-                    {exercises.filter(e => e.completed).length} / {exercises.length} Completed
-                  </span>
-                </div>
-              </div>
-
-              {/* Workout Checklist */}
-              <div className="grid grid-cols-1 gap-4">
-                {exercises.map((ex) => (
-                  <div 
-                    key={ex.id}
-                    className={`p-5 rounded-2xl border transition-all flex items-center justify-between ${
-                      ex.completed 
-                        ? 'bg-emerald-950/20 border-emerald-500/30 text-slate-300' 
-                        : 'bg-slate-900/60 border-slate-800/80 text-white'
-                    }`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <button 
-                        onClick={() => toggleExerciseComplete(ex.id)}
-                        className={`w-7 h-7 rounded-lg border flex items-center justify-center transition-all ${
-                          ex.completed 
-                            ? 'bg-emerald-500 border-emerald-400 text-slate-950' 
-                            : 'bg-slate-950 border-slate-700 hover:border-slate-500 text-transparent'
-                        }`}
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                      </button>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <span className="font-bold text-sm">{ex.name}</span>
-                          <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-semibold">{ex.category}</span>
-                        </div>
-                        <div className="text-xs text-slate-400 mt-1 flex items-center space-x-3">
-                          <span>{ex.defaultSets}</span>
-                          <span>•</span>
-                          <span className="text-emerald-400 font-semibold">{ex.defaultWeight}</span>
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
+                <h3 className="font-bold text-slate-200 text-sm uppercase tracking-wider">Scheduled Routine</h3>
+                <div className="space-y-3">
+                  {exercises.map((ex) => (
+                    <div key={ex.id} className="flex items-center justify-between bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+                      <div className="flex items-center gap-3">
+                        <button 
+                          onClick={() => {
+                            setExercises(exercises.map(item => item.id === ex.id ? {...item, completed: !item.completed} : item));
+                          }}
+                          className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
+                            ex.completed ? "bg-emerald-500 border-emerald-500 text-slate-950" : "border-slate-700 bg-slate-900"
+                          }`}
+                        >
+                          {ex.completed && <CheckCircle2 className="h-4 w-4" />}
+                        </button>
+                        <div>
+                          <div className={`font-bold text-sm ${ex.completed ? "line-through text-slate-500" : "text-white"}`}>{ex.name}</div>
+                          <div className="text-xs text-slate-400">{ex.sets} • Target: <span className="text-emerald-400">{ex.weight}</span></div>
                         </div>
                       </div>
-                    </div>
-                    <div className="text-xs font-bold text-slate-400">
-                      {ex.completed ? "+50 XP Claimed" : "Pending Execution"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Workout Templates Showcase */}
-              <div className="mt-8">
-                <h2 className="text-lg font-black text-white mb-4">AI Recommended Templates</h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {comprehensiveWorkoutTemplates.map(wt => (
-                    <div key={wt.id} className="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl flex flex-col justify-between">
-                      <div>
-                        <span className="text-[10px] uppercase font-bold tracking-widest bg-cyan-500/20 text-cyan-400 px-2.5 py-0.5 rounded-full border border-cyan-500/30">
-                          {wt.targetArchetype}
-                        </span>
-                        <h3 className="font-black text-base mt-2 text-white">{wt.title}</h3>
-                        <p className="text-xs text-slate-400 mt-1">{wt.style}</p>
-                        <p className="text-xs text-slate-500 mt-3 italic">"{wt.guideline}"</p>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          setExercises(wt.exercises.map(ex => ({ ...ex, completed: false })));
-                        }}
-                        className="mt-5 w-full py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl border border-slate-700 transition-all text-emerald-400"
-                      >
-                        Load Protocol
-                      </button>
+                      <span className="text-xs bg-slate-800/80 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300 font-mono">
+                        Live HR: {watchHeartRate} BPM
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -748,67 +337,175 @@ export default function ApexStateApp() {
             </div>
           )}
 
-          {/* AI NUTRITION TAB */}
           {activeTab === "diet" && (
             <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-black text-white">AI Nutrition & Macro Engine</h1>
-                  <p className="text-xs text-slate-400 mt-1">Dynamically generated meal structures tailored precisely to your archetype and dietary restrictions.</p>
+                  <span className="text-xs font-bold text-teal-400 uppercase tracking-wider">Metabolic Control</span>
+                  <h1 className="text-2xl font-black text-white">Dynamic Step-Adjusted Calorie Budget</h1>
+                  <p className="text-xs text-slate-400 mt-1">Your daily calorie allowance automatically scales based on smart watch step telemetry.</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <select 
-                    value={user.dietaryRestriction} 
-                    onChange={(e) => setUser(u => ({ ...u, dietaryRestriction: e.target.value as DietaryRestriction }))}
-                    className="bg-slate-950 border border-slate-700 text-xs font-bold text-slate-200 px-3 py-2 rounded-xl focus:outline-none focus:border-emerald-500"
+                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-right">
+                  <div className="text-xs text-slate-400">Total Net Calorie Target</div>
+                  <div className="text-2xl font-black text-emerald-400">{netCalorieTarget} kcal</div>
+                  <div className="text-[10px] text-slate-500">Base ({macros.baseTarget}) + Steps ({Math.round(steps * 0.02)})</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs font-semibold text-slate-400 mb-1">Protein Target</div>
+                  <div className="text-2xl font-black text-white">{macros.protein}g</div>
+                  <div className="text-xs text-emerald-400 mt-2">Optimal muscle protein synthesis</div>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs font-semibold text-slate-400 mb-1">Carbohydrates</div>
+                  <div className="text-2xl font-black text-white">{macros.carbs}g</div>
+                  <div className="text-xs text-teal-400 mt-2">Adjusted for follicular phase & steps</div>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs font-semibold text-slate-400 mb-1">Dietary Fats</div>
+                  <div className="text-2xl font-black text-white">{macros.fats}g</div>
+                  <div className="text-xs text-cyan-400 mt-2">Hormonal baseline regulation</div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "biometrics" && (
+            <div className="space-y-6">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                <span className="text-xs font-bold text-teal-400 uppercase tracking-wider">Endocrine Optimization</span>
+                <h1 className="text-2xl font-black text-white">Biometric & Menstrual Cycle Matrix</h1>
+                <p className="text-xs text-slate-400 mt-1">Autonomous tuning of recovery metrics based on physiological data inputs.</p>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Gender Profile</label>
+                    <select 
+                      value={user.gender} 
+                      onChange={(e) => setUser({...user, gender: e.target.value as any})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="female">Female (Cycle Tracking Active)</option>
+                      <option value="male">Male (Standard Endocrine Profile)</option>
+                      <option value="other">Custom / Non-Binary</option>
+                    </select>
+                  </div>
+
+                  {user.gender === 'female' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-400 uppercase mb-2">Current Menstrual Phase</label>
+                      <select 
+                        value={user.menstrualPhase} 
+                        onChange={(e) => setUser({...user, menstrualPhase: e.target.value as any})}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500 capitalize"
+                      >
+                        <option value="follicular">Follicular (High Energy / Strength Peak)</option>
+                        <option value="ovulatory">Ovulatory (Peak Estrogen / Power)</option>
+                        <option value="luteal">Luteal (Progesterone Dominant / Endurance Focus)</option>
+                        <option value="menstrual">Menstrual (Recovery & Deload Focus)</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "devices" && (
+            <div className="space-y-6">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">BLE 5.3 Protocol</span>
+                  <h1 className="text-2xl font-black text-white">Smartwatch & Hardware Hub</h1>
+                  <p className="text-xs text-slate-400 mt-1">Live telemetry streaming for heart rate, steps, and sleep debt.</p>
+                </div>
+                <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl">
+                  <BatteryCharging className="h-4 w-4 text-emerald-400" />
+                  <span className="text-xs font-bold">{watchBattery}% Watch Battery</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between p-4 bg-slate-950/60 border border-slate-800 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl">
+                      <Radio className="h-5 w-5 text-emerald-400 animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-white text-sm">Apex Smart Ring Gen-2 / Watch OS</div>
+                      <div className="text-xs text-slate-400">{watchConnected ? "Connected via Bluetooth Low Energy" : "Device Disconnected"}</div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setWatchConnected(!watchConnected)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                      watchConnected ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" : "bg-emerald-500 text-slate-950"
+                    }`}
                   >
-                    <option value="standard">Standard Performance</option>
-                    <option value="plant-based">Plant-Based / Vegetarian</option>
-                    <option value="gluten-free">Gluten-Free Clean</option>
-                    <option value="keto">Ketogenic & Low-Carb</option>
-                    <option value="dairy-free">Dairy-Free / Allergen</option>
+                    {watchConnected ? "Disconnect" : "Connect Device"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "leaderboard" && (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                <div>
+                  <span className="text-xs font-bold text-yellow-400 uppercase tracking-wider">Global Arena</span>
+                  <h1 className="text-2xl font-black text-white">Apex Global Leaderboard</h1>
+                  <p className="text-xs text-slate-400 mt-1">Filter competitors by region and weight class.</p>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-2">
+                  <select 
+                    value={lbFilterRegion} 
+                    onChange={(e) => setLbFilterRegion(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  >
+                    <option value="Global">All Regions</option>
+                    <option value="North America">North America</option>
+                    <option value="Europe">Europe</option>
+                    <option value="Asia">Asia</option>
+                  </select>
+
+                  <select 
+                    value={lbFilterWeight} 
+                    onChange={(e) => setLbFilterWeight(e.target.value)}
+                    className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                  >
+                    <option value="All">All Weight Classes</option>
+                    <option value="55-65kg">55-65kg</option>
+                    <option value="65-75kg">65-75kg</option>
+                    <option value="75-85kg">75-85kg</option>
+                    <option value="85kg+">85kg+</option>
                   </select>
                 </div>
               </div>
 
-              {/* Macro Target Summary Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                  <div className="text-xs text-slate-400 font-bold uppercase">Target Calories</div>
-                  <div className="text-xl font-black text-white mt-1">{dynamicPlan.totalCalories} <span className="text-xs font-normal text-slate-400">kcal</span></div>
-                </div>
-                <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                  <div className="text-xs text-slate-400 font-bold uppercase">Protein Goal</div>
-                  <div className="text-xl font-black text-emerald-400 mt-1">{dynamicPlan.protein}g</div>
-                </div>
-                <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                  <div className="text-xs text-slate-400 font-bold uppercase">Carbohydrates</div>
-                  <div className="text-xl font-black text-cyan-400 mt-1">{dynamicPlan.carbs}g</div>
-                </div>
-                <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl">
-                  <div className="text-xs text-slate-400 font-bold uppercase">Healthy Fats</div>
-                  <div className="text-xl font-black text-amber-400 mt-1">{dynamicPlan.fats}g</div>
-                </div>
-              </div>
-
-              {/* Synthesized Meals List */}
-              <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl">
-                <h2 className="text-lg font-black text-white mb-2">{dynamicPlan.title}</h2>
-                <p className="text-xs text-slate-400 mb-6">{dynamicPlan.description}</p>
-                <div className="space-y-4">
-                  {dynamicPlan.meals.map((meal, idx) => (
-                    <div key={idx} className="bg-slate-950/60 border border-slate-800/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <div className="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/30 inline-block mb-1">
-                          {meal.mealType}
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className="divide-y divide-slate-800/80">
+                  {filteredLeaderboard.map((item) => (
+                    <div key={item.rank} className={`p-4 flex items-center justify-between gap-4 ${item.name.includes("You") ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
+                      <div className="flex items-center gap-4">
+                        <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${item.rank <= 3 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400'}`}>
+                          #{item.rank}
+                        </span>
+                        <div>
+                          <div className="font-bold text-sm text-white flex items-center gap-2">
+                            {item.name}
+                            {item.isPro && <Crown className="h-3 w-3 text-amber-400" />}
+                          </div>
+                          <div className="text-xs text-slate-400">{item.badge} • {item.region} ({item.weightClass})</div>
                         </div>
-                        <h3 className="font-bold text-sm text-white">{meal.name}</h3>
                       </div>
-                      <div className="flex items-center space-x-4 text-xs font-semibold">
-                        <span className="text-white bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">{meal.calories} kcal</span>
-                        <span className="text-emerald-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">P: {meal.protein}g</span>
-                        <span className="text-cyan-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">C: {meal.carbs}g</span>
-                        <span className="text-amber-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">F: {meal.fats}g</span>
+                      <div className="text-right font-mono font-bold text-emerald-400 text-sm">
+                        {item.score}
                       </div>
                     </div>
                   ))}
@@ -817,290 +514,80 @@ export default function ApexStateApp() {
             </div>
           )}
 
-          {/* NEURAL COACH (AI CHAT) TAB */}
           {activeTab === "ai-coach" && (
-            <div className="space-y-6 flex flex-col h-[calc(100vh-12rem)]">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl flex items-center space-x-3">
-                <Bot className="w-6 h-6 text-emerald-400" />
-                <div>
-                  <h1 className="font-black text-base text-white">Apex Neural Coach</h1>
-                  <p className="text-xs text-slate-400">Ask any question regarding biomechanics, injury prevention, or macro adjustments.</p>
-                </div>
+            <div className="space-y-6 flex flex-col h-[calc(100vh-10rem)]">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl shrink-0">
+                <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">Autonomous AI Matrix</span>
+                <h1 className="text-2xl font-black text-white">Apex Neural AI Coach</h1>
+                <p className="text-xs text-slate-400 mt-1">Direct integration with your sleep telemetry, hormone cycle, and step expenditure.</p>
               </div>
 
-              {/* Chat Messages Box */}
-              <div className="flex-1 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 overflow-y-auto space-y-4">
-                {aiChatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-md rounded-2xl p-4 text-xs font-medium leading-relaxed ${
-                      msg.role === "user" 
-                        ? "bg-emerald-500 text-slate-950 font-bold" 
-                        : "bg-slate-900 border border-slate-800 text-slate-200"
+              <div className="flex-1 bg-slate-900/40 border border-slate-800 rounded-2xl p-4 overflow-y-auto space-y-4 flex flex-col">
+                {chatMessages.map((msg, index) => (
+                  <div key={index} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div className={`max-w-lg rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+                      msg.role === 'user' 
+                        ? 'bg-emerald-500 text-slate-950 font-medium' 
+                        : 'bg-slate-900 border border-slate-800 text-slate-200'
                     }`}>
                       {msg.text}
                     </div>
                   </div>
                 ))}
+                {isAiThinking && (
+                  <div className="flex justify-start">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-slate-400 animate-pulse">
+                      Analyzing biometrics and generating response...
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Chat Input Form */}
-              <form onSubmit={handleSendAiChat} className="flex items-center space-x-2">
+              <form onSubmit={handleSendChat} className="flex items-center gap-2 shrink-0">
                 <input 
                   type="text" 
-                  value={aiChatInput}
-                  onChange={(e) => setAiChatInput(e.target.value)}
-                  placeholder="Ask neural coach for custom protocol advice..."
-                  className="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+                  value={chatInput} 
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Ask about your cycle phase, step macros, or watch metrics..."
+                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
                 />
-                <button 
-                  type="submit"
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-3 rounded-2xl font-bold transition-all shadow-lg shadow-emerald-500/20"
-                >
-                  <Send className="w-4 h-4" />
+                <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-3 rounded-xl font-bold transition-all">
+                  <Send className="h-5 w-5" />
                 </button>
               </form>
             </div>
           )}
 
-          {/* HARDWARE & BLUETOOTH DEVICES TAB */}
-          {activeTab === "devices" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl">
-                <div className="flex items-center space-x-3 mb-2">
-                  <Bluetooth className="w-6 h-6 text-cyan-400" />
-                  <h1 className="text-2xl font-black text-white">Hardware & Bluetooth Sync</h1>
-                </div>
-                <p className="text-xs text-slate-400">Manage your connected smart rings, watches, and smart gym equipment for real-time telemetry streaming.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl flex flex-col justify-between">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                      Active Synced Hardware
-                    </span>
-                    <h2 className="text-lg font-black text-white mt-3">{connectedDevice}</h2>
-                    <p className="text-xs text-slate-400 mt-1">Streaming heart rate variability, steps, and active mechanical output.</p>
-                  </div>
-                  <div className="mt-6 p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
-                    <span className="text-xs text-slate-300 font-bold">Signal Strength: Optimal (98%)</span>
-                    <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl flex flex-col justify-between">
-                  <div>
-                    <h2 className="text-lg font-black text-white">Scan Nearby Gym Equipment</h2>
-                    <p className="text-xs text-slate-400 mt-1">Pair with smart treadmills, rowers, or intelligent barbell sensors via Bluetooth Low Energy (BLE).</p>
-                  </div>
-                  <button 
-                    onClick={() => {
-                      setIsScanningDevices(true);
-                      setTimeout(() => {
-                        setIsScanningDevices(false);
-                        setConnectedDevice("Apex Gym Matrix Rower v4 (Synched)");
-                      }, 3000);
-                    }}
-                    disabled={isScanningDevices}
-                    className="mt-6 w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black rounded-2xl transition-all shadow-lg shadow-cyan-500/20 disabled:opacity-50"
-                  >
-                    {isScanningDevices ? "Scanning BLE Frequencies..." : "Scan & Pair New Equipment"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* BLOODLINE SQUAD TAB */}
-          {activeTab === "bloodline" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl">
-                <h1 className="text-2xl font-black text-white">Bloodline Squad Matrix</h1>
-                <p className="text-xs text-slate-400 mt-1">Train alongside your synced family and squad members to amplify streaks and boss raid rewards.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {bloodlineMembers.map(member => (
-                  <div key={member.id} className="bg-slate-900/60 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 rounded-2xl bg-gradient-to-tr ${member.avatarBg} flex items-center justify-center text-white font-black text-base shadow-lg`}>
-                        {member.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="flex items-center space-x-2">
-                          <h3 className="font-bold text-sm text-white">{member.name}</h3>
-                          <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-semibold">{member.role}</span>
-                        </div>
-                        <p className="text-xs text-slate-400 mt-1">"{member.status}"</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs font-black text-orange-400">{member.streak} Days</div>
-                      <div className="text-[10px] text-slate-500">Streak Active</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* LEADERBOARD TAB */}
-          {activeTab === "leaderboard" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl">
-                <h1 className="text-2xl font-black text-white">Ruby League Rankings</h1>
-                <p className="text-xs text-slate-400 mt-1">Compete weekly against global athletes to secure promotion to the Obsidian Tier.</p>
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl overflow-hidden">
-                {leagueUsers.map((u) => (
-                  <div 
-                    key={u.rank} 
-                    className={`p-4 flex items-center justify-between border-b border-slate-800/60 last:border-none ${
-                      u.isUser ? 'bg-emerald-950/20 border-emerald-500/30' : ''
-                    }`}
-                  >
-                    <div className="flex items-center space-x-4">
-                      <span className={`w-8 h-8 rounded-xl font-black text-xs flex items-center justify-center ${
-                        u.rank === 1 ? 'bg-amber-500 text-slate-950' : u.rank === 2 ? 'bg-slate-300 text-slate-950' : 'bg-slate-800 text-slate-300'
-                      }`}>
-                        {u.rank}
-                      </span>
-                      <span className="font-bold text-sm text-white">{u.name} {u.isUser && "(You)"}</span>
-                    </div>
-                    <div className="flex items-center space-x-3">
-                      <span className="text-xs font-black text-amber-400">{u.xp.toLocaleString()} XP</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* SQUAD CHAT TAB */}
-          {activeTab === "social" && (
-            <div className="space-y-6 flex flex-col h-[calc(100vh-12rem)]">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-4 rounded-2xl flex items-center space-x-3">
-                <MessageSquare className="w-6 h-6 text-emerald-400" />
-                <div>
-                  <h1 className="font-black text-base text-white">Squad Communications</h1>
-                  <p className="text-xs text-slate-400">Coordinate raid boss attacks and share daily milestones with your team.</p>
-                </div>
-              </div>
-
-              <div className="flex-1 bg-slate-900/40 border border-slate-800/80 rounded-3xl p-6 overflow-y-auto space-y-4">
-                {squadMessages.map((msg) => (
-                  <div key={msg.id} className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-bold text-xs text-emerald-400">{msg.sender}</span>
-                      <span className="text-[10px] text-slate-500">{msg.timestamp}</span>
-                    </div>
-                    <p className="text-xs text-slate-200">{msg.text}</p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input 
-                  type="text" 
-                  value={squadInput}
-                  onChange={(e) => setSquadInput(e.target.value)}
-                  placeholder="Broadcast message to squad..."
-                  className="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl px-4 py-3 text-xs text-white focus:outline-none focus:border-emerald-500"
-                />
-                <button 
-                  onClick={() => {
-                    if (!squadInput.trim()) return;
-                    setSquadMessages(prev => [...prev, { id: Date.now().toString(), sender: user.name, text: squadInput, timestamp: "Just now" }]);
-                    setSquadInput("");
-                  }}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 p-3 rounded-2xl font-bold transition-all shadow-lg shadow-emerald-500/20"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ACHIEVEMENTS TAB */}
-          {activeTab === "badges" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl">
-                <h1 className="text-2xl font-black text-white">Achievement Badges</h1>
-                <p className="text-xs text-slate-400 mt-1">Unlock legendary badges through consistency, raid boss damage, and macro precision.</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {badges.map(badge => (
-                  <div key={badge.id} className="bg-slate-900/60 border border-slate-800/80 p-6 rounded-3xl flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-3xl">{badge.icon}</span>
-                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${
-                          badge.rarity === 'Legendary' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-purple-500/20 text-purple-400 border-purple-500/30'
-                        }`}>
-                          {badge.rarity}
-                        </span>
-                      </div>
-                      <h3 className="font-black text-base text-white">{badge.title}</h3>
-                      <p className="text-xs text-slate-400 mt-1">{badge.description}</p>
-                    </div>
-
-                    <div className="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between">
-                      <span className="text-xs font-bold text-amber-400">+{badge.xpReward} XP</span>
-                      {badge.unlocked ? (
-                        <span className="text-xs font-bold text-emerald-400 flex items-center space-x-1">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          <span>Unlocked</span>
-                        </span>
-                      ) : (
-                        <button 
-                          onClick={() => claimBadgeReward(badge.id)}
-                          className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold rounded-xl border border-slate-700 transition-all text-slate-200"
-                        >
-                          Claim Reward
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* PRO UPGRADE TAB */}
           {activeTab === "pro" && (
-            <div className="space-y-6 max-w-2xl mx-auto text-center py-8">
-              <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-amber-500 to-orange-500 flex items-center justify-center mx-auto shadow-xl shadow-orange-500/20">
-                <Crown className="w-8 h-8 text-slate-950 font-black" />
+            <div className="space-y-6 max-w-2xl mx-auto py-8 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 flex items-center justify-center mx-auto shadow-xl shadow-amber-500/20 text-slate-950">
+                <Crown className="h-8 w-8 font-black" />
               </div>
               <h1 className="text-3xl font-black text-white">Apex State PRO Access</h1>
-              <p className="text-slate-400 text-sm">Unlock unlimited AI neural coaching, advanced Bluetooth gym equipment streaming, and priority Bloodline Raid rewards.</p>
+              <p className="text-slate-400 text-sm">Unlock fully autonomous AI coaching, advanced biometric hormone analysis, live BLE ring telemetry, and global arena priority matching.</p>
 
-              <div className="bg-slate-900/60 border border-slate-800/80 p-8 rounded-3xl text-left space-y-4">
-                <div className="flex items-center space-x-3 text-xs font-bold text-slate-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Unlimited AI Nutrition & Macro Synthesis Engine</span>
-                </div>
-                <div className="flex items-center space-x-3 text-xs font-bold text-slate-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Multi-Device Bluetooth Hardware Telemetry (Rings, Watches, Rowers)</span>
-                </div>
-                <div className="flex items-center space-x-3 text-xs font-bold text-slate-200">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Exclusive PvE Raid Boss Multipliers & Legend Tier Badges</span>
-                </div>
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl text-left space-y-3">
+                {[
+                  "Advanced Menstrual Cycle & Hormone Biometric Periodization",
+                  "Continuous Bluetooth Smartwatch & Smart Ring Telemetry Stream",
+                  "Unlimited Autonomous AI Neural Coach Prompting",
+                  "Priority Global Leaderboard Badge Matching & Multipliers"
+                ].map((perk, i) => (
+                  <div key={i} className="flex items-center gap-3 text-sm text-slate-200">
+                    <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+                    <span>{perk}</span>
+                  </div>
+                ))}
               </div>
 
               <button 
-                onClick={() => alert("Apex State Pro is already fully activated for your cybernetic matrix!")}
-                className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-black text-sm rounded-2xl shadow-xl shadow-orange-500/20 hover:brightness-110 transition-all"
+                onClick={() => setUser({...user, isPro: !user.isPro})}
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black text-sm shadow-xl shadow-amber-500/20 hover:brightness-110 transition-all"
               >
-                PRO MEMBERSHIP ACTIVE
+                {user.isPro ? "Disable Pro Mode (Test Free Paywall)" : "Activate Apex Pro Membership Now"}
               </button>
             </div>
           )}
-
         </main>
       </div>
     </div>
