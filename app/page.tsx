@@ -6,7 +6,7 @@ import {
   ChevronRight, Lock, Unlock, Zap, Activity, Award, 
   TrendingUp, Shield, RefreshCw, CheckCircle2, Heart, 
   Send, Bot, Globe, Filter, Crown, Cpu, ArrowUpRight,
-  Bluetooth, Footprints, Calendar, BatteryCharging, Radio
+  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen
 } from "lucide-react";
 
 type TabType = "dashboard" | "workout" | "diet" | "leaderboard" | "ai-coach" | "pro" | "biometrics" | "devices";
@@ -16,78 +16,189 @@ interface UserProfile {
   isPro: boolean;
   xp: number;
   streak: number;
-  weightClass: string;
-  ageGroup: string;
-  region: string;
+  weightKg: number;
+  somatotype: "ectomorph" | "mesomorph" | "endomorph";
+  primaryGoal: "muscle-gain" | "fat-loss" | "recomposition";
   gender: "male" | "female" | "other";
   menstrualPhase: "follicular" | "ovulatory" | "luteal" | "menstrual" | "n/a";
   cycleDay: number;
 }
 
-interface LeaderboardUser {
-  rank: number;
+interface ExerciseItem {
+  id: number;
   name: string;
-  score: string;
-  region: string;
-  ageGroup: string;
-  weightClass: string;
-  isPro: boolean;
-  badge: string;
+  category: string;
+  metValue: number;
+  defaultSets: string;
+  defaultWeight: string;
+  completed: boolean;
+}
+
+interface WorkoutRoutineTemplate {
+  id: string;
+  title: string;
+  targetUser: string;
+  style: string;
+  guideline: string;
+  exercises: Omit<ExerciseItem, "completed">[];
 }
 
 export default function ApexStateApp() {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
-  const [user, setUser] = useState<UserProfile>({
-    name: "Alex Vance",
-    isPro: false,
-    xp: 2450,
-    streak: 12,
-    weightClass: "75-85kg",
-    ageGroup: "25-34",
-    region: "North America",
-    gender: "female",
-    menstrualPhase: "follicular",
-    cycleDay: 8
+  
+  // Persistent User Profile State
+  const [user, setUser] = useState<UserProfile>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("apex_user_profile");
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { /* fallback */ }
+      }
+    }
+    return {
+      name: "Alex Vance",
+      isPro: false,
+      xp: 2450,
+      streak: 12,
+      weightKg: 75,
+      somatotype: "mesomorph",
+      primaryGoal: "muscle-gain",
+      gender: "female",
+      menstrualPhase: "follicular",
+      cycleDay: 8
+    };
   });
 
   const [steps, setSteps] = useState<number>(8420);
   const baseCaloriesBurned = 1850;
-  const stepBurnMultiplier = 0.04; 
-  const activeCaloriesBurned = Math.round(baseCaloriesBurned + (steps * stepBurnMultiplier));
-
-  const [isScanning, setIsScanning] = useState<boolean>(false);
-  const [watchConnected, setWatchConnected] = useState<boolean>(true);
-  const [watchBattery, setWatchBattery] = useState<number>(88);
-  const [watchHeartRate, setWatchHeartRate] = useState<number>(128);
+  const activeCaloriesBurned = Math.round(baseCaloriesBurned + (steps * 0.04));
 
   const [workoutActive, setWorkoutActive] = useState<boolean>(false);
   const [workoutTimer, setWorkoutTimer] = useState<number>(0);
-  const [exercises, setExercises] = useState([
-    { id: 1, name: "Barbell Bench Press", sets: "4 sets × 8-10 reps", completed: false, weight: "90kg" },
-    { id: 2, name: "Incline Dumbbell Press", sets: "3 sets × 10-12 reps", completed: false, weight: "32kg" },
-    { id: 3, name: "Weighted Dips", sets: "3 sets × 12 reps", completed: false, weight: "+15kg" },
-    { id: 4, name: "Cable Lateral Raises", sets: "4 sets × 15 reps", completed: false, weight: "12kg" },
-  ]);
-
-  const [macros, setMacros] = useState({ protein: 165, carbs: 210, fats: 65, baseTarget: 2150 });
-  const netCalorieTarget = Math.round(macros.baseTarget + (steps * 0.02)); 
-  const [dietLogged, setDietLogged] = useState<string[]>(["Oats & Whey Protein Shake", "Grilled Chicken & Rice Bowl"]);
-
-  const [lbFilterRegion, setLbFilterRegion] = useState<string>("Global");
-  const [lbFilterWeight, setLbFilterWeight] = useState<string>("All");
   
+  // Persistent Active Exercises State
+  const [exercises, setExercises] = useState<ExerciseItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("apex_active_exercises");
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { /* fallback */ }
+      }
+    }
+    return [
+      { id: 1, name: "Barbell Bench Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "90kg", completed: false },
+      { id: 2, name: "Incline Dumbbell Press", category: "Strength", metValue: 5.0, defaultSets: "3 sets × 10-12 reps", defaultWeight: "32kg", completed: false },
+    ];
+  });
+
+  // Save changes to localStorage automatically
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("apex_user_profile", JSON.stringify(user));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("apex_active_exercises", JSON.stringify(exercises));
+    }
+  }, [exercises]);
+
+  // Comprehensive Master Workout Templates for All Gym User Types
+  const comprehensiveWorkoutTemplates: WorkoutRoutineTemplate[] = [
+    {
+      id: "ppl-hypertrophy",
+      title: "Push / Pull / Legs (PPL) Hypertrophy Split",
+      targetUser: "Intermediate to Advanced Bodybuilding",
+      style: "Hypertrophy & Aesthetics",
+      guideline: "Perform 6 days a week with 1 rest day. Focus on mechanical tension, 60-90s rest intervals, and progressive overload on compound lifts.",
+      exercises: [
+        { id: 201, name: "Barbell Overhead Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "60kg" },
+        { id: 202, name: "Weighted Pull-Ups", category: "Strength", metValue: 8.0, defaultSets: "4 sets × 8 reps", defaultWeight: "Bodyweight + 15kg" },
+        { id: 203, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "110kg" },
+        { id: 204, name: "Incline Dumbbell Flyes", category: "Strength", metValue: 5.0, defaultSets: "3 sets × 12 reps", defaultWeight: "18kg" }
+      ]
+    },
+    {
+      id: "powerlifting-strength",
+      title: "5x5 Powerlifting Strength Foundation",
+      targetUser: "Strength Seekers & Ectomorphs",
+      style: "Absolute Strength",
+      guideline: "Perform 3 days a week. Focus on heavy compound lifting with long rest periods (2 to 3 minutes) to maximize neural adaptations.",
+      exercises: [
+        { id: 205, name: "Heavy Barbell Squat (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "130kg" },
+        { id: 206, name: "Flat Barbell Bench Press (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "100kg" },
+        { id: 207, name: "Conventional Deadlift", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 5 reps", defaultWeight: "160kg" }
+      ]
+    },
+    {
+      id: "fat-loss-circuit",
+      title: "Metabolic Conditioning & Fat-Loss WOD",
+      targetUser: "Endomorphs & Cutting Phases",
+      style: "Cardio & HIIT Circuit",
+      guideline: "High-intensity circuits with minimal rest (30s) between stations. Maximizes EPOC (afterburn effect) and hourly caloric burn.",
+      exercises: [
+        { id: 208, name: "Kettlebell Swings", category: "Circuit", metValue: 11.0, defaultSets: "4 sets × 20 reps", defaultWeight: "24kg" },
+        { id: 209, name: "Rowing Machine Intervals", category: "Cardio", metValue: 9.5, defaultSets: "15 mins continuous", defaultWeight: "Moderate Pace" },
+        { id: 210, name: "Burpee Box Jumps", category: "Circuit", metValue: 12.0, defaultSets: "4 sets × 12 reps", defaultWeight: "Bodyweight" }
+      ]
+    },
+    {
+      id: "calisthenics-mastery",
+      title: "Bodyweight Calisthenics & Gymnastics",
+      targetUser: "Functional Fitness & Travelers",
+      style: "Bodyweight Strength",
+      guideline: "Focus on strict form, full range of motion, and advanced progressions (e.g., muscle-ups, pistol squats, handstand push-ups).",
+      exercises: [
+        { id: 211, name: "Strict Pull-Ups", category: "Strength", metValue: 8.0, defaultSets: "4 sets × max reps", defaultWeight: "Bodyweight" },
+        { id: 212, name: "Pistol Squats", category: "Strength", metValue: 7.0, defaultSets: "3 sets × 8 reps/leg", defaultWeight: "Bodyweight" },
+        { id: 213, name: "Dips on Parallel Bars", category: "Strength", metValue: 6.5, defaultSets: "4 sets × 12 reps", defaultWeight: "Bodyweight" }
+      ]
+    }
+  ];
+
+  const masterExerciseLibrary: Omit<ExerciseItem, "completed">[] = [
+    { id: 101, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "120kg" },
+    { id: 102, name: "Heavy Deadlift", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 5 reps", defaultWeight: "140kg" },
+    { id: 103, name: "CrossFit Circuit WOD", category: "Circuit", metValue: 10.0, defaultSets: "20 min AMRAP", defaultWeight: "Bodyweight" },
+    { id: 104, name: "Brisk Outdoor Walking", category: "Cardio", metValue: 4.3, defaultSets: "30 mins", defaultWeight: "3.5 mph" },
+    { id: 105, name: "Running / Jogging", category: "Cardio", metValue: 8.3, defaultSets: "30 mins", defaultWeight: "5 mph" },
+    { id: 106, name: "HIIT Sprint Intervals", category: "Cardio", metValue: 12.0, defaultSets: "20 mins", defaultWeight: "Max Effort" },
+    { id: 107, name: "Lap Swimming (Moderate)", category: "Cardio", metValue: 8.3, defaultSets: "30 mins", defaultWeight: "Free style" },
+    { id: 108, name: "Vinyasa Flow Yoga", category: "Flexibility", metValue: 4.0, defaultSets: "45 mins", defaultWeight: "Bodyweight" },
+  ];
+
+  const [selectedCat, setSelectedCat] = useState<string>("All");
+  const filteredLibrary = masterExerciseLibrary.filter(item => selectedCat === "All" || item.category === selectedCat);
+
+  const addExerciseToRoutine = (ex: Omit<ExerciseItem, "completed">) => {
+    if (exercises.some(item => item.name === ex.name)) return;
+    setExercises([...exercises, { ...ex, id: Date.now(), completed: false }]);
+  };
+
+  const loadRoutineTemplate = (template: WorkoutRoutineTemplate) => {
+    const newItems: ExerciseItem[] = template.exercises.map((ex, idx) => ({
+      ...ex,
+      id: Date.now() + idx,
+      completed: false
+    }));
+    setExercises(newItems);
+  };
+
+  const calculateMetCalories = (met: number, durationMins: number) => {
+    return Math.round(met * user.weightKg * (durationMins / 60));
+  };
+
+  const [macros] = useState({ protein: 180, carbs: 220, fats: 70, baseTarget: 2200 });
+  const netCalorieTarget = Math.round(macros.baseTarget + (steps * 0.02));
+
   const [chatMessages, setChatMessages] = useState<Array<{role: 'ai' | 'user', text: string}>>([
-    { role: 'ai', text: `Hello Alex! As your Apex AI Coach, I've integrated your current ${user.gender === 'female' ? `${user.menstrualPhase} cycle phase` : 'physiological profile'} and real-time step burn into your daily metrics. How can I optimize your protocol today?` }
+    { role: 'ai', text: `Hello ${user.name}! Your workspace is now backed by persistent Local Storage. All routine setups, custom weights, and somatotype profiles will remain saved on your device.` }
   ]);
   const [chatInput, setChatInput] = useState<string>("");
-  const [isAiThinking, setIsAiThinking] = useState<boolean>(false);
 
   useEffect(() => {
     let interval: any;
     if (workoutActive) {
-      interval = setInterval(() => {
-        setWorkoutTimer(prev => prev + 1);
-      }, 1000);
+      interval = setInterval(() => setWorkoutTimer(prev => prev + 1), 1000);
     } else {
       clearInterval(interval);
     }
@@ -100,236 +211,197 @@ export default function ApexStateApp() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const rawLeaderboard: LeaderboardUser[] = [
-    { rank: 1, name: "Marcus 'The Titan' Vance", score: "14,820 XP", region: "Europe", ageGroup: "25-34", weightClass: "85kg+", isPro: true, badge: "Apex Elite 🏆" },
-    { rank: 2, name: "Elena Rostova", score: "14,100 XP", region: "Europe", ageGroup: "18-24", weightClass: "55-65kg", isPro: true, badge: "Powerhouse 🔥" },
-    { rank: 3, name: "David 'Kage' Miller", score: "13,450 XP", region: "North America", ageGroup: "25-34", weightClass: "75-85kg", isPro: true, badge: "Ghost Runner ⚡" },
-    { rank: 4, name: "Sarah Jenkins", score: "12,900 XP", region: "North America", ageGroup: "25-34", weightClass: "65-75kg", isPro: false, badge: "Consistent 🚀" },
-    { rank: 5, name: "Kenji Sato", score: "12,110 XP", region: "Asia", ageGroup: "35-44", weightClass: "75-85kg", isPro: true, badge: "Master Tactician 🎯" },
-    { rank: 6, name: "Alex Vance (You)", score: "2,450 XP", region: "North America", ageGroup: "25-34", weightClass: "75-85kg", isPro: user.isPro, badge: "Rising Contender 🌱" },
-  ];
-
-  const filteredLeaderboard = rawLeaderboard.filter(item => {
-    if (lbFilterRegion !== "Global" && item.region !== lbFilterRegion) return false;
-    if (lbFilterWeight !== "All" && item.weightClass !== lbFilterWeight) return false;
-    return true;
-  });
-
   const handleSendChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
-
     const userText = chatInput;
     setChatMessages(prev => [...prev, { role: 'user', text: userText }]);
     setChatInput("");
-    setIsAiThinking(true);
 
     setTimeout(() => {
-      let aiReply = "I've analyzed your biometric telemetry and active step burn. Maintain your current intensity vector!";
-      if (userText.toLowerCase().includes("cycle") || userText.toLowerCase().includes("hormone") || userText.toLowerCase().includes("phase")) {
-        aiReply = `Current phase: ${user.menstrualPhase.toUpperCase()}. Estrogen is rising, which optimizes your pain tolerance and explosive strength output. Great window for heavy compound lifts!`;
-      } else if (userText.toLowerCase().includes("step") || userText.toLowerCase().includes("calorie")) {
-        aiReply = `Your ${steps} daily steps have expanded your energy expenditure budget by roughly ~${Math.round(steps * 0.04)} kcal. You can safely incorporate an extra carbohydrate source today.`;
-      } else if (userText.toLowerCase().includes("watch") || userText.toLowerCase().includes("bluetooth")) {
-        aiReply = watchConnected ? "Smartwatch connection is stable via BLE 5.3. Heart rate telemetry streaming smoothly at 128 BPM peak." : "Smartwatch is currently offline. Navigate to the Devices tab to re-scan.";
+      let aiReply = `As a ${user.somatotype} focused on ${user.primaryGoal}, your data is securely cached locally.`;
+      if (userText.toLowerCase().includes("template") || userText.toLowerCase().includes("split")) {
+        aiReply = `You can pick from PPL, 5x5 Strength, Fat-Loss Circuits, or Calisthenics right inside the Workouts tab!`;
       }
-
       setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
-      setIsAiThinking(false);
-    }, 1200);
+    }, 1000);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950 flex flex-col">
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-4 lg:px-8 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col">
+      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Cpu className="h-6 w-6 text-slate-950 font-black" />
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-black text-slate-950">
+            AX
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold tracking-wider text-lg bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
-                APEX STATE
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                Gen-Next OS
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 hidden sm:block">AI-Powered Autonomous Fitness & Longevity</p>
+            <span className="font-extrabold text-lg bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
+              APEX STATE OS
+            </span>
+            <p className="text-xs text-slate-400">Persistent Local Storage & Workouts Engine</p>
           </div>
         </div>
-
         <div className="flex items-center gap-3">
-          <div className="hidden md:flex items-center gap-2 bg-slate-800/60 border border-slate-700/60 px-3 py-1.5 rounded-full text-xs font-medium">
-            <Flame className="h-4 w-4 text-orange-400 fill-orange-400" />
-            <span>{user.streak} Day Streak</span>
-            <span className="text-slate-600">|</span>
-            <Trophy className="h-4 w-4 text-yellow-400" />
-            <span className="text-emerald-400 font-bold">{user.xp} XP</span>
-          </div>
-
-          <button 
-            onClick={() => setActiveTab("pro")}
-            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 ${
-              user.isPro 
-                ? "bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 shadow-lg shadow-amber-500/20" 
-                : "bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 hover:brightness-110 shadow-lg shadow-emerald-500/20"
-            }`}
-          >
-            <Crown className="h-3.5 w-3.5" />
-            {user.isPro ? "Apex Pro Active" : "Upgrade to Pro"}
-          </button>
+          <span className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold uppercase">
+            {user.somatotype} • {user.primaryGoal}
+          </span>
         </div>
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto">
-        <aside className="w-full lg:w-64 border-r border-slate-800/80 bg-slate-900/30 p-4 flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible shrink-0">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 hidden lg:block mb-1">
-            Core Modules
-          </div>
-
+        <aside className="w-full lg:w-64 border-r border-slate-800 p-4 flex lg:flex-col gap-2 overflow-x-auto shrink-0">
           <nav className="flex lg:flex-col gap-1 w-full">
             {[
               { id: "dashboard", label: "Overview", icon: Activity },
-              { id: "workout", label: "Workout & Ghost", icon: Dumbbell },
+              { id: "workout", label: "Workouts & Guidelines", icon: Dumbbell },
               { id: "diet", label: "Nutrition & Steps", icon: Utensils },
-              { id: "biometrics", label: "Biometrics & Cycle", icon: Calendar },
-              { id: "devices", label: "Smartwatch BLE", icon: Bluetooth, badge: watchConnected ? "Live" : "Off" },
-              { id: "leaderboard", label: "Global Arena", icon: Trophy },
-              { id: "ai-coach", label: "Apex AI Coach", icon: Bot, highlight: true },
-              { id: "pro", label: "Pro Membership", icon: Crown, proBadge: !user.isPro },
-            ].map((tab) => {
+              { id: "biometrics", label: "Somatotype & Profile", icon: Calendar },
+              { id: "ai-coach", label: "Apex AI Coach", icon: Bot },
+            ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all text-left whitespace-nowrap lg:whitespace-normal w-full ${
-                    isActive
-                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-inner"
-                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/40 border border-transparent"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left whitespace-nowrap w-full ${
+                    isActive ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30" : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  <Icon className={`h-4 w-4 shrink-0 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
-                  <span className="flex-1">{tab.label}</span>
-                  {tab.badge && (
-                    <span className={`text-[9px] uppercase px-1.5 py-0.5 rounded font-bold ${watchConnected ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-400'}`}>
-                      {tab.badge}
-                    </span>
-                  )}
-                  {tab.highlight && (
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse hidden lg:block" />
-                  )}
-                  {tab.proBadge && (
-                    <span className="text-[9px] uppercase bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold hidden lg:block">
-                      Unlock
-                    </span>
-                  )}
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
                 </button>
               );
             })}
           </nav>
         </aside>
 
-        <main className="flex-1 p-4 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-6 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl relative overflow-hidden">
-                <div>
-                  <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold mb-1 uppercase tracking-wider">
-                    <Zap className="h-3.5 w-3.5" /> Welcome back, {user.name}
-                  </div>
-                  <h1 className="text-2xl lg:text-3xl font-black text-white tracking-tight">
-                    Biometric & Energy Budgets Balanced
-                  </h1>
-                  <p className="text-sm text-slate-400 mt-1 max-w-xl">
-                    {user.gender === 'female' ? `Currently in your ${user.menstrualPhase} phase (Day ${user.cycleDay}). AI has adjusted carbohydrate timing.` : 'Standard endocrine profile active.'} Watch telemetry linked successfully.
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setActiveTab("workout")}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 shrink-0"
-                >
-                  Start Workout <ChevronRight className="h-4 w-4" />
-                </button>
+              <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl">
+                <h1 className="text-2xl font-black text-white">System Persistent & Ready</h1>
+                <p className="text-sm text-slate-400 mt-1">
+                  Your customized routine edits, weight scale entries, and somatotype configurations (<strong className="text-emerald-400">{user.somatotype}</strong>) are automatically saved to your browser's local storage.
+                </p>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: "Daily Steps", value: steps.toLocaleString(), change: "Auto-synced via BLE", icon: Footprints, color: "text-emerald-400" },
-                  { label: "Active Energy Burn", value: `${activeCaloriesBurned} kcal`, change: `Base + ${steps} steps deduction`, icon: Flame, color: "text-orange-400" },
-                  { label: "Watch Heart Rate", value: `${watchHeartRate} BPM`, change: watchConnected ? "Connected BLE 5.3" : "Disconnected", icon: Radio, color: "text-cyan-400" },
-                  { label: "Endocrine Phase", value: user.gender === 'female' ? user.menstrualPhase : 'Standard', change: user.gender === 'female' ? `Day ${user.cycleDay} of 28` : 'Optimized profile', icon: Calendar, color: "text-teal-400" },
-                ].map((stat, i) => {
-                  const Icon = stat.icon;
-                  return (
-                    <div key={i} className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 relative">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-semibold text-slate-400">{stat.label}</span>
-                        <div className="p-2 rounded-xl bg-slate-800/60 border border-slate-700/50">
-                          <Icon className={`h-4 w-4 ${stat.color}`} />
-                        </div>
-                      </div>
-                      <div className="text-2xl font-black text-white mb-1 capitalize">{stat.value}</div>
-                      <div className="text-xs text-slate-500">{stat.change}</div>
-                    </div>
-                  );
-                })}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs text-slate-400">Body Weight</div>
+                  <div className="text-2xl font-black text-white mt-1">{user.weightKg} kg</div>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs text-slate-400">Step Count Burn</div>
+                  <div className="text-2xl font-black text-orange-400 mt-1">+{Math.round(steps * 0.04)} kcal</div>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs text-slate-400">Net Calorie Budget</div>
+                  <div className="text-2xl font-black text-emerald-400 mt-1">{netCalorieTarget} kcal</div>
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === "workout" && (
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+            <div className="space-y-8">
+              <div className="flex items-center justify-between bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
                 <div>
-                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Active Session</span>
-                  <h1 className="text-2xl font-black text-white">Push Hypertrophy & Ghost Racing</h1>
-                  <p className="text-xs text-slate-400 mt-1">AI-guided execution with live watch heart rate integration.</p>
+                  <h1 className="text-2xl font-black text-white">Workouts, Guidelines & Templates</h1>
+                  <p className="text-xs text-slate-400 mt-1">Choose pre-built blueprints designed for all gym users, complete with MET-calculated calorie burns.</p>
                 </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-center font-mono text-xl font-bold text-emerald-400">
-                    {formatTime(workoutTimer)}
-                  </div>
-                  <button 
-                    onClick={() => setWorkoutActive(!workoutActive)}
-                    className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
-                      workoutActive 
-                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30" 
-                        : "bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-lg shadow-emerald-500/20"
-                    }`}
-                  >
-                    {workoutActive ? "Pause Session" : "Start Session"}
-                  </button>
+                <div className="font-mono text-xl font-bold text-emerald-400 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
+                  {formatTime(workoutTimer)}
                 </div>
               </div>
 
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-4">
-                <h3 className="font-bold text-slate-200 text-sm uppercase tracking-wider">Scheduled Routine</h3>
+              {/* Pre-built Gym Routine Templates for All Users */}
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
+                  <BookOpen className="h-4 w-4" />
+                  <h3>Professional Workout Templates & Guidelines</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {comprehensiveWorkoutTemplates.map(template => (
+                    <div key={template.id} className="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded border border-emerald-500/20 font-bold">{template.style}</span>
+                          <span className="text-xs text-slate-400">{template.targetUser}</span>
+                        </div>
+                        <h4 className="font-bold text-white text-base mt-2">{template.title}</h4>
+                        <p className="text-xs text-slate-400 mt-1 italic">"{template.guideline}"</p>
+                      </div>
+                      <button 
+                        onClick={() => loadRoutineTemplate(template)}
+                        className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 py-2.5 rounded-xl text-xs font-bold transition-all text-center"
+                      >
+                        Load Routine into Active Session
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Active Session Routine */}
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-sm uppercase tracking-wider text-slate-200">Active Session Routine (Persisted)</h3>
+                  <button onClick={() => setWorkoutActive(!workoutActive)} className={`px-4 py-1.5 rounded-xl text-xs font-bold ${workoutActive ? "bg-rose-500 text-white" : "bg-emerald-500 text-slate-950"}`}>
+                    {workoutActive ? "Pause Timer" : "Start Session Timer"}
+                  </button>
+                </div>
                 <div className="space-y-3">
-                  {exercises.map((ex) => (
-                    <div key={ex.id} className="flex items-center justify-between bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+                  {exercises.map(ex => (
+                    <div key={ex.id} className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
                       <div className="flex items-center gap-3">
                         <button 
-                          onClick={() => {
-                            setExercises(exercises.map(item => item.id === ex.id ? {...item, completed: !item.completed} : item));
-                          }}
-                          className={`w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
-                            ex.completed ? "bg-emerald-500 border-emerald-500 text-slate-950" : "border-slate-700 bg-slate-900"
-                          }`}
+                          onClick={() => setExercises(exercises.map(i => i.id === ex.id ? {...i, completed: !i.completed} : i))}
+                          className={`w-6 h-6 rounded-lg border flex items-center justify-center ${ex.completed ? "bg-emerald-500 border-emerald-500 text-slate-950" : "border-slate-700"}`}
                         >
                           {ex.completed && <CheckCircle2 className="h-4 w-4" />}
                         </button>
                         <div>
                           <div className={`font-bold text-sm ${ex.completed ? "line-through text-slate-500" : "text-white"}`}>{ex.name}</div>
-                          <div className="text-xs text-slate-400">{ex.sets} • Target: <span className="text-emerald-400">{ex.weight}</span></div>
+                          <div className="text-xs text-slate-400">{ex.defaultSets} • Burn Estimate: <span className="text-emerald-400">~{calculateMetCalories(ex.metValue, 30)} kcal / 30m</span></div>
                         </div>
                       </div>
-                      <span className="text-xs bg-slate-800/80 border border-slate-700 px-2.5 py-1 rounded-lg text-slate-300 font-mono">
-                        Live HR: {watchHeartRate} BPM
-                      </span>
+                      <button onClick={() => setExercises(exercises.filter(i => i.id !== ex.id))} className="text-xs text-rose-400">Remove</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Global Exercise & MET Library */}
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <h3 className="font-bold text-white text-base">Global Exercise & MET Library</h3>
+                  <div className="flex gap-1.5 flex-wrap">
+                    {["All", "Strength", "Cardio", "Circuit", "Flexibility"].map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCat(cat)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold ${selectedCat === cat ? "bg-emerald-500 text-slate-950 font-bold" : "bg-slate-950 border border-slate-800 text-slate-400"}`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                  {filteredLibrary.map(item => (
+                    <div key={item.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] bg-cyan-500/10 text-cyan-400 px-2 py-0.5 rounded border border-cyan-500/20 font-bold">{item.category} (MET: {item.metValue})</span>
+                        <div className="font-bold text-sm text-white mt-1.5">{item.name}</div>
+                        <div className="text-xs text-slate-400">Burns ~{calculateMetCalories(item.metValue, 30)} kcal per 30 mins</div>
+                      </div>
+                      <button 
+                        onClick={() => addExerciseToRoutine(item)}
+                        className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 px-3 py-2 rounded-xl text-xs font-bold transition-all"
+                      >
+                        Add
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -337,79 +409,45 @@ export default function ApexStateApp() {
             </div>
           )}
 
-          {activeTab === "diet" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="text-xs font-bold text-teal-400 uppercase tracking-wider">Metabolic Control</span>
-                  <h1 className="text-2xl font-black text-white">Dynamic Step-Adjusted Calorie Budget</h1>
-                  <p className="text-xs text-slate-400 mt-1">Your daily calorie allowance automatically scales based on smart watch step telemetry.</p>
-                </div>
-                <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl text-right">
-                  <div className="text-xs text-slate-400">Total Net Calorie Target</div>
-                  <div className="text-2xl font-black text-emerald-400">{netCalorieTarget} kcal</div>
-                  <div className="text-[10px] text-slate-500">Base ({macros.baseTarget}) + Steps ({Math.round(steps * 0.02)})</div>
-                </div>
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
-                    <Footprints className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-white text-sm">Step Counter Sync (Smartwatch Connected)</h3>
-                    <p className="text-xs text-slate-400">Current step count: <strong className="text-white">{steps.toLocaleString()} steps</strong></p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setSteps(prev => Math.max(0, prev - 1000))} className="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs px-3 py-2 rounded-xl border border-slate-700">- 1k Steps</button>
-                  <button onClick={() => setSteps(prev => prev + 1000)} className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-3 py-2 rounded-xl">+ 1k Steps</button>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                  { label: "Net Calorie Budget", current: "1,460", target: `${netCalorieTarget} kcal`, color: "bg-emerald-500" },
-                  { label: "Protein", current: "120g", target: `${macros.protein}g`, color: "bg-cyan-500" },
-                  { label: "Carbohydrates", current: "145g", target: `${macros.carbs}g`, color: "bg-teal-500" },
-                  { label: "Fats", current: "42g", target: `${macros.fats}g`, color: "bg-amber-500" },
-                ].map((mac, idx) => (
-                  <div key={idx} className="bg-slate-900/60 border border-slate-800 rounded-2xl p-5">
-                    <div className="text-xs text-slate-400 mb-1">{mac.label}</div>
-                    <div className="text-xl font-black text-white">{mac.current} <span className="text-xs text-slate-500 font-normal">/ {mac.target}</span></div>
-                    <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
-                      <div className={`h-full ${mac.color} w-3/4`} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           {activeTab === "biometrics" && (
-            <div className="space-y-6 max-w-3xl mx-auto">
+            <div className="space-y-6 max-w-2xl mx-auto">
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
-                <span className="text-xs font-bold text-pink-400 uppercase tracking-wider">Endocrine & Physiology</span>
-                <h1 className="text-2xl font-black text-white">Gender & Hormone Cycle Management</h1>
-                <p className="text-xs text-slate-400 mt-1">Configure your biological profile to calibrate AI-driven recovery and nutritional scaling.</p>
+                <h1 className="text-2xl font-black text-white">Somatotype & Body Goal Configuration</h1>
+                <p className="text-xs text-slate-400 mt-1">Changes here instantly save locally across device reloads.</p>
               </div>
 
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-6">
                 <div>
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-3">Biological Profile / Gender</label>
+                  <label className="text-xs font-bold text-slate-300 uppercase block mb-3">Select Somatotype (Body Type)</label>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { id: "female", label: "Female (Cycle Tracking)" },
-                      { id: "male", label: "Male (Standard)" },
-                      { id: "other", label: "Custom / Other" },
-                    ].map((g) => (
+                      { id: "ectomorph", label: "Ectomorph (Lean / Fast Metabolism)" },
+                      { id: "mesomorph", label: "Mesomorph (Athletic / Balanced)" },
+                      { id: "endomorph", label: "Endomorph (Sturdy / Fat Storage)" },
+                    ].map(s => (
+                      <button
+                        key={s.id}
+                        onClick={() => setUser({...user, somatotype: s.id as any})}
+                        className={`p-4 rounded-xl text-xs font-bold border text-center ${user.somatotype === s.id ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950 border-slate-800 text-slate-400"}`}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-300 uppercase block mb-3">Primary Fitness Goal</label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: "muscle-gain", label: "Muscle Hypertrophy" },
+                      { id: "fat-loss", label: "Fat Loss & Conditioning" },
+                      { id: "recomposition", label: "Body Recomposition" },
+                    ].map(g => (
                       <button
                         key={g.id}
-                        onClick={() => setUser({...user, gender: g.id as any})}
-                        className={`p-3.5 rounded-xl text-xs font-bold border transition-all text-center ${
-                          user.gender === g.id ? "bg-pink-500/20 border-pink-500 text-pink-300" : "bg-slate-950 border-slate-800 text-slate-400"
-                        }`}
+                        onClick={() => setUser({...user, primaryGoal: g.id as any})}
+                        className={`p-4 rounded-xl text-xs font-bold border text-center ${user.primaryGoal === g.id ? "bg-cyan-500/20 border-cyan-500 text-cyan-300" : "bg-slate-950 border-slate-800 text-slate-400"}`}
                       >
                         {g.label}
                       </button>
@@ -417,103 +455,16 @@ export default function ApexStateApp() {
                   </div>
                 </div>
 
-                {user.gender === "female" && (
-                  <div className="space-y-4 pt-4 border-t border-slate-800">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="text-xs font-bold text-pink-400 uppercase tracking-wider">Current Cycle Phase</label>
-                        <span className="text-xs text-slate-400 font-mono">Day {user.cycleDay} of 28</span>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {[
-                          { id: "menstrual", label: "Menstrual" },
-                          { id: "follicular", label: "Follicular" },
-                          { id: "ovulatory", label: "Ovulatory" },
-                          { id: "luteal", label: "Luteal" },
-                        ].map((phase) => (
-                          <button
-                            key={phase.id}
-                            onClick={() => setUser({...user, menstrualPhase: phase.id as any})}
-                            className={`p-3 rounded-xl text-xs font-semibold border transition-all text-center capitalize ${
-                              user.menstrualPhase === phase.id ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950 border-slate-800 text-slate-400"
-                            }`}
-                          >
-                            {phase.label}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "devices" && (
-            <div className="space-y-6 max-w-3xl mx-auto">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-cyan-400 uppercase tracking-wider">BLE 5.3 Telemetry Hub</span>
-                  <h1 className="text-2xl font-black text-white">Smartwatch & Biometric Sync</h1>
-                  <p className="text-xs text-slate-400 mt-1">Connect your smartwatch, fitness band, or heart rate monitor via Bluetooth.</p>
-                </div>
-                <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${watchConnected ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}`}>
-                  <Radio className="h-3.5 w-3.5 animate-pulse" />
-                  {watchConnected ? "Connected" : "Disconnected"}
-                </div>
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 space-y-6">
-                <div className="flex items-center justify-between bg-slate-950 p-5 rounded-xl border border-slate-800">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-xl text-cyan-400">
-                      <Bluetooth className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-white text-sm">Apex Band Pro X9</h3>
-                      <p className="text-xs text-slate-400">MAC Address: 84:F3:EB:92:A1:0C • Battery: {watchBattery}%</p>
-                    </div>
-                  </div>
-
-                  <button 
-                    onClick={() => setWatchConnected(!watchConnected)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                      watchConnected ? "bg-rose-500/20 text-rose-400 border border-rose-500/30" : "bg-emerald-500 text-slate-950"
-                    }`}
-                  >
-                    {watchConnected ? "Disconnect" : "Pair Device"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "leaderboard" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">Global Arena</span>
-                  <h1 className="text-2xl font-black text-white">Apex Leaderboard & Cohorts</h1>
-                  <p className="text-xs text-slate-400 mt-1">Free global standings with advanced segmented filtering unlocked for Pro athletes.</p>
-                </div>
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
-                <div className="divide-y divide-slate-800/60">
-                  {filteredLeaderboard.map((item) => (
-                    <div key={item.rank} className={`p-4 flex items-center justify-between ${item.name.includes("You") ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
-                      <div className="flex items-center gap-4">
-                        <div className="w-8 h-8 rounded-xl font-bold flex items-center justify-center text-xs bg-slate-800 text-slate-300">
-                          #{item.rank}
-                        </div>
-                        <div>
-                          <div className="font-bold text-sm text-white">{item.name}</div>
-                          <div className="text-xs text-slate-400">{item.badge} • {item.region}</div>
-                        </div>
-                      </div>
-                      <div className="text-right font-mono font-bold text-emerald-400 text-sm">{item.score}</div>
-                    </div>
-                  ))}
+                  <label className="text-xs font-bold text-slate-300 uppercase block mb-2">Current Body Weight: <span className="text-emerald-400">{user.weightKg} kg</span></label>
+                  <input 
+                    type="range" 
+                    min="40" 
+                    max="140" 
+                    value={user.weightKg} 
+                    onChange={(e) => setUser({...user, weightKg: Number(e.target.value)})}
+                    className="w-full accent-emerald-500 bg-slate-950" 
+                  />
                 </div>
               </div>
             </div>
@@ -521,24 +472,18 @@ export default function ApexStateApp() {
 
           {activeTab === "ai-coach" && (
             <div className="space-y-4 h-[75vh] flex flex-col">
-              <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl shrink-0 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
-                    <Bot className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h1 className="font-black text-white text-base">Apex AI Personal Coach</h1>
-                    <p className="text-xs text-slate-400">Trained on biomechanics, hormone cycles, and BLE sensor telemetry.</p>
-                  </div>
+              <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 shrink-0">
+                <Bot className="h-5 w-5 text-emerald-400" />
+                <div>
+                  <h1 className="font-black text-white text-base">Apex AI Somatotype Coach</h1>
+                  <p className="text-xs text-slate-400">Contextualized for your {user.somatotype} profile and local saved settings.</p>
                 </div>
               </div>
 
               <div className="flex-1 bg-slate-900/40 border border-slate-800 rounded-2xl p-4 overflow-y-auto space-y-4 flex flex-col">
-                {chatMessages.map((msg, index) => (
-                  <div key={index} className={`flex gap-3 max-w-xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-                    <div className={`p-4 rounded-2xl text-sm leading-relaxed ${
-                      msg.role === 'ai' ? 'bg-slate-900 border border-slate-800 text-slate-200' : 'bg-emerald-500 text-slate-950 font-medium'
-                    }`}>
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={`flex max-w-xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
+                    <div className={`p-4 rounded-2xl text-sm ${msg.role === 'ai' ? 'bg-slate-900 border border-slate-800 text-slate-200' : 'bg-emerald-500 text-slate-950 font-medium'}`}>
                       {msg.text}
                     </div>
                   </div>
@@ -550,30 +495,13 @@ export default function ApexStateApp() {
                   type="text" 
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Ask your AI coach..." 
+                  placeholder="Ask about workout templates or splits..." 
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
                 />
                 <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 rounded-xl font-bold">
                   <Send className="h-4 w-4" />
                 </button>
               </form>
-            </div>
-          )}
-
-          {activeTab === "pro" && (
-            <div className="space-y-6 max-w-3xl mx-auto py-4">
-              <div className="text-center space-y-2">
-                <h1 className="text-3xl lg:text-4xl font-black text-white">Elevate Your Training to Apex Pro</h1>
-              </div>
-              <button 
-                onClick={() => {
-                  setUser({...user, isPro: true});
-                  setActiveTab("dashboard");
-                }}
-                className="w-full bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-extrabold text-sm py-3.5 rounded-xl shadow-lg"
-              >
-                Unlock Apex Pro Now
-              </button>
             </div>
           )}
         </main>
