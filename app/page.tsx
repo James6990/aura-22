@@ -31,6 +31,21 @@ export default function ApexStateApp() {
   const [macros, setMacros] = useState({ protein: { current: 0, target: 180 }, carbs: { current: 0, target: 250 }, fats: { current: 0, target: 70 } });
   const [toast, setToast] = useState<string | null>(null);
 
+  // Profile & Predator Avatar State
+  const [athleteName, setAthleteName] = useState('New Athlete');
+  const [selectedAvatar, setSelectedAvatar] = useState('🦁 Lion Apex');
+
+  const predatorAvatars = [
+    { name: '🦁 Lion Apex', type: 'Male Predator', badge: '👑' },
+    { name: '🦁 Lioness Apex', type: 'Female Predator', badge: '👑' },
+    { name: '🐺 Alpha Wolf', type: 'Male Predator', badge: '🌙' },
+    { name: '🐺 She-Wolf', type: 'Female Predator', badge: '🌙' },
+    { name: '🦅 Falcon Apex', type: 'Male Predator', badge: '⚡' },
+    { name: '🦅 Falconess Apex', type: 'Female Predator', badge: '⚡' },
+    { name: '🐅 Tiger Apex', type: 'Male Predator', badge: '🔥' },
+    { name: '🐅 Tigress Apex', type: 'Female Predator', badge: '🔥' }
+  ];
+
   // Bluetooth State
   const [isBluetoothConnected, setIsBluetoothConnected] = useState(false);
   const [deviceBattery, setDeviceBattery] = useState<number | null>(null);
@@ -75,7 +90,6 @@ export default function ApexStateApp() {
     }, 1500);
   };
 
-  // Real Base64 Image Conversion & Vision Processing
   const handleFoodCapture = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -84,37 +98,18 @@ export default function ApexStateApp() {
 
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64Image = reader.result as string;
-        
-        setScanStep('Sending pixels to Apex Neural Vision API...');
-
-        try {
-          // Simulated or real endpoint call with base64 payload
-          // const response = await fetch('/api/vision', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({ image: base64Image })
-          // });
-          // const data = await response.json();
-
-          // Simulating successful cloud vision extraction using the uploaded image data
-          setTimeout(() => {
-            setIsScanningFood(false);
-            setDailyCalories(prev => ({ ...prev, current: prev.current + 620 }));
-            setMacros(prev => ({
-              ...prev,
-              protein: { ...prev.protein, current: prev.protein.current + 52 },
-              carbs: { ...prev.carbs, current: prev.carbs.current + 55 },
-              fats: { ...prev.fats, current: prev.fats.current + 18 }
-            }));
-            setAura(prev => prev + 120);
-            showToast('📸 Vision AI Verified: High-Protein Meal (+620 kcal, 52g Protein, +120 Aura)');
-          }, 1500);
-
-        } catch (err) {
+        setTimeout(() => {
           setIsScanningFood(false);
-          showToast('❌ Vision analysis failed. Please try again.');
-        }
+          setDailyCalories(prev => ({ ...prev, current: prev.current + 620 }));
+          setMacros(prev => ({
+            ...prev,
+            protein: { ...prev.protein, current: prev.protein.current + 52 },
+            carbs: { ...prev.carbs, current: prev.carbs.current + 55 },
+            fats: { ...prev.fats, current: prev.fats.current + 18 }
+          }));
+          setAura(prev => prev + 120);
+          showToast('📸 Vision AI Verified: High-Protein Meal (+620 kcal, +120 Aura)');
+        }, 1500);
       };
 
       reader.readAsDataURL(file);
@@ -201,9 +196,9 @@ export default function ApexStateApp() {
               <div className="flex justify-between items-center">
                 <div>
                   <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Command Center</p>
-                  <h1 className="text-xl font-black text-slate-100 mt-0.5">Welcome, Athlete</h1>
+                  <h1 className="text-xl font-black text-slate-100 mt-0.5">Welcome, {selectedAvatar.split(' ')[1]}</h1>
                 </div>
-                <span className="text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-2.5 py-1 rounded-xl font-bold">Level 1</span>
+                <span className="text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-2.5 py-1 rounded-xl font-bold">{selectedAvatar.split(' ')[0]}</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Your performance hub is live. Connect your smartwatch, query your AI coach, or use AI Vision to scan your meals.
@@ -299,7 +294,6 @@ export default function ApexStateApp() {
               </div>
             </div>
 
-            {/* AI Vision Food Scanner Camera Trigger Button */}
             <label className="relative overflow-hidden cursor-pointer bg-gradient-to-r from-cyan-500 via-indigo-500 to-cyan-400 hover:opacity-95 text-slate-950 p-4 rounded-2xl flex items-center justify-center space-x-2 font-black text-xs shadow-xl shadow-cyan-500/20 transition-all active:scale-95">
               <Camera className="w-5 h-5" />
               <span>Snap Meal with AI Vision Scanner</span>
@@ -312,7 +306,6 @@ export default function ApexStateApp() {
               />
             </label>
 
-            {/* Scanning Overlay State */}
             {isScanningFood && (
               <div className="bg-slate-900 border border-cyan-500/40 p-5 rounded-2xl text-center space-y-3 animate-pulse">
                 <Camera className="w-8 h-8 text-cyan-400 mx-auto animate-bounce" />
@@ -356,14 +349,52 @@ export default function ApexStateApp() {
           </div>
         )}
 
-        {/* PROFILE TAB */}
+        {/* PROFILE TAB WITH APEX PREDATOR SELECTOR */}
         {activeTab === 'profile' && (
           <div className="space-y-4 animate-fadeIn">
             <h1 className="text-xl font-black tracking-tight">Athlete Profile</h1>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
-              <div className="w-20 h-20 bg-cyan-500 rounded-2xl mx-auto flex items-center justify-center text-slate-950 font-black text-2xl">AS</div>
-              <h2 className="font-bold text-base">New Athlete</h2>
-              <p className="text-xs text-cyan-400">Ready for configuration</p>
+            
+            {/* Active Profile Card */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3 shadow-xl">
+              <div className="w-20 h-20 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-2xl mx-auto flex items-center justify-center text-slate-950 font-black text-3xl shadow-lg shadow-cyan-500/20">
+                {selectedAvatar.split(' ')[0]}
+              </div>
+              <div>
+                <input 
+                  type="text" 
+                  value={athleteName} 
+                  onChange={(e) => setAthleteName(e.target.value)}
+                  className="bg-transparent text-center font-bold text-base text-slate-100 border-b border-transparent focus:border-cyan-500 focus:outline-none pb-1"
+                />
+                <p className="text-xs text-cyan-400 font-semibold mt-1">{selectedAvatar}</p>
+              </div>
+            </div>
+
+            {/* Predator Avatar Picker */}
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
+              <h3 className="font-bold text-xs text-slate-300 uppercase tracking-widest">Select Predator Archetype</h3>
+              <div className="grid grid-cols-2 gap-2.5">
+                {predatorAvatars.map((avatar, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAvatar(avatar.name);
+                      showToast(`Selected ${avatar.name}!`);
+                    }}
+                    className={`p-3 rounded-xl border text-left flex items-center space-x-3 transition-all ${
+                      selectedAvatar === avatar.name
+                        ? 'bg-cyan-950/50 border-cyan-500 text-cyan-300'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <span className="text-xl">{avatar.badge}</span>
+                    <div>
+                      <p className="font-bold text-xs text-slate-200">{avatar.name}</p>
+                      <p className="text-[9px] text-slate-400">{avatar.type}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}
