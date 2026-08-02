@@ -6,7 +6,7 @@ import {
   ChevronRight, Lock, Unlock, Zap, Activity, Award, 
   TrendingUp, Shield, RefreshCw, CheckCircle2, Heart, 
   Send, Bot, Globe, Filter, Crown, Cpu, ArrowUpRight,
-  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera
+  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera, Volume2, ShieldAlert, Sword
 } from "lucide-react";
 
 type TabType = "dashboard" | "workout" | "diet" | "leaderboard" | "ai-coach" | "pro" | "biometrics" | "devices";
@@ -22,6 +22,8 @@ interface UserProfile {
   gender: "male" | "female" | "other";
   menstrualPhase: "follicular" | "ovulatory" | "luteal" | "menstrual" | "n/a";
   cycleDay: number;
+  league: "Bronze" | "Silver" | "Gold" | "Sapphire" | "Ruby" | "Emerald" | "Diamond";
+  leagueRank: number;
 }
 
 interface ExerciseItem {
@@ -40,6 +42,7 @@ interface WorkoutRoutineTemplate {
   targetUser: string;
   style: string;
   guideline: string;
+  isProOnly?: boolean;
   exercises: Omit<ExerciseItem, "completed">[];
 }
 
@@ -53,13 +56,12 @@ interface NutritionItem {
   mealType: "Breakfast" | "Lunch" | "Dinner" | "Snack";
 }
 
-interface LeaderboardUser {
+interface LeagueUser {
   rank: number;
   name: string;
   xp: number;
-  streak: number;
-  somatotype: string;
   isPro: boolean;
+  isUser?: boolean;
 }
 
 export default function ApexStateApp() {
@@ -75,20 +77,33 @@ export default function ApexStateApp() {
     return {
       name: "Alex Vance",
       isPro: false,
-      xp: 2450,
-      streak: 12,
+      xp: 2840,
+      streak: 14,
       weightKg: 75,
       somatotype: "mesomorph",
       primaryGoal: "muscle-gain",
       gender: "female",
       menstrualPhase: "follicular",
-      cycleDay: 8
+      cycleDay: 8,
+      league: "Ruby",
+      leagueRank: 4
     };
   });
 
-  const [steps, setSteps] = useState<number>(8420);
+  const [steps, setSteps] = useState<number>(8920);
   const baseCaloriesBurned = 1850;
   const activeCaloriesBurned = Math.round(baseCaloriesBurned + (steps * 0.04));
+
+  // Boss Battle State (PvE)
+  const [bossHp, setBossHp] = useState<number>(34200);
+  const bossMaxHp = 50000;
+
+  // Recovery Debt State
+  const [recoveryDebtPct, setRecoveryDebtPct] = useState<number>(38);
+
+  // Audio Hype Mode State
+  const [hypeActive, setHypeActive] = useState<boolean>(false);
+  const [hypeMessage, setHypeMessage] = useState<string>("Ready to ignite your set!");
 
   const [workoutActive, setWorkoutActive] = useState<boolean>(false);
   const [workoutTimer, setWorkoutTimer] = useState<number>(0);
@@ -119,15 +134,11 @@ export default function ApexStateApp() {
     ];
   });
 
-  const [newMealName, setNewMealName] = useState("");
-  const [newMealCals, setNewMealCals] = useState(350);
-  const [newMealProtein, setNewMealProtein] = useState(25);
-  const [newMealType, setNewMealType] = useState<"Breakfast" | "Lunch" | "Dinner" | "Snack">("Dinner");
-
-  // Camera / Google Visual Search Simulation State
+  // Camera Scanner State
   const [cameraActive, setCameraActive] = useState(false);
   const [scanningStatus, setScanningStatus] = useState<string>("");
   const [scannedFoodResult, setScannedFoodResult] = useState<{name: string; cals: number; protein: number} | null>(null);
+  const [scanCount, setScanCount] = useState<number>(1);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -151,104 +162,44 @@ export default function ApexStateApp() {
     {
       id: "ppl-hypertrophy",
       title: "Push / Pull / Legs (PPL) Hypertrophy Split",
-      targetUser: "Intermediate to Advanced Bodybuilding",
-      style: "Hypertrophy & Aesthetics",
-      guideline: "Perform 6 days a week with 1 rest day. Focus on mechanical tension, 60-90s rest intervals, and progressive overload on compound lifts.",
+      targetUser: "Intermediate Bodybuilding",
+      style: "Hypertrophy",
+      guideline: "Perform 6 days a week with 1 rest day. Focus on mechanical tension and progressive overload.",
       exercises: [
         { id: 201, name: "Barbell Overhead Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "60kg" },
         { id: 202, name: "Weighted Pull-Ups", category: "Strength", metValue: 8.0, defaultSets: "4 sets × 8 reps", defaultWeight: "Bodyweight + 15kg" },
-        { id: 203, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "110kg" },
-        { id: 204, name: "Incline Dumbbell Flyes", category: "Strength", metValue: 5.0, defaultSets: "3 sets × 12 reps", defaultWeight: "18kg" }
+        { id: 203, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "110kg" }
       ]
     },
     {
       id: "powerlifting-strength",
       title: "5x5 Powerlifting Strength Foundation",
-      targetUser: "Strength Seekers & Ectomorphs",
+      targetUser: "Strength Seekers",
       style: "Absolute Strength",
-      guideline: "Perform 3 days a week. Focus on heavy compound lifting with long rest periods (2 to 3 minutes) to maximize neural adaptations.",
+      guideline: "Perform 3 days a week with heavy compound lifts and 2-3 minute rest windows.",
       exercises: [
         { id: 205, name: "Heavy Barbell Squat (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "130kg" },
-        { id: 206, name: "Flat Barbell Bench Press (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "100kg" },
-        { id: 207, name: "Conventional Deadlift", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 5 reps", defaultWeight: "160kg" }
+        { id: 206, name: "Flat Barbell Bench Press (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "100kg" }
       ]
     },
     {
-      id: "upper-lower-power",
-      title: "Upper / Lower Heavy Power Split",
-      targetUser: "Intermediate Lifters & Athletes",
-      style: "Maximal Force & Hypertrophy",
-      guideline: "4 days a week split. Focus on heavy multi-joint movements followed by targeted accessory volume for joint health and growth.",
+      id: "ai-pro-custom",
+      title: "Apex AI Biometric Hyper-Customizer",
+      targetUser: "Pro Subscribers Only",
+      style: "AI Adaptive",
+      guideline: "Generates daily micro-adjustments based on your sleep quality, recovery score, and hormonal cycle.",
+      isProOnly: true,
       exercises: [
-        { id: 214, name: "Weighted Dips", category: "Strength", metValue: 6.5, defaultSets: "4 sets × 6-8 reps", defaultWeight: "Bodyweight + 20kg" },
-        { id: 215, name: "Pendlay Barbell Row", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "85kg" },
-        { id: 216, name: "Romanian Deadlift (RDL)", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "115kg" },
-        { id: 217, name: "Standing Barbell Military Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6 reps", defaultWeight: "65kg" }
-      ]
-    },
-    {
-      id: "fat-loss-circuit",
-      title: "Metabolic Conditioning & Fat-Loss WOD",
-      targetUser: "Endomorphs & Cutting Phases",
-      style: "Cardio & HIIT Circuit",
-      guideline: "High-intensity circuits with minimal rest (30s) between stations. Maximizes EPOC (afterburn effect) and hourly caloric burn.",
-      exercises: [
-        { id: 208, name: "Kettlebell Swings", category: "Circuit", metValue: 11.0, defaultSets: "4 sets × 20 reps", defaultWeight: "24kg" },
-        { id: 209, name: "Rowing Machine Intervals", category: "Cardio", metValue: 9.5, defaultSets: "15 mins continuous", defaultWeight: "Moderate Pace" },
-        { id: 210, name: "Burpee Box Jumps", category: "Circuit", metValue: 12.0, defaultSets: "4 sets × 12 reps", defaultWeight: "Bodyweight" }
-      ]
-    },
-    {
-      id: "calisthenics-mastery",
-      title: "Bodyweight Calisthenics & Gymnastics",
-      targetUser: "Functional Fitness & Travelers",
-      style: "Bodyweight Strength",
-      guideline: "Focus on strict form, full range of motion, and advanced progressions (e.g., muscle-ups, pistol squats, handstand push-ups).",
-      exercises: [
-        { id: 211, name: "Strict Pull-Ups", category: "Strength", metValue: 8.0, defaultSets: "4 sets × max reps", defaultWeight: "Bodyweight" },
-        { id: 212, name: "Pistol Squats", category: "Strength", metValue: 7.0, defaultSets: "3 sets × 8 reps/leg", defaultWeight: "Bodyweight" },
-        { id: 213, name: "Dips on Parallel Bars", category: "Strength", metValue: 6.5, defaultSets: "4 sets × 12 reps", defaultWeight: "Bodyweight" }
+        { id: 220, name: "AI Curated Compound Sequence", category: "Strength", metValue: 7.0, defaultSets: "4 sets × 8 reps", defaultWeight: "Adaptive" }
       ]
     }
   ];
 
-  const masterExerciseLibrary: Omit<ExerciseItem, "completed">[] = [
-    { id: 101, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "120kg" },
-    { id: 102, name: "Heavy Deadlift", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 5 reps", defaultWeight: "140kg" },
-    { id: 115, name: "Front Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "95kg" },
-    { id: 116, name: "Sumo Deadlift", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 5 reps", defaultWeight: "150kg" },
-    { id: 117, name: "Incline Barbell Bench Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "80kg" },
-    { id: 118, name: "Close-Grip Bench Press", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 8-10 reps", defaultWeight: "75kg" },
-    { id: 119, name: "Standing Barbell Military Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "65kg" },
-    { id: 120, name: "Dumbbell Lateral Raises", category: "Strength", metValue: 5.0, defaultSets: "4 sets × 12-15 reps", defaultWeight: "14kg" },
-    { id: 121, name: "Barbell Bent-Over Row", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8 reps", defaultWeight: "90kg" },
-    { id: 122, name: "T-Bar Row", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "70kg" },
-    { id: 123, name: "Lat Pulldown (Wide Grip)", category: "Strength", metValue: 5.0, defaultSets: "4 sets × 10-12 reps", defaultWeight: "70kg" },
-    { id: 124, name: "Seated Cable Row", category: "Strength", metValue: 5.0, defaultSets: "4 sets × 10 reps", defaultWeight: "75kg" },
-    { id: 125, name: "Romanian Deadlift (RDL)", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "110kg" },
-    { id: 126, name: "Bulgarian Split Squats", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 10 reps/leg", defaultWeight: "24kg db" },
-    { id: 127, name: "Leg Press (45 Degree)", category: "Strength", metValue: 5.5, defaultSets: "4 sets × 10-12 reps", defaultWeight: "220kg" },
-    { id: 128, name: "Barbell Hip Thrust", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 10 reps", defaultWeight: "140kg" },
-    { id: 129, name: "Standing Barbell Bicep Curl", category: "Strength", metValue: 4.5, defaultSets: "3 sets × 10-12 reps", defaultWeight: "35kg" },
-    { id: 130, name: "Tricep Overhead Cable Extension", category: "Strength", metValue: 4.5, defaultSets: "3 sets × 12-15 reps", defaultWeight: "30kg" },
-    { id: 131, name: "Standing Calf Raises", category: "Strength", metValue: 4.0, defaultSets: "4 sets × 15 reps", defaultWeight: "100kg" },
-    { id: 103, name: "CrossFit Circuit WOD", category: "Circuit", metValue: 10.0, defaultSets: "20 min AMRAP", defaultWeight: "Bodyweight" },
-    { id: 104, name: "Brisk Outdoor Walking", category: "Cardio", metValue: 4.3, defaultSets: "30 mins", defaultWeight: "3.5 mph" },
-    { id: 105, name: "Running / Jogging", category: "Cardio", metValue: 8.3, defaultSets: "30 mins", defaultWeight: "5 mph" },
-    { id: 106, name: "HIIT Sprint Intervals", category: "Cardio", metValue: 12.0, defaultSets: "20 mins", defaultWeight: "Max Effort" },
-    { id: 107, name: "Lap Swimming (Moderate)", category: "Cardio", metValue: 8.3, defaultSets: "30 mins", defaultWeight: "Free style" },
-    { id: 108, name: "Vinyasa Flow Yoga", category: "Flexibility", metValue: 4.0, defaultSets: "45 mins", defaultWeight: "Bodyweight" },
-  ];
-
-  const [selectedCat, setSelectedCat] = useState<string>("All");
-  const filteredLibrary = masterExerciseLibrary.filter(item => selectedCat === "All" || item.category === selectedCat);
-
-  const addExerciseToRoutine = (ex: Omit<ExerciseItem, "completed">) => {
-    if (exercises.some(item => item.name === ex.name)) return;
-    setExercises([...exercises, { ...ex, id: Date.now(), completed: false }]);
-  };
-
   const loadRoutineTemplate = (template: WorkoutRoutineTemplate) => {
+    if (template.isProOnly && !user.isPro) {
+      setActiveTab("pro");
+      return;
+    }
     const newItems: ExerciseItem[] = template.exercises.map((ex, idx) => ({
       ...ex,
       id: Date.now() + idx,
@@ -257,42 +208,27 @@ export default function ApexStateApp() {
     setExercises(newItems);
   };
 
-  const calculateMetCalories = (met: number, durationMins: number) => {
-    return Math.round(met * user.weightKg * (durationMins / 60));
-  };
-
   const totalNutritionCals = nutritionLog.reduce((acc, item) => acc + item.calories, 0);
   const totalNutritionProtein = nutritionLog.reduce((acc, item) => acc + item.protein, 0);
   const netCalorieTarget = Math.round(2200 + (steps * 0.02));
 
-  const handleAddMeal = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newMealName.trim()) return;
-    const newItem: NutritionItem = {
-      id: Date.now(),
-      name: newMealName,
-      calories: Number(newMealCals),
-      protein: Number(newMealProtein),
-      carbs: 35,
-      fats: 12,
-      mealType: newMealType
-    };
-    setNutritionLog([...nutritionLog, newItem]);
-    setNewMealName("");
-  };
-
   const triggerCameraScan = () => {
+    if (!user.isPro && scanCount >= 2) {
+      setActiveTab("pro");
+      return;
+    }
     setCameraActive(true);
-    setScanningStatus("Analyzing image via Google Visual Search Engine...");
+    setScanningStatus("Analyzing plate via Google Visual Search Engine...");
     setScannedFoodResult(null);
 
     setTimeout(() => {
-      setScanningStatus("Match found: Avocado & Poached Eggs on Sourdough Toast");
+      setScanningStatus("Match found: Grilled Salmon Bowl with Quinoa & Avocado");
       setScannedFoodResult({
-        name: "Avocado & Poached Eggs on Sourdough",
-        cals: 420,
-        protein: 22
+        name: "Grilled Salmon Bowl & Quinoa",
+        cals: 510,
+        protein: 38
       });
+      setScanCount(prev => prev + 1);
     }, 2000);
   };
 
@@ -303,24 +239,26 @@ export default function ApexStateApp() {
       name: scannedFoodResult.name,
       calories: scannedFoodResult.cals,
       protein: scannedFoodResult.protein,
-      carbs: 30,
-      fats: 18,
-      mealType: "Breakfast"
+      carbs: 40,
+      fats: 16,
+      mealType: "Lunch"
     }]);
     setCameraActive(false);
     setScannedFoodResult(null);
   };
 
-  const leaderboardData: LeaderboardUser[] = [
-    { rank: 1, name: "Marcus Thorne", xp: 5420, streak: 45, somatotype: "Mesomorph", isPro: true },
-    { rank: 2, name: "Elena Rostova", xp: 4890, streak: 30, somatotype: "Ectomorph", isPro: true },
-    { rank: 3, name: "Alex Vance (You)", xp: user.xp, streak: user.streak, somatotype: user.somatotype, isPro: user.isPro },
-    { rank: 4, name: "David Kim", xp: 2100, streak: 8, somatotype: "Endomorph", isPro: false },
-    { rank: 5, name: "Sarah Jenkins", xp: 1950, streak: 14, somatotype: "Mesomorph", isPro: false },
+  const currentLeagueCohort: LeagueUser[] = [
+    { rank: 1, name: "Marcus T.", xp: 3420, isPro: true },
+    { rank: 2, name: "Elena R.", xp: 3150, isPro: true },
+    { rank: 3, name: "David K.", xp: 2950, isPro: false },
+    { rank: 4, name: `${user.name} (You)`, xp: user.xp, isPro: user.isPro, isUser: true },
+    { rank: 5, name: "Sarah J.", xp: 2680, isPro: false },
+    { rank: 6, name: "Liam W.", xp: 2410, isPro: false },
+    { rank: 7, name: "Chloe M.", xp: 2190, isPro: true },
   ];
 
   const [chatMessages, setChatMessages] = useState<Array<{role: 'ai' | 'user', text: string}>>([
-    { role: 'ai', text: `Hello ${user.name}! Google Visual Camera Scanner, Leaderboards, Pro Paywall, and all biometrics are fully operational.` }
+    { role: 'ai', text: `Welcome back, ${user.name}! Your Recovery Debt is currently ${recoveryDebtPct}%. Let's crush today's goals!` }
   ]);
   const [chatInput, setChatInput] = useState<string>("");
 
@@ -340,6 +278,24 @@ export default function ApexStateApp() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const attackBoss = () => {
+    const damage = 1250;
+    const nextHp = Math.max(0, bossHp - damage);
+    setBossHp(nextHp);
+    setUser(prev => ({ ...prev, xp: prev.xp + 150 }));
+  };
+
+  const triggerHypeAudio = () => {
+    setHypeActive(true);
+    const lines = [
+      "Lock in! Drive your heels through the floor!",
+      "Explosive power! Two more reps in the tank, Alex!",
+      "Unstoppable momentum! Keep your core braced!"
+    ];
+    setHypeMessage(lines[Math.floor(Math.random() * lines.length)]);
+    setTimeout(() => setHypeActive(false), 4000);
+  };
+
   const handleSendChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatInput.trim()) return;
@@ -348,11 +304,11 @@ export default function ApexStateApp() {
     setChatInput("");
 
     setTimeout(() => {
-      let aiReply = `As a ${user.gender} (${user.somatotype}) focused on ${user.primaryGoal}, your hormonal phase is currently logged as ${user.menstrualPhase} (Day ${user.cycleDay}).`;
-      if (userText.toLowerCase().includes("camera") || userText.toLowerCase().includes("scan")) {
-        aiReply = `You can use the Google Visual Camera Scanner in the Nutrition tab to instantly snap or upload a meal for automatic calorie logging!`;
-      } else if (userText.toLowerCase().includes("pro") || userText.toLowerCase().includes("paywall")) {
-        aiReply = `Upgrading to Apex Pro unlocks advanced AI coaching, limitless routine templates, and priority leaderboard placements.`;
+      let aiReply = `Based on your ${user.somatotype} physique and ${user.menstrualPhase} cycle phase, keep your rest intervals strict at 90 seconds.`;
+      if (userText.toLowerCase().includes("league") || userText.toLowerCase().includes("rank")) {
+        aiReply = `You need about 350 more XP this week to pass David K. and secure promotion in the ${user.league} League!`;
+      } else if (userText.toLowerCase().includes("recovery") || userText.toLowerCase().includes("debt")) {
+        aiReply = `Your Recovery Debt is at ${recoveryDebtPct}%. You are safe to lift heavy today, but make sure to hydrate aggressively!`;
       }
       setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
     }, 1000);
@@ -362,38 +318,38 @@ export default function ApexStateApp() {
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col">
       <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-black text-slate-950">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-black text-slate-950 shadow-lg shadow-emerald-950/50">
             AX
           </div>
           <div>
             <span className="font-extrabold text-lg bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
               APEX STATE OS
             </span>
-            <p className="text-xs text-slate-400">Camera Scanner, Leaderboards & Pro Engine</p>
+            <p className="text-xs text-slate-400">Gamified Fitness & Biometric Leagues</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setActiveTab("pro")} 
-            className="flex items-center gap-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full font-bold uppercase hover:bg-amber-500/20 transition-all"
+            className="flex items-center gap-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3.5 py-1.5 rounded-full font-bold uppercase hover:bg-amber-500/20 transition-all shadow-lg shadow-amber-950/30"
           >
-            <Crown className="h-3.5 w-3.5" />
-            {user.isPro ? "PRO ACTIVE" : "UPGRADE PRO"}
+            <Crown className="h-3.5 w-3.5 text-amber-400" />
+            {user.isPro ? "APEX PRO ACTIVE" : "GO PRO"}
           </button>
         </div>
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto">
-        <aside className="w-full lg:w-64 border-r border-slate-800 p-4 flex lg:flex-col gap-2 overflow-x-auto shrink-0">
+        <aside className="w-full lg:w-64 border-r border-slate-800 p-4 flex lg:flex-col gap-2 overflow-x-auto shrink-0 bg-slate-950/40">
           <nav className="flex lg:flex-col gap-1 w-full">
             {[
               { id: "dashboard", label: "Overview", icon: Activity },
               { id: "workout", label: "Workouts & Guidelines", icon: Dumbbell },
               { id: "diet", label: "Nutrition & Camera", icon: Utensils },
-              { id: "leaderboard", label: "Global Leaderboard", icon: Trophy },
+              { id: "leaderboard", label: `${user.league} League`, icon: Trophy },
               { id: "biometrics", label: "Somatotype & Profile", icon: Calendar },
               { id: "ai-coach", label: "Apex AI Coach", icon: Bot },
-              { id: "pro", label: "Apex Pro Paywall", icon: Crown },
+              { id: "pro", label: "Apex Pro Club", icon: Crown },
               { id: "devices", label: "Connected Devices", icon: Bluetooth }
             ].map(tab => {
               const Icon = tab.icon;
@@ -402,118 +358,184 @@ export default function ApexStateApp() {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left whitespace-nowrap w-full ${
-                    isActive ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold" : "text-slate-400 hover:text-slate-200"
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap ${
+                    isActive 
+                      ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shadow-lg shadow-emerald-950/50" 
+                      : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
                   }`}
                 >
-                  <Icon className="h-4 w-4" />
-                  <span>{tab.label}</span>
+                  <Icon className={`h-4 w-4 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
+                  {tab.label}
                 </button>
               );
             })}
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-black text-white">Welcome back, {user.name}</h1>
-                  <p className="text-sm text-slate-300 mt-1">
-                    Your <strong className="text-emerald-400">{user.somatotype}</strong> profile is configured for <strong className="text-cyan-400">{user.primaryGoal}</strong>.
-                  </p>
+              <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/30 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+                <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                  <div>
+                    <span className="text-xs uppercase tracking-widest text-emerald-400 font-bold">Welcome back</span>
+                    <h1 className="text-2xl lg:text-3xl font-black text-white mt-1">{user.name}</h1>
+                    <p className="text-sm text-slate-400 mt-1">
+                      League: <span className="text-amber-400 font-bold">{user.league} League (#4)</span> • Streak: <span className="text-amber-400 font-bold">{user.streak} Days</span>
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-center">
+                      <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold">
+                        <Flame className="h-4 w-4 fill-amber-400" />
+                        <span>Streak</span>
+                      </div>
+                      <p className="text-xl font-black text-white mt-0.5">{user.streak} Days</p>
+                    </div>
+                    <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-center">
+                      <div className="flex items-center gap-1.5 text-cyan-400 text-xs font-bold">
+                        <Zap className="h-4 w-4 fill-cyan-400" />
+                        <span>Total XP</span>
+                      </div>
+                      <p className="text-xl font-black text-white mt-0.5">{user.xp}</p>
+                    </div>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => { setActiveTab("diet"); triggerCameraScan(); }} 
-                  className="hidden sm:flex items-center gap-2 bg-emerald-500 text-slate-950 font-bold px-4 py-3 rounded-xl text-xs uppercase"
-                >
-                  <Camera className="h-4 w-4" /> Quick Camera Scan
-                </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">XP Rank</div>
-                  <div className="text-2xl font-black text-amber-400 mt-1">{user.xp} XP</div>
+              <div className="bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-500/30 rounded-2xl p-6 relative overflow-hidden">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2.5 py-0.5 rounded-full font-bold uppercase">
+                        Weekly PvE Boss Battle
+                      </span>
+                      <span className="text-xs text-slate-400">The Iron Titan</span>
+                    </div>
+                    <h3 className="text-xl font-black text-white mt-2">Defeat the Titan: {bossHp.toLocaleString()} / {bossMaxHp.toLocaleString()} HP</h3>
+                    <div className="w-full bg-slate-800 h-3 rounded-full mt-3 overflow-hidden max-w-md border border-slate-700">
+                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all" style={{ width: `${(bossHp / bossMaxHp) * 100}%` }}></div>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={attackBoss}
+                    className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-lg shadow-purple-950/50 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Sword className="h-4 w-4" /> Strike Boss (+150 XP)
+                  </button>
                 </div>
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Training Streak</div>
-                  <div className="text-2xl font-black text-emerald-400 mt-1">{user.streak} Days</div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Daily Step Count</span>
+                    <Footprints className="h-5 w-5 text-emerald-400" />
+                  </div>
+                  <p className="text-3xl font-black text-white mt-3">{steps.toLocaleString()}</p>
+                  <p className="text-xs text-slate-400 mt-1">Goal: 10,000 steps</p>
+                  <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min(100, (steps / 10000) * 100)}%` }}></div>
+                  </div>
                 </div>
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Daily Steps</div>
-                  <div className="text-2xl font-black text-cyan-400 mt-1">{steps.toLocaleString()}</div>
+
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Calorie Burn</span>
+                    <Flame className="h-5 w-5 text-amber-400" />
+                  </div>
+                  <p className="text-3xl font-black text-white mt-3">{activeCaloriesBurned} <span className="text-sm font-normal text-slate-400">kcal</span></p>
+                  <p className="text-xs text-slate-400 mt-1">Basal + Active Movement</p>
+                  <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
+                    <div className="bg-amber-500 h-full rounded-full" style={{ width: `${Math.min(100, (activeCaloriesBurned / 2500) * 100)}%` }}></div>
+                  </div>
                 </div>
-                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Calories Burned</div>
-                  <div className="text-2xl font-black text-rose-400 mt-1">~{activeCaloriesBurned} kcal</div>
+
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Recovery Debt</span>
+                    <ShieldAlert className="h-5 w-5 text-cyan-400" />
+                  </div>
+                  <p className="text-3xl font-black text-white mt-3">{recoveryDebtPct}% <span className="text-sm font-normal text-cyan-400">Debt Load</span></p>
+                  <p className="text-xs text-slate-400 mt-1">Safe training window open</p>
+                  <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
+                    <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${recoveryDebtPct}%` }}></div>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
           {activeTab === "workout" && (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-black text-white">Workouts & Guidelines</h1>
-                  <p className="text-xs text-slate-400 mt-1">Select from professional splits or build your custom routine.</p>
+                  <h1 className="text-2xl font-black text-white">Workouts & Routine Guidelines</h1>
+                  <p className="text-sm text-slate-400">Select professional templates or build custom routines.</p>
                 </div>
-                <div className="font-mono text-xl font-bold text-emerald-400 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
-                  {formatTime(workoutTimer)}
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={triggerHypeAudio}
+                    className="px-4 py-2 rounded-xl text-sm font-bold bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 flex items-center gap-2 transition-all"
+                  >
+                    <Volume2 className="h-4 w-4" />
+                    Hype Mode
+                  </button>
+                  <button 
+                    onClick={() => setWorkoutActive(!workoutActive)}
+                    className={`px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all ${
+                      workoutActive ? "bg-rose-500 text-white animate-pulse" : "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                    }`}
+                  >
+                    <Activity className="h-4 w-4" />
+                    {workoutActive ? `End Session (${formatTime(workoutTimer)})` : "Start Live Workout"}
+                  </button>
                 </div>
               </div>
 
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
-                <h3 className="font-bold text-sm text-emerald-400 flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" /> Professional Workout Templates
+              {hypeActive && (
+                <div className="bg-cyan-950/60 border border-cyan-500/50 p-4 rounded-xl flex items-center gap-3 animate-fade-in">
+                  <Volume2 className="h-5 w-5 text-cyan-400 animate-bounce" />
+                  <div>
+                    <span className="text-[10px] text-cyan-400 uppercase font-bold tracking-wider block">Apex Audio Motivator</span>
+                    <p className="text-sm font-bold text-white">"{hypeMessage}"</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-4">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <Award className="h-5 w-5 text-amber-400" />
+                  Routine Templates
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {comprehensiveWorkoutTemplates.map(template => (
-                    <div key={template.id} className="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4">
-                      <div>
-                        <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">{template.style}</span>
-                        <h4 className="font-bold text-white text-base mt-2">{template.title}</h4>
-                        <p className="text-xs text-slate-400 mt-1 italic">{template.guideline}</p>
-                      </div>
-                      <button 
-                        onClick={() => loadRoutineTemplate(template)}
-                        className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 py-3 rounded-xl text-xs font-bold transition-all text-center"
-                      >
-                        Load Routine into Active Session
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm uppercase text-slate-200">Active Session Routine</h3>
-                  <button 
-                    onClick={() => setWorkoutActive(!workoutActive)} 
-                    className={`px-4 py-2 rounded-xl text-xs font-bold ${workoutActive ? "bg-rose-500 text-white" : "bg-emerald-500 text-slate-950"}`}
-                  >
-                    {workoutActive ? "Pause Timer" : "Start Session Timer"}
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {exercises.map(ex => (
-                    <div key={ex.id} className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
-                      <div className="flex items-center gap-3">
-                        <button 
-                          onClick={() => setExercises(exercises.map(i => i.id === ex.id ? {...i, completed: !i.completed} : i))}
-                          className={`w-7 h-7 rounded-lg border flex items-center justify-center ${ex.completed ? "bg-emerald-500 border-emerald-500 text-slate-950" : "border-slate-700"}`}
-                        >
-                          {ex.completed && <CheckCircle2 className="h-4 w-4" />}
-                        </button>
-                        <div>
-                          <div className={`font-bold text-sm ${ex.completed ? "line-through text-slate-500" : "text-white"}`}>{ex.name}</div>
-                          <div className="text-xs text-slate-400">{ex.defaultSets} • Burn Estimate: <span className="text-emerald-400">~{calculateMetCalories(ex.metValue, 30)} kcal</span></div>
+                    <div key={template.id} className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between hover:border-slate-700 transition-all relative overflow-hidden">
+                      {template.isProOnly && !user.isPro && (
+                        <div className="absolute top-3 right-3 bg-amber-500/20 border border-amber-500/40 text-amber-400 text-[10px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                          <Crown className="h-3 w-3" /> PRO EXCLUSIVE
                         </div>
+                      )}
+                      <div>
+                        <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-full font-bold">
+                          {template.style}
+                        </span>
+                        <h4 className="text-lg font-bold text-white mt-2">{template.title}</h4>
+                        <p className="text-xs text-slate-300 mt-2 leading-relaxed bg-slate-950/50 p-3 rounded-xl border border-slate-800">
+                          {template.guideline}
+                        </p>
                       </div>
-                      <button onClick={() => setExercises(exercises.filter(i => i.id !== ex.id))} className="text-xs text-rose-400">Remove</button>
+                      <div className="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
+                        <span className="text-xs text-slate-400">{template.exercises.length} Exercises</span>
+                        <button 
+                          onClick={() => loadRoutineTemplate(template)}
+                          className="bg-slate-800 hover:bg-slate-700 text-emerald-400 text-xs font-bold px-3 py-2 rounded-xl transition-all flex items-center gap-1.5"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                          {template.isProOnly && !user.isPro ? "Unlock with Pro" : "Load Routine"}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -523,132 +545,82 @@ export default function ApexStateApp() {
 
           {activeTab === "diet" && (
             <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-black text-white">Nutrition, Macros & Google Visual Camera</h1>
-                  <p className="text-xs text-slate-400 mt-1">Snap or upload meal photos to automatically estimate calories and macros.</p>
+                  <h1 className="text-2xl font-black text-white">Nutrition & Visual Scanner</h1>
+                  <p className="text-sm text-slate-400">Scan meals instantly with Google Visual AI or log manually.</p>
                 </div>
-                <button 
+                <button
                   onClick={triggerCameraScan}
-                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-extrabold px-5 py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
+                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 px-4 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-950/50 transition-all"
                 >
-                  <Camera className="h-4 w-4" /> Google Visual Scan Meal
+                  <Camera className="h-4 w-4" />
+                  {user.isPro ? "Visual Scan (Unlimited)" : `Visual Scan (${2 - scanCount} free left)`}
                 </button>
               </div>
 
               {cameraActive && (
-                <div className="bg-slate-900 border-2 border-emerald-500/50 p-6 rounded-2xl space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-white text-base flex items-center gap-2">
-                      <Camera className="h-5 w-5 text-emerald-400" /> Google Visual Search Scanner Active
-                    </h3>
-                    <button onClick={() => setCameraActive(false)} className="text-xs text-slate-400 hover:text-white">Close Camera</button>
-                  </div>
-                  
-                  <div className="h-48 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center space-y-3">
-                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 animate-pulse">
-                      <Search className="h-6 w-6" />
+                <div className="bg-slate-900 border-2 border-emerald-500/50 rounded-2xl p-6 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-emerald-950/20 pointer-events-none"></div>
+                  <div className="relative z-10 flex flex-col items-center justify-center text-center py-8 space-y-4">
+                    <div className="h-16 w-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 animate-pulse">
+                      <Camera className="h-8 w-8" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-200">{scanningStatus}</p>
-                  </div>
-
-                  {scannedFoodResult && (
-                    <div className="bg-emerald-950/30 border border-emerald-500/30 p-4 rounded-xl flex items-center justify-between">
-                      <div>
-                        <div className="text-xs text-emerald-400 font-bold">Detection Successful</div>
-                        <div className="font-bold text-white text-base mt-1">{scannedFoodResult.name}</div>
-                        <div className="text-xs text-slate-300">{scannedFoodResult.cals} kcal • {scannedFoodResult.protein}g Protein</div>
+                    <h3 className="text-lg font-bold text-white">{scanningStatus}</h3>
+                    {scannedFoodResult ? (
+                      <div className="bg-slate-950 border border-slate-800 p-4 rounded-xl max-w-md w-full space-y-2">
+                        <p className="font-bold text-white">{scannedFoodResult.name}</p>
+                        <p className="text-xs text-emerald-400">Macros: {scannedFoodResult.cals} kcal • {scannedFoodResult.protein}g Protein</p>
+                        <div className="flex gap-2 pt-2">
+                          <button 
+                            onClick={confirmScannedFood}
+                            className="flex-1 bg-emerald-500 text-slate-950 py-2 rounded-lg text-xs font-bold hover:bg-emerald-400"
+                          >
+                            Log Meal
+                          </button>
+                          <button 
+                            onClick={() => setCameraActive(false)}
+                            className="bg-slate-800 text-slate-300 px-4 py-2 rounded-lg text-xs font-bold"
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
-                      <button 
-                        onClick={confirmScannedFood}
-                        className="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase"
-                      >
-                        Log to Nutrition
-                      </button>
-                    </div>
-                  )}
+                    ) : (
+                      <p className="text-xs text-slate-400 animate-bounce">Analyzing plate...</p>
+                    )}
+                  </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
-                  <h3 className="font-bold text-white text-sm uppercase">Today's Logged Meals</h3>
-                  <div className="space-y-3">
-                    {nutritionLog.map(meal => (
-                      <div key={meal.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between">
-                        <div>
-                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded font-bold">{meal.mealType}</span>
-                          <div className="font-bold text-sm text-white mt-1">{meal.name}</div>
-                          <div className="text-xs text-slate-400">{meal.calories} kcal • {meal.protein}g Protein</div>
-                        </div>
-                        <button onClick={() => setNutritionLog(nutritionLog.filter(m => m.id !== meal.id))} className="text-xs text-rose-400">Remove</button>
-                      </div>
-                    ))}
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                  <span className="text-xs text-slate-400 font-bold uppercase">Calories Consumed</span>
+                  <p className="text-3xl font-black text-white mt-2">{totalNutritionCals} <span className="text-sm font-normal text-slate-400">kcal</span></p>
                 </div>
-
-                <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
-                  <h3 className="font-bold text-white text-sm uppercase">Log New Meal Manually</h3>
-                  <form onSubmit={handleAddMeal} className="space-y-3">
-                    <input 
-                      type="text" 
-                      placeholder="Meal Name (e.g., Salmon & Rice)" 
-                      value={newMealName}
-                      onChange={(e) => setNewMealName(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-                    />
-                    <div className="grid grid-cols-2 gap-2">
-                      <input 
-                        type="number" 
-                        placeholder="Calories" 
-                        value={newMealCals}
-                        onChange={(e) => setNewMealCals(Number(e.target.value))}
-                        className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-                      />
-                      <input 
-                        type="number" 
-                        placeholder="Protein (g)" 
-                        value={newMealProtein}
-                        onChange={(e) => setNewMealProtein(Number(e.target.value))}
-                        className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
-                      />
-                    </div>
-                    <button type="submit" className="w-full bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs uppercase">
-                      Add to Nutrition Log
-                    </button>
-                  </form>
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                  <span className="text-xs text-slate-400 font-bold uppercase">Protein Intake</span>
+                  <p className="text-3xl font-black text-white mt-2">{totalNutritionProtein} <span className="text-sm font-normal text-slate-400">g</span></p>
+                </div>
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                  <span className="text-xs text-slate-400 font-bold uppercase">Calorie Target</span>
+                  <p className="text-3xl font-black text-emerald-400 mt-2">{netCalorieTarget} <span className="text-sm font-normal text-slate-400">kcal</span></p>
                 </div>
               </div>
-            </div>
-          )}
 
-          {activeTab === "leaderboard" && (
-            <div className="space-y-6 max-w-3xl mx-auto">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-black text-white">Global Somatotype Leaderboard</h1>
-                  <p className="text-xs text-slate-400 mt-1">Compete globally based on XP, training streaks, and metabolic output.</p>
-                </div>
-                <Trophy className="h-8 w-8 text-amber-400" />
-              </div>
-
-              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
-                <div className="divide-y divide-slate-800">
-                  {leaderboardData.map(item => (
-                    <div key={item.rank} className={`p-4 flex items-center justify-between ${item.name.includes("You") ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
-                      <div className="flex items-center gap-4">
-                        <span className="w-8 h-8 rounded-xl bg-slate-950 text-slate-300 flex items-center justify-center font-bold text-xs">
-                          #{item.rank}
-                        </span>
-                        <div>
-                          <div className="font-bold text-white text-sm flex items-center gap-2">
-                            {item.name}
-                            {item.isPro && <Crown className="h-3.5 w-3.5 text-amber-400" />}
-                          </div>
-                          <div className="text-xs text-slate-400">{item.somatotype} • Streak: {item.streak} days</div>
-                        </div>
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6">
+                <h3 className="text-base font-bold text-white mb-4">Today's Log</h3>
+                <div className="space-y-3">
+                  {nutritionLog.map(item => (
+                    <div key={item.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4 flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-bold">{item.mealType}</span>
+                        <h5 className="font-bold text-white text-sm mt-1">{item.name}</h5>
                       </div>
-                      <div className="font-black text-emerald-400 text-sm">{item.xp} XP</div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-emerald-400">{item.calories} kcal</p>
+                        <p className="text-xs text-slate-400">{item.protein}g protein</p>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -656,109 +628,237 @@ export default function ApexStateApp() {
             </div>
           )}
 
-          {activeTab === "pro" && (
-            <div className="space-y-6 max-w-2xl mx-auto text-center">
-              <div className="bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-900 border border-amber-500/30 p-8 rounded-3xl space-y-6">
-                <div className="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 mx-auto flex items-center justify-center shadow-xl">
-                  <Crown className="h-8 w-8" />
-                </div>
+          {activeTab === "leaderboard" && (
+            <div className="space-y-6">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-black text-white">Apex State Pro Membership</h1>
-                  <p className="text-sm text-slate-300 mt-2">Unlock unlimited AI coach queries, advanced biometric hormone analysis, priority global leaderboard placement, and Google camera food recognition.</p>
+                  <h1 className="text-2xl font-black text-white flex items-center gap-2">
+                    <Trophy className="h-6 w-6 text-amber-400" />
+                    {user.league} League Tournament
+                  </h1>
+                  <p className="text-sm text-slate-400">Top 3 users get promoted to the next league at the end of the week. Bottom 2 face demotion.</p>
                 </div>
-                <button 
-                  onClick={() => setUser({...user, isPro: true})}
-                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black py-4 rounded-xl text-sm uppercase tracking-wider shadow-lg"
-                >
-                  {user.isPro ? "Pro Active on Account" : "Upgrade to Pro ($9.99/mo)"}
-                </button>
+                <div className="bg-slate-900 border border-amber-500/30 px-4 py-2 rounded-xl text-center">
+                  <span className="text-[10px] text-amber-400 font-bold uppercase block">Time Remaining</span>
+                  <span className="text-sm font-black text-white">2 Days 14 Hours</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+                  <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Rank & Competitor</span>
+                  <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Weekly XP</span>
+                </div>
+                <div className="divide-y divide-slate-800/80">
+                  {currentLeagueCohort.map(lb => (
+                    <div key={lb.rank} className={`p-4 flex items-center justify-between ${lb.isUser ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
+                      <div className="flex items-center gap-4">
+                        <div className={`h-8 w-8 rounded-xl flex items-center justify-center font-black text-xs ${
+                          lb.rank === 1 ? "bg-amber-500 text-slate-950" : lb.rank === 2 ? "bg-slate-300 text-slate-950" : lb.rank === 3 ? "bg-amber-700 text-white" : "bg-slate-800 text-slate-300"
+                        }`}>
+                          #{lb.rank}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-sm">{lb.name}</span>
+                          {lb.isPro && <Crown className="h-3.5 w-3.5 text-amber-400" />}
+                          {lb.rank <= 3 && <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">Promotion Zone</span>}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-emerald-400 text-sm">{lb.xp} XP</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === "biometrics" && (
-            <div className="space-y-6 max-w-2xl mx-auto">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+            <div className="space-y-6">
+              <div>
                 <h1 className="text-2xl font-black text-white">Somatotype & Biometric Profile</h1>
-                <p className="text-xs text-slate-400 mt-1">Configure your body type and physiological profile for custom caloric and workout generation.</p>
+                <p className="text-sm text-slate-400">Customize your physical profile and hormonal cycle tracking.</p>
               </div>
 
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-6">
-                <div>
-                  <label className="text-xs font-bold text-slate-300 uppercase block mb-3">Somatotype Selection</label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[
-                      { id: "ectomorph", label: "Ectomorph" },
-                      { id: "mesomorph", label: "Mesomorph" },
-                      { id: "endomorph", label: "Endomorph" },
-                    ].map(s => (
-                      <button
-                        key={s.id}
-                        onClick={() => setUser({...user, somatotype: s.id as any})}
-                        className={`p-4 rounded-xl text-xs font-bold border text-center ${user.somatotype === s.id ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950 border-slate-800 text-slate-400"}`}
-                      >
-                        {s.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "devices" && (
-            <div className="space-y-6 max-w-2xl mx-auto">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
-                <h1 className="text-2xl font-black text-white">Connected Wearables & Devices</h1>
-                <p className="text-xs text-slate-400 mt-1">Sync Apple Health, Garmin, Whoop, or Bluetooth heart rate monitors.</p>
-              </div>
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
-                    <Bluetooth className="h-6 w-6" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
+                  <h3 className="text-base font-bold text-white">User Profile Configuration</h3>
+                  <div>
+                    <label className="text-xs text-slate-400 font-bold block mb-1">Name</label>
+                    <input 
+                      type="text" 
+                      value={user.name}
+                      onChange={e => setUser({...user, name: e.target.value})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-base">Apex BLE Heart Rate Monitor</h3>
-                    <p className="text-xs text-emerald-400 font-semibold">Connected & Streaming Live HR</p>
+                    <label className="text-xs text-slate-400 font-bold block mb-1">Weight (kg)</label>
+                    <input 
+                      type="number" 
+                      value={user.weightKg}
+                      onChange={e => setUser({...user, weightKg: Number(e.target.value)})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-400 font-bold block mb-1">Somatotype</label>
+                    <select 
+                      value={user.somatotype}
+                      onChange={e => setUser({...user, somatotype: e.target.value as any})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="ectomorph">Ectomorph</option>
+                      <option value="mesomorph">Mesomorph</option>
+                      <option value="endomorph">Endomorph</option>
+                    </select>
                   </div>
                 </div>
-                <span className="text-2xl font-black text-white">138 <span className="text-xs text-rose-500 font-normal">BPM</span></span>
+
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
+                  <h3 className="text-base font-bold text-white">Hormonal & Cycle Tracking</h3>
+                  <div>
+                    <label className="text-xs text-slate-400 font-bold block mb-1">Gender</label>
+                    <select 
+                      value={user.gender}
+                      onChange={e => setUser({...user, gender: e.target.value as any})}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                    >
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  {user.gender === "female" && (
+                    <div>
+                      <label className="text-xs text-slate-400 font-bold block mb-1">Menstrual Phase</label>
+                      <select 
+                        value={user.menstrualPhase}
+                        onChange={e => setUser({...user, menstrualPhase: e.target.value as any})}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      >
+                        <option value="follicular">Follicular Phase</option>
+                        <option value="ovulatory">Ovulatory Phase</option>
+                        <option value="luteal">Luteal Phase</option>
+                        <option value="menstrual">Menstrual Phase</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === "ai-coach" && (
-            <div className="space-y-4 h-[75vh] flex flex-col">
-              <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 shrink-0">
-                <Bot className="h-5 w-5 text-emerald-400" />
-                <div>
-                  <h1 className="font-black text-white text-base">Apex AI Somatotype Coach</h1>
-                  <p className="text-xs text-slate-400">Your custom advisor for training splits, macros, and recovery optimization.</p>
-                </div>
+            <div className="space-y-6 flex flex-col h-[calc(100vh-12rem)]">
+              <div>
+                <h1 className="text-2xl font-black text-white">Apex AI Coach</h1>
+                <p className="text-sm text-slate-400">Ask questions about your recovery debt, boss battles, and nutrition.</p>
               </div>
 
-              <div className="flex-1 bg-slate-900/40 border border-slate-800 rounded-2xl p-4 overflow-y-auto space-y-4 flex flex-col">
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex max-w-xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
-                    <div className={`p-4 rounded-2xl text-sm ${msg.role === 'ai' ? 'bg-slate-900 border border-slate-800 text-slate-200' : 'bg-emerald-500 text-slate-950 font-medium'}`}>
-                      {msg.text}
+              <div className="flex-1 bg-slate-900/80 border border-slate-800 rounded-2xl p-4 flex flex-col overflow-hidden">
+                <div className="flex-1 overflow-y-auto space-y-4 pr-2">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-md p-4 rounded-2xl text-sm ${
+                        msg.role === 'user' ? 'bg-emerald-500 text-slate-950 font-medium' : 'bg-slate-950 border border-slate-800 text-slate-200'
+                      }`}>
+                        {msg.text}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+
+                <form onSubmit={handleSendChat} className="mt-4 flex gap-2 pt-3 border-t border-slate-800">
+                  <input 
+                    type="text" 
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    placeholder="Ask about recovery debt, boss battles, or scans..."
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-emerald-500"
+                  />
+                  <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 rounded-xl font-bold flex items-center justify-center">
+                    <Send className="h-4 w-4" />
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "pro" && (
+            <div className="space-y-6 max-w-2xl mx-auto py-6">
+              <div className="text-center space-y-3">
+                <div className="inline-flex h-16 w-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 items-center justify-center text-amber-400">
+                  <Crown className="h-8 w-8" />
+                </div>
+                <h1 className="text-3xl font-black text-white">Unlock Apex Pro Club</h1>
+                <p className="text-sm text-slate-400">Keep core workout and tracking 100% free. Upgrade only when you want superpowers.</p>
               </div>
 
-              <form onSubmit={handleSendChat} className="flex gap-2 shrink-0">
-                <input 
-                  type="text" 
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Ask your AI coach anything..." 
-                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
-                />
-                <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 rounded-xl font-bold">
-                  <Send className="h-4 w-4" />
+              <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-6 relative overflow-hidden space-y-6">
+                <div className="absolute right-0 top-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="space-y-3">
+                  {[
+                    "Unlimited Google Visual Camera Food Scans",
+                    "Advanced Biometric Recovery & Recovery Debt Forecasting",
+                    "Exclusive AI Custom Routine Generator",
+                    "Double XP Multiplier in Weekly Leagues & Boss Battles"
+                  ].map((feat, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <CheckCircle2 className="h-5 w-5 text-amber-400 shrink-0" />
+                      <span className="text-sm text-slate-200">{feat}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => setUser({...user, isPro: !user.isPro})}
+                  className={`w-full py-4 rounded-xl font-extrabold text-sm transition-all shadow-lg ${
+                    user.isPro 
+                      ? "bg-slate-800 text-amber-400 border border-amber-500/30" 
+                      : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-500/20"
+                  }`}
+                >
+                  {user.isPro ? "PRO MEMBERSHIP ACTIVE (TOGGLE OFF)" : "START 7-DAY FREE TRIAL • $7.99/MO"}
                 </button>
-              </form>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "devices" && (
+            <div className="space-y-6">
+              <div>
+                <h1 className="text-2xl font-black text-white">Connected Biometric Devices</h1>
+                <p className="text-sm text-slate-400">Sync Apple Health, Garmin, Whoop, and smart scales.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { name: "Apple Health / Apple Watch", status: "Connected", battery: "84%", icon: Activity },
+                  { name: "Whoop 4.0 Strap", status: "Ready to Pair", battery: "--", icon: Radio },
+                  { name: "Garmin Fenix 7 Pro", status: "Connected", battery: "92%", icon: BatteryCharging },
+                  { name: "Bluetooth Smart Scale", status: "Connected", battery: "78%", icon: Bluetooth }
+                ].map((dev, idx) => {
+                  const DevIcon = dev.icon;
+                  return (
+                    <div key={idx} className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-xl bg-slate-800 flex items-center justify-center text-emerald-400">
+                          <DevIcon className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm">{dev.name}</h4>
+                          <p className="text-xs text-slate-400 mt-0.5">{dev.status} • Battery: {dev.battery}</p>
+                        </div>
+                      </div>
+                      <button className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-lg">
+                        {dev.status === "Connected" ? "Synced" : "Pair"}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </main>
