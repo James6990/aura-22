@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,7 +29,6 @@ function ApexLogo({ className = "w-6 h-6" }: { className?: string }) {
 export default function ApexStateApp() {
   const [activeTab, setActiveTab] = useState<'home' | 'workout' | 'history' | 'profile'>('home');
   
-  // Persistent State with LocalStorage
   const [aura, setAura] = useState<number>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('apex_aura');
@@ -49,13 +46,9 @@ export default function ApexStateApp() {
   });
 
   const [toast, setToast] = useState<string | null>(null);
-
-  // Accessibility State
   const [highContrast, setHighContrast] = useState(false);
   const [screenReaderVoice, setScreenReaderVoice] = useState(true);
 
-  // Profile & Biometrics
-  const [selectedAvatar, setSelectedAvatar] = useState('🦁 Lion Apex');
   const [biometrics, setBiometrics] = useState({
     sex: 'Male',
     age: '24',
@@ -64,7 +57,6 @@ export default function ApexStateApp() {
     goal: 'Hypertrophy & Lean Muscle'
   });
 
-  // Workout History Log
   const [workoutHistory, setWorkoutHistory] = useState<Array<{ id: number; date: string; title: string; summary: string }>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('apex_history');
@@ -75,15 +67,12 @@ export default function ApexStateApp() {
     return [];
   });
 
-  // Rest Timer State
   const [restSeconds, setRestSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
-  // Plate Calculator State
   const [targetWeight, setTargetWeight] = useState<number>(100);
   const [barWeight, setBarWeight] = useState<number>(20);
 
-  // PR Tracker State
   const [personalRecords, setPersonalRecords] = useState<Array<{ id: number; lift: string; weight: string; date: string }>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('apex_prs');
@@ -125,7 +114,6 @@ export default function ApexStateApp() {
   ]);
   const [isListening, setIsListening] = useState(false);
 
-  // Save to LocalStorage whenever state changes
   useEffect(() => {
     localStorage.setItem('apex_aura', aura.toString());
     localStorage.setItem('apex_streak', streak.toString());
@@ -133,47 +121,19 @@ export default function ApexStateApp() {
     localStorage.setItem('apex_prs', JSON.stringify(personalRecords));
   }, [aura, streak, workoutHistory, personalRecords]);
 
-  // Rest Timer Interval Logic with Audio Beep
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isTimerRunning && restSeconds > 0) {
       interval = setInterval(() => setRestSeconds(prev => prev - 1), 1000);
     } else if (restSeconds === 0 && isTimerRunning) {
       setIsTimerRunning(false);
-      playBeep();
       showToast("Rest time complete! Get back under the bar.");
     }
     return () => clearInterval(interval);
   }, [isTimerRunning, restSeconds]);
 
-  const playBeep = () => {
-    if (typeof window === 'undefined') return;
-    try {
-      const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.3);
-    } catch (e) {
-      // Audio context fallback if restricted
-    }
-  };
-
-  const speakText = (text: string) => {
-    if (!screenReaderVoice || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
-  };
-
   const showToast = (msg: string) => {
     setToast(msg);
-    speakText(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
@@ -204,30 +164,6 @@ export default function ApexStateApp() {
     showToast("Workout session saved to history! Plus 100 Aura");
   };
 
-  const startVoiceLogger = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      showToast("Voice recognition not supported in this browser.");
-      return;
-    }
-    // @ts-ignore
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => setIsListening(true);
-    // @ts-ignore
-    recognition.onresult = (event) => {
-      const speech = event.results[0][0].transcript;
-      setIsListening(false);
-      setExercises(prev => [{ id: Date.now(), name: speech, targetWeight: 50, sets: [{ setNumber: 1, weight: 'Logged', reps: 'Logged', completed: true, lastWeekRef: 'First entry' }] }, ...prev]);
-      setAura(prev => prev + 50);
-      showToast(`Voice logged: "${speech}"`);
-    };
-    recognition.onerror = () => setIsListening(false);
-    recognition.onend = () => setIsListening(false);
-    recognition.start();
-  };
-
   const calculatePlates = () => {
     if (targetWeight <= barWeight) return 'Weight must be greater than bar weight.';
     const weightPerSide = (targetWeight - barWeight) / 2;
@@ -243,35 +179,6 @@ export default function ApexStateApp() {
       }
     }
     return breakdown.join(', ') + ' per side';
-  };
-
-  const sendAiMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!aiQuery.trim()) return;
-    const userMsg = aiQuery;
-    setAiChat(prev => [...prev, { sender: 'user', text: userMsg, hasAction: false }]);
-    setAiQuery('');
-
-    try {
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, biometrics })
-      });
-      const data = await res.json();
-      setAiChat(prev => [...prev, { sender: 'ai', text: data.reply || "Generated protocol tailored for your goals.", hasAction: true }]);
-      speakText("AI protocol generated.");
-    } catch (err) {
-      setAiChat(prev => [...prev, { sender: 'ai', text: "Here is your customized macro & training split: Focus on progressive overload with 4 core compound movements weekly.", hasAction: true }]);
-      speakText("AI protocol generated offline fallback.");
-    }
-  };
-
-  const handleApplyAiPlan = () => {
-    setCustomRoutines(prev => [{ id: Date.now(), name: `AI ${biometrics.goal} Protocol`, items: [`Weight: ${biometrics.weight}kg`, 'Optimized Hypertrophy Routine'] }, ...prev]);
-    setAura(prev => prev + 150);
-    setIsAiOpen(false);
-    showToast("AI Plan saved to routines!");
   };
 
   return (
@@ -324,17 +231,6 @@ export default function ApexStateApp() {
               </div>
             </div>
 
-            {/* QUICK VOICE LOG */}
-            <div className={`border p-4 rounded-2xl flex items-center justify-between shadow-xl ${highContrast ? 'bg-zinc-900 border-white' : 'bg-slate-900 border-slate-800'}`}>
-              <div>
-                <h4 className="font-bold text-xs text-cyan-300">Voice-to-Text Logger</h4>
-                <p className="text-[10px] text-slate-400">Log sets hands-free while lifting</p>
-              </div>
-              <button onClick={startVoiceLogger} className={`p-3 rounded-xl font-bold flex items-center justify-center ${isListening ? 'bg-red-500 animate-pulse text-white' : 'bg-cyan-500 text-slate-950'}`}>
-                {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              </button>
-            </div>
-
             {/* ROUTINES */}
             <div className={`border p-5 rounded-2xl space-y-3 shadow-xl ${highContrast ? 'bg-zinc-900 border-white' : 'bg-slate-900 border-slate-800'}`}>
               <h3 className="font-bold text-xs uppercase tracking-widest flex items-center text-cyan-400">
@@ -354,12 +250,12 @@ export default function ApexStateApp() {
               </div>
             </div>
 
-            <button onClick={() => setIsAiOpen(true)} className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">
+            <button onClick={() => setActiveTab('workout')} className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 rounded-2xl flex items-center justify-between shadow-lg shadow-cyan-500/20 active:scale-95 transition-all">
               <div className="flex items-center space-x-3">
-                <Sparkles className="w-6 h-6 text-slate-100" />
+                <Dumbbell className="w-6 h-6 text-slate-100" />
                 <div className="text-left">
-                  <h3 className="font-bold text-sm text-slate-100">Consult AI Coach</h3>
-                  <p className="text-[10px] text-cyan-200">Persistent intelligent training partner</p>
+                  <h3 className="font-bold text-sm text-slate-100">Start Workout Session</h3>
+                  <p className="text-[10px] text-cyan-200">Track sets & plate calculator</p>
                 </div>
               </div>
               <ArrowRight className="w-5 h-5 text-slate-100" />
@@ -428,7 +324,7 @@ export default function ApexStateApp() {
               </div>
             </div>
 
-            {/* EXERCISES & PROGRESSIVE OVERLOAD HINTS */}
+            {/* EXERCISES & SETS */}
             <div className="space-y-4">
               {exercises.map((ex) => (
                 <div key={ex.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-xl">
@@ -439,15 +335,19 @@ export default function ApexStateApp() {
                   </div>
                   <div className="space-y-2">
                     {ex.sets.map((set, setIdx) => (
-                      <div key={setIdx} className={`p-3 rounded-xl border space-y-1.5 ${set.completed ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-slate-950 border-slate-800'}`}>
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-bold">Set #{set.setNumber} - {set.weight} x {set.reps}</span>
-                          <button onClick={() => toggleSetCompletion(ex.id, setIdx)} className={`px-3 py-1 rounded-lg text-xs font-bold ${set.completed ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>
-                            {set.completed ? 'Done' : 'Complete'}
-                          </button>
+                      <div key={setIdx} className="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <span className="text-xs font-bold text-slate-400">Set {set.setNumber}</span>
+                          <span className="text-xs font-semibold text-slate-200">{set.weight} × {set.reps} reps</span>
                         </div>
-                        <div className="text-[10px] text-cyan-400/80 flex items-center font-medium">
-                          <TrendingUp className="w-3 h-3 mr-1" /> Progressive Overload Target: {set.lastWeekRef}
+                        <div className="flex items-center space-x-3">
+                          <span className="text-[10px] text-cyan-400 hidden sm:inline">{set.lastWeekRef}</span>
+                          <button 
+                            onClick={() => toggleSetCompletion(ex.id, setIdx)}
+                            className={`w-7 h-7 rounded-lg flex items-center justify-center border transition-all ${set.completed ? 'bg-cyan-500 border-cyan-400 text-slate-950' : 'bg-slate-900 border-slate-700 text-slate-500'}`}
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -455,143 +355,19 @@ export default function ApexStateApp() {
                 </div>
               ))}
             </div>
+
           </div>
         )}
-
-        {/* WORKOUT HISTORY & PR TAB */}
-        {activeTab === 'history' && (
-          <div className="space-y-5 animate-fadeIn">
-            <div>
-              <h1 className="text-xl font-black tracking-tight">Personal Records (PRs)</h1>
-              <p className="text-xs text-slate-400">Track your peak strength milestones and all-time heaviest lifts.</p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2.5">
-              {personalRecords.map((pr) => (
-                <div key={pr.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between shadow-lg">
-                  <div className="flex items-center space-x-3">
-                    <div className="bg-cyan-950 border border-cyan-500/40 p-2 rounded-xl text-cyan-400 font-bold">
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-xs text-slate-200">{pr.lift}</h4>
-                      <p className="text-[10px] text-slate-400">Achieved on {pr.date}</p>
-                    </div>
-                  </div>
-                  <span className="text-sm font-black text-cyan-400">{pr.weight}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="pt-2">
-              <h2 className="text-sm font-black tracking-tight mb-2">Workout History Logs</h2>
-              <div className="space-y-3">
-                {workoutHistory.map((item) => (
-                  <div key={item.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-xl">
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-bold text-xs text-cyan-300">{item.title}</h3>
-                      <span className="text-[10px] text-slate-400">{item.date}</span>
-                    </div>
-                    <p className="text-xs text-slate-300">{item.summary}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* PROFILE TAB */}
-        {activeTab === 'profile' && (
-          <div className="space-y-4 animate-fadeIn">
-            <h1 className="text-xl font-black tracking-tight">Athlete Profile & Settings</h1>
-            
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3 shadow-xl">
-              <div className="w-20 h-20 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-2xl mx-auto flex items-center justify-center text-slate-950 font-black text-3xl shadow-lg">
-                {selectedAvatar.split(' ')[0]}
-              </div>
-              <h3 className="font-bold text-sm text-cyan-300">{getApexTitle(aura)}</h3>
-            </div>
-
-            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
-              <h3 className="font-bold text-xs text-cyan-400 uppercase tracking-widest flex items-center">
-                <Eye className="w-4 h-4 mr-2" /> Accessibility Settings
-              </h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-200">High Contrast Mode</h4>
-                  </div>
-                  <button onClick={() => setHighContrast(!highContrast)} className={`w-12 h-6 rounded-full p-1 transition-colors ${highContrast ? 'bg-cyan-500' : 'bg-slate-800'}`}>
-                    <div className={`w-4 h-4 rounded-full bg-slate-950 transform transition-transform ${highContrast ? 'translate-x-6' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between bg-slate-950 p-3 rounded-xl border border-slate-800">
-                  <div>
-                    <h4 className="font-bold text-xs text-slate-200">Audio Screen Reader</h4>
-                  </div>
-                  <button onClick={() => setScreenReaderVoice(!screenReaderVoice)} className={`w-12 h-6 rounded-full p-1 transition-colors ${screenReaderVoice ? 'bg-cyan-500' : 'bg-slate-800'}`}>
-                    <div className={`w-4 h-4 rounded-full bg-slate-950 transform transition-transform ${screenReaderVoice ? 'translate-x-6' : 'translate-x-0'}`} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
       </main>
 
-      {/* AI Modal Drawer */}
-      {isAiOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col justify-end">
-          <div className="bg-slate-900 border-t border-cyan-500/40 rounded-t-3xl p-5 max-w-md w-full mx-auto max-h-[85vh] flex flex-col shadow-2xl">
-            <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-              <div className="flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-cyan-400" />
-                <h3 className="font-black text-sm">Apex AI Coach</h3>
-              </div>
-              <button onClick={() => setIsAiOpen(false)} className="p-1 rounded-lg bg-slate-800 text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto py-4 space-y-3">
-              {aiChat.map((msg, index) => (
-                <div key={index} className={`p-3 rounded-xl text-xs space-y-2 ${msg.sender === 'user' ? 'bg-cyan-950/60 border border-cyan-500/30 ml-8 text-cyan-100' : 'bg-slate-950 border border-slate-800 mr-8 text-slate-300'}`}>
-                  <p>{msg.text}</p>
-                  {msg.hasAction && (
-                    <button onClick={handleApplyAiPlan} className="bg-cyan-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg flex items-center space-x-1 mt-2">
-                      <Plus className="w-3.5 h-3.5 mr-1" /> Save Plan to Protocols
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            <form onSubmit={sendAiMessage} className="pt-3 border-t border-slate-800 flex gap-2">
-              <input 
-                type="text" 
-                value={aiQuery} 
-                onChange={(e) => setAiQuery(e.target.value)} 
-                placeholder="Ask for custom meal or training split..." 
-                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
-              />
-              <button type="submit" className="bg-cyan-500 text-slate-950 px-4 rounded-xl font-bold flex items-center justify-center">
-                <Send className="w-4 h-4" />
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* Bottom Navigation */}
-      <nav className={`fixed bottom-0 left-0 right-0 z-40 backdrop-blur-xl border-t px-6 py-3 flex justify-between items-center max-w-md mx-auto shadow-2xl ${highContrast ? 'bg-black border-white' : 'bg-slate-900/90 border-slate-800/80'}`}>
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/80 px-4 py-3 z-30 max-w-md mx-auto flex justify-around items-center">
         <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center space-y-1 ${activeTab === 'home' ? 'text-cyan-400' : 'text-slate-400'}`}>
-          <Dumbbell className="w-5 h-5" />
+          <BookOpen className="w-5 h-5" />
           <span className="text-[10px] font-bold">Home</span>
         </button>
         <button onClick={() => setActiveTab('workout')} className={`flex flex-col items-center space-y-1 ${activeTab === 'workout' ? 'text-cyan-400' : 'text-slate-400'}`}>
-          <Zap className="w-5 h-5" />
+          <Dumbbell className="w-5 h-5" />
           <span className="text-[10px] font-bold">Workout</span>
         </button>
         <button onClick={() => setActiveTab('history')} className={`flex flex-col items-center space-y-1 ${activeTab === 'history' ? 'text-cyan-400' : 'text-slate-400'}`}>
