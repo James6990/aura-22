@@ -20,7 +20,13 @@ import {
   Bluetooth,
   MessageSquare,
   Camera,
-  Send
+  Send,
+  LogOut,
+  LogIn,
+  Globe,
+  Lock,
+  Crown,
+  CreditCard
 } from 'lucide-react';
 
 export default function ApexStateApp() {
@@ -30,6 +36,14 @@ export default function ApexStateApp() {
   const [dailyCalories, setDailyCalories] = useState({ current: 0, target: 2500 });
   const [macros, setMacros] = useState({ protein: { current: 0, target: 180 }, carbs: { current: 0, target: 250 }, fats: { current: 0, target: 70 } });
   const [toast, setToast] = useState<string | null>(null);
+
+  // Authentication & Subscription State
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSubscriber, setIsSubscriber] = useState(false);
+  const [authEmail, setAuthEmail] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [showPaywallModal, setShowPaywallModal] = useState(false);
 
   // Profile & Predator Avatar State
   const [athleteName, setAthleteName] = useState('New Athlete');
@@ -78,6 +92,37 @@ export default function ApexStateApp() {
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authEmail) {
+      showToast('❌ Please enter a valid email address.');
+      return;
+    }
+
+    setTimeout(() => {
+      setIsAuthenticated(true);
+      setAura(prev => prev + 100);
+      showToast(isSignUpMode ? '✅ Account created! Free Offline Mode Active.' : '✅ Signed In Locally.');
+    }, 800);
+  };
+
+  const handleUnlockProPass = () => {
+    setTimeout(() => {
+      setIsSubscriber(true);
+      setShowPaywallModal(false);
+      setAura(prev => prev + 500);
+      showToast('👑 APEX PRO UNLOCKED! Global Leagues & Cloud Sync Active (+500 Aura)');
+    }, 1000);
+  };
+
+  const handleSignOut = () => {
+    setIsAuthenticated(false);
+    setIsSubscriber(false);
+    setAuthEmail('');
+    setAuthPassword('');
+    showToast('🔒 Signed out.');
   };
 
   const connectBluetoothWatch = () => {
@@ -145,6 +190,7 @@ export default function ApexStateApp() {
 
   const achievements = [
     { title: 'Iron Initiate', desc: 'Log your very first workout session', progress: '0/1', unlocked: false, reward: '+250 Aura' },
+    { title: 'Apex Pro Competitor', desc: 'Unlock global online league access', progress: isSubscriber ? '1/1' : '0/1', unlocked: isSubscriber, reward: '+500 Aura' },
     { title: 'Bluetooth Sync', desc: 'Connect your smart wearable device', progress: isBluetoothConnected ? '1/1' : '0/1', unlocked: isBluetoothConnected, reward: '+150 Aura' },
   ];
 
@@ -195,15 +241,36 @@ export default function ApexStateApp() {
             <div className="bg-gradient-to-br from-slate-900 to-cyan-950/30 border border-cyan-500/30 p-5 rounded-2xl shadow-xl space-y-3">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Command Center</p>
+                  <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest flex items-center">
+                    <Globe className="w-3 h-3 mr-1" /> {isSubscriber ? 'Apex Pro Global Online' : 'Local Offline Mode'}
+                  </p>
                   <h1 className="text-xl font-black text-slate-100 mt-0.5">Welcome, {selectedAvatar.split(' ')[1]}</h1>
                 </div>
                 <span className="text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-2.5 py-1 rounded-xl font-bold">{selectedAvatar.split(' ')[0]}</span>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Your performance hub is live. Connect your smartwatch, query your AI coach, or use AI Vision to scan your meals.
+                Your performance hub is live. Track workouts offline for free, or unlock the Apex Pro Pass for worldwide online leaderboards.
               </p>
             </div>
+
+            {/* Global Competition Gateway Card (If not a subscriber) */}
+            {!isSubscriber && (
+              <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-cyan-950/40 border border-amber-500/40 p-4 rounded-2xl flex items-center justify-between shadow-xl">
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-1.5 text-amber-400 text-xs font-black">
+                    <Crown className="w-4 h-4" />
+                    <span>Global Duolingo-Style Leagues</span>
+                  </div>
+                  <p className="text-[10px] text-slate-400">Compete against athletes worldwide</p>
+                </div>
+                <button 
+                  onClick={() => setShowPaywallModal(true)}
+                  className="bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+                >
+                  Unlock Pro
+                </button>
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <button 
@@ -349,10 +416,10 @@ export default function ApexStateApp() {
           </div>
         )}
 
-        {/* PROFILE TAB WITH APEX PREDATOR SELECTOR */}
+        {/* PROFILE TAB WITH OFFLINE/ONLINE GATED MODES */}
         {activeTab === 'profile' && (
           <div className="space-y-4 animate-fadeIn">
-            <h1 className="text-xl font-black tracking-tight">Athlete Profile</h1>
+            <h1 className="text-xl font-black tracking-tight">Athlete Profile & Tier</h1>
             
             {/* Active Profile Card */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3 shadow-xl">
@@ -367,8 +434,51 @@ export default function ApexStateApp() {
                   className="bg-transparent text-center font-bold text-base text-slate-100 border-b border-transparent focus:border-cyan-500 focus:outline-none pb-1"
                 />
                 <p className="text-xs text-cyan-400 font-semibold mt-1">{selectedAvatar}</p>
+                <p className="text-[10px] text-amber-400 font-bold mt-1">
+                  {isSubscriber ? '👑 Apex Pro Subscriber (Global Access)' : '🔒 Free Offline Mode'}
+                </p>
               </div>
+
+              {isAuthenticated ? (
+                <button 
+                  onClick={handleSignOut}
+                  className="w-full mt-2 bg-rose-950/60 hover:bg-rose-900/60 border border-rose-500/40 text-rose-400 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center space-x-2 transition-all"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Sign Out</span>
+                </button>
+              ) : null}
             </div>
+
+            {/* Offline/Online Gateway */}
+            {!isAuthenticated && (
+              <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
+                <h3 className="font-bold text-xs text-slate-300 uppercase tracking-widest">Local Offline Account</h3>
+                <form onSubmit={handleAuthSubmit} className="space-y-3">
+                  <input 
+                    type="email" 
+                    placeholder="Athlete Email" 
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                  />
+                  <input 
+                    type="password" 
+                    placeholder="Password" 
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button 
+                    type="submit"
+                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs py-3 rounded-xl flex items-center justify-center space-x-2 transition-all"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Save Local Profile</span>
+                  </button>
+                </form>
+              </div>
+            )}
 
             {/* Predator Avatar Picker */}
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
@@ -400,6 +510,45 @@ export default function ApexStateApp() {
         )}
 
       </main>
+
+      {/* Paywall / Subscription Modal */}
+      {showPaywallModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-amber-500/40 w-full max-w-sm p-6 rounded-3xl space-y-5 shadow-2xl animate-fadeIn">
+            <div className="text-center space-y-2">
+              <div className="w-14 h-14 bg-gradient-to-tr from-amber-500 to-amber-300 rounded-2xl mx-auto flex items-center justify-center text-slate-950 shadow-lg shadow-amber-500/20">
+                <Crown className="w-7 h-7" />
+              </div>
+              <h2 className="text-lg font-black text-slate-100">Unlock Apex Pro Pass</h2>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Step into the worldwide arena. Unlock global Duolingo-style competitive leagues, live leaderboards, and cloud telemetry backups.
+              </p>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-2.5 text-xs">
+              <div className="flex items-center text-slate-300"><Globe className="w-4 h-4 text-amber-400 mr-2" /> Worldwide Leaderboards</div>
+              <div className="flex items-center text-slate-300"><Trophy className="w-4 h-4 text-amber-400 mr-2" /> Competitive Weekly Leagues</div>
+              <div className="flex items-center text-slate-300"><ShieldCheck className="w-4 h-4 text-amber-400 mr-2" /> Real-Time Cloud Sync</div>
+            </div>
+
+            <div className="space-y-2">
+              <button 
+                onClick={handleUnlockProPass}
+                className="w-full bg-gradient-to-r from-amber-500 to-amber-400 hover:opacity-95 text-slate-950 font-black text-xs py-3.5 rounded-xl shadow-xl shadow-amber-500/20 transition-all flex items-center justify-center space-x-2"
+              >
+                <CreditCard className="w-4 h-4" />
+                <span>Unlock Now ($4.99 / Month)</span>
+              </button>
+              <button 
+                onClick={() => setShowPaywallModal(false)}
+                className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2.5 rounded-xl transition-all"
+              >
+                Continue Offline (Free)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* AI Chat Modal Overlay */}
       {isAiOpen && (
