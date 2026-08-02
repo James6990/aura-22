@@ -6,7 +6,7 @@ import {
   ChevronRight, Lock, Unlock, Zap, Activity, Award, 
   TrendingUp, Shield, RefreshCw, CheckCircle2, Heart, 
   Send, Bot, Globe, Filter, Crown, Cpu, ArrowUpRight,
-  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart
+  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera
 } from "lucide-react";
 
 type TabType = "dashboard" | "workout" | "diet" | "leaderboard" | "ai-coach" | "pro" | "biometrics" | "devices";
@@ -53,10 +53,18 @@ interface NutritionItem {
   mealType: "Breakfast" | "Lunch" | "Dinner" | "Snack";
 }
 
+interface LeaderboardUser {
+  rank: number;
+  name: string;
+  xp: number;
+  streak: number;
+  somatotype: string;
+  isPro: boolean;
+}
+
 export default function ApexStateApp() {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   
-  // Persistent User Profile State with full biometrics restored
   const [user, setUser] = useState<UserProfile>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("apex_user_profile");
@@ -98,7 +106,6 @@ export default function ApexStateApp() {
     ];
   });
 
-  // Nutrition Log State with LocalStorage
   const [nutritionLog, setNutritionLog] = useState<NutritionItem[]>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("apex_nutrition_log");
@@ -116,6 +123,11 @@ export default function ApexStateApp() {
   const [newMealCals, setNewMealCals] = useState(350);
   const [newMealProtein, setNewMealProtein] = useState(25);
   const [newMealType, setNewMealType] = useState<"Breakfast" | "Lunch" | "Dinner" | "Snack">("Dinner");
+
+  // Camera / Google Visual Search Simulation State
+  const [cameraActive, setCameraActive] = useState(false);
+  const [scanningStatus, setScanningStatus] = useState<string>("");
+  const [scannedFoodResult, setScannedFoodResult] = useState<{name: string; cals: number; protein: number} | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -135,7 +147,6 @@ export default function ApexStateApp() {
     }
   }, [nutritionLog]);
 
-  // Expanded Workout Templates including advanced strength blueprints
   const comprehensiveWorkoutTemplates: WorkoutRoutineTemplate[] = [
     {
       id: "ppl-hypertrophy",
@@ -201,7 +212,6 @@ export default function ApexStateApp() {
     }
   ];
 
-  // Greatly Expanded Strength Master Library
   const masterExerciseLibrary: Omit<ExerciseItem, "completed">[] = [
     { id: 101, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "120kg" },
     { id: 102, name: "Heavy Deadlift", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 5 reps", defaultWeight: "140kg" },
@@ -271,8 +281,48 @@ export default function ApexStateApp() {
     setNewMealName("");
   };
 
+  // Simulate Google Vision Camera Food Recognition
+  const triggerCameraScan = () => {
+    setCameraActive(true);
+    setScanningStatus("Analyzing image via Google Visual Search Engine...");
+    setScannedFoodResult(null);
+
+    setTimeout(() => {
+      setScanningStatus("Match found: Avocado & Poached Eggs on Sourdough Toast");
+      setScannedFoodResult({
+        name: "Avocado & Poached Eggs on Sourdough",
+        cals: 420,
+        protein: 22
+      });
+    }, 2000);
+  };
+
+  const confirmScannedFood = () => {
+    if (!scannedFoodResult) return;
+    setNutritionLog([...nutritionLog, {
+      id: Date.now(),
+      name: scannedFoodResult.name,
+      calories: scannedFoodResult.cals,
+      protein: scannedFoodResult.protein,
+      carbs: 30,
+      fats: 18,
+      mealType: "Breakfast"
+    }]);
+    setCameraActive(false);
+    setScannedFoodResult(null);
+  };
+
+  // Leaderboard mockup data
+  const leaderboardData: LeaderboardUser[] = [
+    { rank: 1, name: "Marcus Thorne", xp: 5420, streak: 45, somatotype: "Mesomorph", isPro: true },
+    { rank: 2, name: "Elena Rostova", xp: 4890, streak: 30, somatotype: "Ectomorph", isPro: true },
+    { rank: 3, name: "Alex Vance (You)", xp: user.xp, streak: user.streak, somatotype: user.somatotype, isPro: user.isPro },
+    { rank: 4, name: "David Kim", xp: 2100, streak: 8, somatotype: "Endomorph", isPro: false },
+    { rank: 5, name: "Sarah Jenkins", xp: 1950, streak: 14, somatotype: "Mesomorph", isPro: false },
+  ];
+
   const [chatMessages, setChatMessages] = useState<Array<{role: 'ai' | 'user', text: string}>>([
-    { role: 'ai', text: `Hello ${user.name}! All your complete features—including Nutrition tracking, Step counters, Gender biometrics, and Menstrual/Hormonal phase cycles—are fully restored and persisted.` }
+    { role: 'ai', text: `Hello ${user.name}! Google Visual Camera Scanner, Leaderboards, Pro Paywall, and all biometrics are fully operational.` }
   ]);
   const [chatInput, setChatInput] = useState<string>("");
 
@@ -301,8 +351,10 @@ export default function ApexStateApp() {
 
     setTimeout(() => {
       let aiReply = `As a ${user.gender} (${user.somatotype}) focused on ${user.primaryGoal}, your hormonal phase is currently logged as ${user.menstrualPhase} (Day ${user.cycleDay}).`;
-      if (userText.toLowerCase().includes("nutrition") || userText.toLowerCase().includes("diet")) {
-        aiReply = `Your daily caloric intake is tracking at ${totalNutritionCals} kcal out of your ${netCalorieTarget} kcal target.`;
+      if (userText.toLowerCase().includes("camera") || userText.toLowerCase().includes("scan")) {
+        aiReply = `You can use the Google Visual Camera Scanner in the Nutrition tab to instantly snap or upload a meal for automatic calorie logging!`;
+      } else if (userText.toLowerCase().includes("pro") || userText.toLowerCase().includes("paywall")) {
+        aiReply = `Upgrading to Apex Pro unlocks advanced AI coaching, limitless routine templates, and priority leaderboard placements.`;
       }
       setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
     }, 1000);
@@ -319,13 +371,17 @@ export default function ApexStateApp() {
             <span className="font-extrabold text-lg bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
               APEX STATE OS
             </span>
-            <p className="text-xs text-slate-400">Complete Biometrics, Nutrition & Strength Engine</p>
+            <p className="text-xs text-slate-400">Camera Scanner, Leaderboards & Pro Engine</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold uppercase">
-            {user.somatotype} • {user.gender}
-          </span>
+          <button 
+            onClick={() => setActiveTab("pro")} 
+            className="flex items-center gap-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full font-bold uppercase hover:bg-amber-500/20 transition-all"
+          >
+            <Crown className="h-3.5 w-3.5" />
+            {user.isPro ? "PRO ACTIVE" : "UPGRADE PRO"}
+          </button>
         </div>
       </header>
 
@@ -335,9 +391,11 @@ export default function ApexStateApp() {
             {[
               { id: "dashboard", label: "Overview", icon: Activity },
               { id: "workout", label: "Workouts & Guidelines", icon: Dumbbell },
-              { id: "diet", label: "Nutrition & Steps", icon: Utensils },
+              { id: "diet", label: "Nutrition & Camera", icon: Utensils },
+              { id: "leaderboard", label: "Global Leaderboard", icon: Trophy },
               { id: "biometrics", label: "Somatotype & Profile", icon: Calendar },
               { id: "ai-coach", label: "Apex AI Coach", icon: Bot },
+              { id: "pro", label: "Apex Pro Paywall", icon: Crown },
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
@@ -360,23 +418,28 @@ export default function ApexStateApp() {
         <main className="flex-1 p-6 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl">
-                <h1 className="text-2xl font-black text-white">System Fully Restored & Active</h1>
-                <p className="text-sm text-slate-400 mt-1">
-                  All modules—including nutrition logs, step counts, expanded strength movements, and hormonal/menstrual phase tracking (<strong className="text-emerald-400">{user.menstrualPhase} phase</strong>)—are fully online and synced.
-                </p>
+              <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-black text-white">Full Feature Suite Online</h1>
+                  <p className="text-sm text-slate-400 mt-1">
+                    Google Visual Camera food scanning, Global Leaderboards, and Pro Paywall systems are fully integrated into your <strong className="text-emerald-400">{user.somatotype}</strong> environment.
+                  </p>
+                </div>
+                <button onClick={() => setActiveTab("diet")} className="hidden sm:flex items-center gap-2 bg-emerald-500 text-slate-950 font-bold px-4 py-3 rounded-xl text-xs uppercase">
+                  <Camera className="h-4 w-4" /> Open Camera Scan
+                </button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Body Weight</div>
-                  <div className="text-2xl font-black text-white mt-1">{user.weightKg} kg</div>
+                  <div className="text-xs text-slate-400">Global Rank</div>
+                  <div className="text-2xl font-black text-amber-400 mt-1">#3 on Leaderboard</div>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
                   <div className="text-xs text-slate-400">Daily Steps</div>
-                  <div className="text-2xl font-black text-orange-400 mt-1">{steps.toLocaleString()} steps</div>
+                  <div className="text-2xl font-black text-cyan-400 mt-1">{steps.toLocaleString()} steps</div>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Calories Logged</div>
+                  <div className="text-xs text-slate-400">Calories Consumed</div>
                   <div className="text-2xl font-black text-emerald-400 mt-1">{totalNutritionCals} / {netCalorieTarget} kcal</div>
                 </div>
               </div>
@@ -492,10 +555,54 @@ export default function ApexStateApp() {
 
           {activeTab === "diet" && (
             <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
-                <h1 className="text-2xl font-black text-white">Nutrition, Macros & Step Count Tracker</h1>
-                <p className="text-xs text-slate-400 mt-1">Log meals, monitor protein intake, and sync steps automatically.</p>
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-2xl font-black text-white">Nutrition, Macros & Google Visual Camera</h1>
+                  <p className="text-xs text-slate-400 mt-1">Scan meals using your camera or log them manually to track calories.</p>
+                </div>
+                <button 
+                  onClick={triggerCameraScan}
+                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-extrabold px-5 py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  <Camera className="h-4 w-4" /> Google Visual Scan Meal
+                </button>
               </div>
+
+              {/* Camera Scanner Simulation Modal Box */}
+              {cameraActive && (
+                <div className="bg-slate-900 border-2 border-emerald-500/50 p-6 rounded-2xl space-y-4 animate-in fade-in zoom-in duration-200">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-white text-base flex items-center gap-2">
+                      <Camera className="h-5 w-5 text-emerald-400" /> Google Visual Search Scanner Active
+                    </h3>
+                    <button onClick={() => setCameraActive(false)} className="text-xs text-slate-400 hover:text-white">Close Camera</button>
+                  </div>
+                  
+                  <div className="h-48 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center space-y-3 relative overflow-hidden">
+                    <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 animate-pulse">
+                      <Search className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-200">{scanningStatus}</p>
+                  </div>
+
+                  {scannedFoodResult && (
+                    <div className="bg-emerald-950/30 border border-emerald-500/30 p-4 rounded-xl flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-emerald-400 font-bold uppercase">Detection Successful</div>
+                        <div className="font-bold text-white text-base mt-1">{scannedFoodResult.name}</div>
+                        <div className="text-xs text-slate-300 mt-0.5">{scannedFoodResult.cals} kcal • {scannedFoodResult.protein}g Protein</div>
+                      </div>
+                      <button 
+                        onClick={confirmScannedFood}
+                        className="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase"
+                      >
+                        Log to Nutrition
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
@@ -545,7 +652,7 @@ export default function ApexStateApp() {
                 </div>
 
                 <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
-                  <h3 className="font-bold text-white text-sm uppercase">Log New Meal</h3>
+                  <h3 className="font-bold text-white text-sm uppercase">Log New Meal Manually</h3>
                   <form onSubmit={handleAddMeal} className="space-y-3">
                     <input 
                       type="text" 
@@ -585,6 +692,80 @@ export default function ApexStateApp() {
                     </button>
                   </form>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "leaderboard" && (
+            <div className="space-y-6 max-w-3xl mx-auto">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
+                <div>
+                  <h1 className="text-2xl font-black text-white">Global Somatotype Leaderboard</h1>
+                  <p className="text-xs text-slate-400 mt-1">Compete globally based on XP earned, training consistency, and streaks.</p>
+                </div>
+                <Trophy className="h-8 w-8 text-amber-400" />
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
+                <div className="divide-y divide-slate-800">
+                  {leaderboardData.map(item => (
+                    <div key={item.rank} className={`p-4 flex items-center justify-between ${item.name.includes("You") ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
+                      <div className="flex items-center gap-4">
+                        <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${item.rank === 1 ? "bg-amber-500 text-slate-950" : item.rank === 2 ? "bg-slate-300 text-slate-950" : item.rank === 3 ? "bg-amber-700 text-white" : "bg-slate-950 text-slate-400"}`}>
+                          #{item.rank}
+                        </span>
+                        <div>
+                          <div className="font-bold text-white text-sm flex items-center gap-2">
+                            {item.name}
+                            {item.isPro && <Crown className="h-3.5 w-3.5 text-amber-400" />}
+                          </div>
+                          <div className="text-xs text-slate-400">{item.somatotype} • Streak: <span className="text-orange-400">{item.streak} days</span></div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-black text-emerald-400 text-sm">{item.xp} XP</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "pro" && (
+            <div className="space-y-6 max-w-2xl mx-auto text-center">
+              <div className="bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-900 border border-amber-500/30 p-8 rounded-3xl space-y-6">
+                <div className="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 mx-auto flex items-center justify-center shadow-xl shadow-amber-500/20">
+                  <Crown className="h-8 w-8" />
+                </div>
+                <div>
+                  <h1 className="text-3xl font-black text-white">Apex State Pro Membership</h1>
+                  <p className="text-sm text-slate-300 mt-2">Unlock unlimited AI coach queries, advanced somatotype analytics, priority Google camera recognition, and exclusive pro workout routines.</p>
+                </div>
+
+                <div className="bg-slate-950 p-6 rounded-2xl border border-slate-800 text-left space-y-3">
+                  {[
+                    "Unlimited Google Visual Camera Food & Meal Scanning",
+                    "Advanced Somatotype & Hormonal Phase Optimization",
+                    "Unlimited AI Coach Access with Custom Splits",
+                    "Priority Global Leaderboard Badge & Perks"
+                  ].map((perk, idx) => (
+                    <div key={idx} className="flex items-center gap-3 text-xs text-slate-200">
+                      <CheckCircle2 className="h-4 w-4 text-amber-400 shrink-0" />
+                      <span>{perk}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => {
+                    setUser({...user, isPro: true});
+                    alert("Congratulations! Apex Pro is now active.");
+                  }}
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black py-4 rounded-xl text-sm uppercase tracking-wider shadow-lg shadow-amber-500/20 hover:opacity-95 transition-all"
+                >
+                  {user.isPro ? "Pro Active on Account" : "Upgrade to Pro ($9.99/mo)"}
+                </button>
               </div>
             </div>
           )}
@@ -716,7 +897,7 @@ export default function ApexStateApp() {
                   type="text" 
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  placeholder="Ask about nutrition, strength splits, or hormonal cycles..." 
+                  placeholder="Ask about camera scanning, leaderboard, or nutrition..." 
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
                 />
                 <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 rounded-xl font-bold">
