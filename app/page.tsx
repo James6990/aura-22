@@ -17,17 +17,30 @@ import {
   Sparkles,
   ShieldCheck,
   Timer,
-  Play,
-  RotateCcw
+  Bluetooth,
+  MessageSquare,
+  Activity,
+  Send
 } from 'lucide-react';
 
 export default function ApexStateApp() {
-  const [activeTab, setActiveTab] = useState<'workout' | 'nutrition' | 'library' | 'achievements' | 'profile'>('workout');
-  const [aura, setAura] = useState(1470);
-  const [streak, setStreak] = useState(12);
-  const [dailyCalories, setDailyCalories] = useState({ current: 1850, target: 2600 });
-  const [macros, setMacros] = useState({ protein: { current: 145, target: 180 }, carbs: { current: 190, target: 250 }, fats: { current: 55, target: 70 } });
+  const [activeTab, setActiveTab] = useState<'home' | 'workout' | 'nutrition' | 'library' | 'achievements' | 'profile'>('home');
+  const [aura, setAura] = useState(100);
+  const [streak, setStreak] = useState(1);
+  const [dailyCalories, setDailyCalories] = useState({ current: 0, target: 2500 });
+  const [macros, setMacros] = useState({ protein: { current: 0, target: 180 }, carbs: { current: 0, target: 250 }, fats: { current: 0, target: 70 } });
   const [toast, setToast] = useState<string | null>(null);
+
+  // Bluetooth State
+  const [isBluetoothConnected, setIsBluetoothConnected] = useState(false);
+  const [deviceBattery, setDeviceBattery] = useState<number | null>(null);
+
+  // AI Assistant Modal State
+  const [isAiOpen, setIsAiOpen] = useState(false);
+  const [aiQuery, setAiQuery] = useState('');
+  const [aiChat, setAiChat] = useState([
+    { sender: 'ai', text: 'Hello athlete. I am your Apex AI Coach. Ask me anything about training, macros, or form correction.' }
+  ]);
 
   // Rest Timer State
   const [restSeconds, setRestSeconds] = useState(0);
@@ -36,29 +49,50 @@ export default function ApexStateApp() {
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isResting && restSeconds > 0) {
-      interval = setInterval(() => {
-        setRestSeconds(prev => prev - 1);
-      }, 1000);
+      interval = setInterval(() => setRestSeconds(prev => prev - 1), 1000);
     } else if (restSeconds === 0) {
       setIsResting(false);
     }
     return () => clearInterval(interval);
   }, [isResting, restSeconds]);
 
-  const startRestTimer = (seconds: number) => {
-    setRestSeconds(seconds);
-    setIsResting(true);
-  };
-
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 3000);
   };
 
+  const connectBluetoothWatch = () => {
+    showToast('📡 Scanning for Apex Smartwatch...');
+    setTimeout(() => {
+      setIsBluetoothConnected(true);
+      setDeviceBattery(98);
+      setAura(prev => prev + 150);
+      showToast('✅ Connected to Apex Watch! +150 Aura');
+    }, 1500);
+  };
+
+  const sendAiMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!aiQuery.trim()) return;
+    
+    const userMsg = aiQuery;
+    setAiChat(prev => [...prev, { sender: 'user', text: userMsg }]);
+    setAiQuery('');
+
+    setTimeout(() => {
+      let reply = "Based on your current volume and recovery metrics, keep pushing progressive overload on your compound movements.";
+      if (userMsg.toLowerCase().includes('macro') || userMsg.toLowerCase().includes('protein')) {
+        reply = "Hit your protein target of 180g today to maximize muscle protein synthesis.";
+      } else if (userMsg.toLowerCase().includes('fatigue') || userMsg.toLowerCase().includes('tired')) {
+        reply = "Fatigue is stacking up. Consider taking an extra 60 seconds of rest between working sets.";
+      }
+      setAiChat(prev => [...prev, { sender: 'ai', text: reply }]);
+    }, 1000);
+  };
+
   const [exercises, setExercises] = useState([
-    { id: 1, name: 'Barbell Bench Press', weight: '100kg', reps: '8, 8, 7', pr: 'NEW PR!', logged: false },
-    { id: 2, name: 'Incline Dumbbell Press', weight: '36kg', reps: '10, 10, 9', pr: '+2kg vs last week', logged: false },
-    { id: 3, name: 'Cable Lateral Raises', weight: '14kg', reps: '12, 12, 12', pr: 'Solid Form', logged: false }
+    { id: 1, name: 'Barbell Bench Press', weight: '60kg', reps: '10, 10, 10', pr: 'Ready', logged: false },
+    { id: 2, name: 'Incline Dumbbell Press', weight: '20kg', reps: '10, 10, 10', pr: 'Ready', logged: false },
   ]);
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -67,29 +101,20 @@ export default function ApexStateApp() {
     { name: 'Barbell Back Squat', muscle: 'Legs', difficulty: 'Advanced', tips: 'Keep chest upright, break at hips and knees simultaneously.' },
     { name: 'Conventional Deadlift', muscle: 'Back', difficulty: 'Advanced', tips: 'Keep bar close to shins, engage lats before initiating pull.' },
     { name: 'Overhead Press', muscle: 'Shoulders', difficulty: 'Intermediate', tips: 'Brace core hard, squeeze glutes, press straight overhead.' },
-    { name: 'Weighted Pull-Up', muscle: 'Back', difficulty: 'Intermediate', tips: 'Full hang at the bottom, pull chest up to the bar.' },
-    { name: 'Barbell Bicep Curl', muscle: 'Arms', difficulty: 'Beginner', tips: 'Keep elbows locked by your sides, avoid swinging.' },
   ];
 
   const achievements = [
-    { title: 'Iron Addict', desc: 'Complete 10 heavy workout sessions', progress: '10/10', unlocked: true, reward: '+250 Aura' },
-    { title: '100kg Club', desc: 'Bench press 100kg for working reps', progress: '100kg / 100kg', unlocked: true, reward: '+500 Aura' },
-    { title: 'Macro Master', desc: 'Hit your protein target 7 days in a row', progress: '6/7 days', unlocked: false, reward: '+300 Aura' },
-    { title: 'Centurion', desc: 'Reach a streak of 100 consecutive days', progress: '12/100 days', unlocked: false, reward: '+2000 Aura' },
+    { title: 'Iron Initiate', desc: 'Log your very first workout session', progress: '0/1', unlocked: false, reward: '+250 Aura' },
+    { title: 'Bluetooth Sync', desc: 'Connect your smart wearable device', progress: isBluetoothConnected ? '1/1' : '0/1', unlocked: isBluetoothConnected, reward: '+150 Aura' },
   ];
 
   const logExercise = (id: number) => {
     setExercises(exercises.map(ex => ex.id === id ? { ...ex, logged: true } : ex));
-    setAura(prev => prev + 75);
-    showToast('⚡ +75 Aura! Rest Timer Started.');
-    startRestTimer(90); // Automatically start a 90s rest timer
+    setAura(prev => prev + 50);
+    showToast('⚡ Set Logged! +50 Aura');
+    setRestSeconds(90);
+    setIsResting(true);
   };
-
-  const filteredLibrary = library.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesMuscle = selectedMuscle === 'All' || item.muscle === selectedMuscle;
-    return matchesSearch && matchesMuscle;
-  });
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col pb-32 select-none">
@@ -103,18 +128,18 @@ export default function ApexStateApp() {
 
       {/* Cybernetic Header */}
       <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 flex items-center justify-between shadow-lg">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setActiveTab('home')}>
           <div className="bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950 p-1.5 rounded-xl font-black tracking-wider text-xs flex items-center shadow-lg shadow-cyan-500/20">
             <Zap className="w-4 h-4 mr-0.5 fill-current" /> APEX
           </div>
           <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">STATE</span>
         </div>
         <div className="flex items-center space-x-2.5">
-          <div className="flex items-center bg-slate-800/90 px-3 py-1 rounded-full border border-slate-700/60 text-xs font-semibold shadow-inner">
-            <Flame className="w-3.5 h-3.5 text-orange-400 mr-1.5 fill-orange-400 animate-pulse" />
+          <div className="flex items-center bg-slate-800/90 px-3 py-1 rounded-full border border-slate-700/60 text-xs font-semibold">
+            <Flame className="w-3.5 h-3.5 text-orange-400 mr-1.5 fill-orange-400" />
             <span className="text-slate-200">{streak}d</span>
           </div>
-          <div className="flex items-center bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/40 text-xs font-bold text-cyan-400 shadow-lg shadow-cyan-500/10">
+          <div className="flex items-center bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/40 text-xs font-bold text-cyan-400">
             <Trophy className="w-3.5 h-3.5 mr-1.5 text-cyan-400" />
             <span>{aura}</span>
           </div>
@@ -124,171 +149,148 @@ export default function ApexStateApp() {
       {/* Main Content Area */}
       <main className="flex-1 max-w-md w-full mx-auto p-4 space-y-6">
         
+        {/* HOME DASHBOARD TAB */}
+        {activeTab === 'home' && (
+          <div className="space-y-4 animate-fadeIn">
+            <div className="bg-gradient-to-br from-slate-900 to-cyan-950/30 border border-cyan-500/30 p-5 rounded-2xl shadow-xl space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Command Center</p>
+                  <h1 className="text-xl font-black text-slate-100 mt-0.5">Welcome, Athlete</h1>
+                </div>
+                <span className="text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-2.5 py-1 rounded-xl font-bold">Level 1</span>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Your performance hub is live. Connect your smartwatch, query your AI coach, or jump straight into today's protocol.
+              </p>
+            </div>
+
+            {/* Interactive Hardware Connectors & AI Triggers */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Bluetooth Smartwatch Connector Button */}
+              <button 
+                onClick={connectBluetoothWatch}
+                className={`p-4 rounded-2xl border text-left flex flex-col justify-between transition-all shadow-md ${
+                  isBluetoothConnected 
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-400' 
+                    : 'bg-slate-900 hover:bg-slate-800 border-slate-800 text-slate-200'
+                }`}
+              >
+                <div className="flex justify-between items-center w-full mb-3">
+                  <Bluetooth className={`w-5 h-5 ${isBluetoothConnected ? 'text-emerald-400 animate-pulse' : 'text-cyan-400'}`} />
+                  {isBluetoothConnected && <span className="text-[9px] bg-emerald-500/20 px-2 py-0.5 rounded font-bold">{deviceBattery}% Batt</span>}
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs">{isBluetoothConnected ? 'Watch Paired' : 'Connect Watch'}</h3>
+                  <p className="text-[10px] text-slate-400 mt-0.5">{isBluetoothConnected ? 'Syncing telemetry' : 'Tap to pair Bluetooth device'}</p>
+                </div>
+              </button>
+
+              {/* AI Assistant Button */}
+              <button 
+                onClick={() => setIsAiOpen(true)}
+                className="bg-slate-900 hover:bg-slate-800 border border-slate-800 p-4 rounded-2xl text-left flex flex-col justify-between transition-all shadow-md group"
+              >
+                <div className="flex justify-between items-center w-full mb-3">
+                  <MessageSquare className="w-5 h-5 text-cyan-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded font-bold">Online</span>
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-200">AI Coach</h3>
+                  <p className="text-[10px] text-slate-400 mt-0.5">Ask questions & get insights</p>
+                </div>
+              </button>
+            </div>
+
+            {/* Quick Navigation Card */}
+            <div onClick={() => setActiveTab('workout')} className="bg-slate-900 hover:border-slate-700 border border-slate-800 p-4 rounded-2xl flex items-center justify-between cursor-pointer shadow-md transition-all">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-xl border border-cyan-500/20">
+                  <Dumbbell className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-200">Start Today's Workout</h3>
+                  <p className="text-[10px] text-slate-400">Push Hypertrophy Protocol</p>
+                </div>
+              </div>
+              <Plus className="w-4 h-4 text-cyan-400" />
+            </div>
+          </div>
+        )}
+
         {/* WORKOUT TAB */}
         {activeTab === 'workout' && (
           <div className="space-y-4 animate-fadeIn">
-            <div className="flex justify-between items-center bg-gradient-to-r from-cyan-950/30 to-slate-900 border border-cyan-500/20 p-4 rounded-2xl shadow-xl">
-              <div>
-                <p className="text-[10px] text-cyan-400 font-bold uppercase tracking-widest">Active Protocol</p>
-                <h1 className="text-lg font-black tracking-tight text-slate-100 mt-0.5">Hypertrophy Push A</h1>
-              </div>
-              <div className="bg-cyan-500/10 border border-cyan-500/30 px-3 py-1.5 rounded-xl text-center">
-                <span className="text-xs font-bold text-cyan-400">Week 4/8</span>
-              </div>
-            </div>
-
-            {/* Active Rest Timer Widget */}
+            <h1 className="text-xl font-black tracking-tight">Active Workout</h1>
+            
             {isResting && (
-              <div className="bg-gradient-to-r from-indigo-950/80 to-slate-900 border border-indigo-500/40 p-4 rounded-2xl flex items-center justify-between shadow-lg animate-pulse">
+              <div className="bg-indigo-950/80 border border-indigo-500/40 p-4 rounded-2xl flex items-center justify-between shadow-lg">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl border border-indigo-500/30">
-                    <Timer className="w-5 h-5 animate-spin" />
-                  </div>
+                  <Timer className="w-5 h-5 text-indigo-400 animate-spin" />
                   <div>
-                    <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-wider">Rest Period Active</p>
-                    <p className="text-xl font-black text-slate-100">{Math.floor(restSeconds / 60)}:{('0' + (restSeconds % 60)).slice(-2)}</p>
+                    <p className="text-[10px] text-indigo-300 font-bold uppercase">Rest Period Active</p>
+                    <p className="text-lg font-black text-slate-100">{Math.floor(restSeconds / 60)}:{('0' + (restSeconds % 60)).slice(-2)}</p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setIsResting(false)}
-                  className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl border border-slate-700 transition-colors"
-                >
-                  Skip
-                </button>
+                <button onClick={() => setIsResting(false)} className="px-3 py-1 bg-slate-800 text-xs font-bold rounded-xl text-slate-300">Skip</button>
               </div>
             )}
 
             <div className="space-y-3">
               {exercises.map(ex => (
-                <div key={ex.id} className="bg-slate-900/90 border border-slate-800/80 hover:border-slate-700 p-4 rounded-2xl flex items-center justify-between shadow-md transition-all">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-bold text-slate-200 text-sm">{ex.name}</h3>
-                      <span className="text-[9px] bg-cyan-950 text-cyan-400 border border-cyan-800/50 px-1.5 py-0.5 rounded font-bold">{ex.pr}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 font-medium">{ex.weight} • <span className="text-slate-300">{ex.reps}</span></p>
+                <div key={ex.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-slate-200 text-sm">{ex.name}</h3>
+                    <p className="text-xs text-slate-400">{ex.weight} • {ex.reps}</p>
                   </div>
                   <button 
                     onClick={() => logExercise(ex.id)}
                     disabled={ex.logged}
-                    className={`px-4 py-2 rounded-xl text-xs font-black flex items-center transition-all ${
-                      ex.logged 
-                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 cursor-default' 
-                        : 'bg-gradient-to-r from-cyan-500 to-cyan-400 hover:from-cyan-400 hover:to-cyan-300 text-slate-950 shadow-lg shadow-cyan-500/25 active:scale-95'
-                    }`}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold ${ex.logged ? 'bg-emerald-950 text-emerald-400' : 'bg-cyan-500 text-slate-950'}`}
                   >
-                    <CheckCircle2 className={`w-3.5 h-3.5 mr-1.5 ${ex.logged ? 'text-emerald-400' : 'text-slate-950'}`} />
                     {ex.logged ? 'Done' : 'Log Set'}
                   </button>
                 </div>
               ))}
             </div>
-
-            <div className="bg-slate-900/80 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-md">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center">
-                  <TrendingUp className="w-3.5 h-3.5 text-cyan-400 mr-1.5" /> Weekly Volume Surge
-                </h2>
-                <span className="text-xs text-cyan-400 font-bold">78%</span>
-              </div>
-              <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden p-0.5 border border-slate-800">
-                <div className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-cyan-400 h-full rounded-full w-[78%]"></div>
-              </div>
-              <p className="text-[10px] text-slate-400 mt-2 font-medium">✨ You are lifting 4.2kg heavier on average than last week.</p>
-            </div>
           </div>
         )}
 
-        {/* NUTRITION & MACROS TAB */}
+        {/* NUTRITION TAB */}
         {activeTab === 'nutrition' && (
           <div className="space-y-4 animate-fadeIn">
-            <h1 className="text-xl font-black tracking-tight">Fuel & Recovery</h1>
-            
-            <div className="bg-gradient-to-br from-slate-900 to-slate-900/60 border border-slate-800 p-5 rounded-2xl flex items-center justify-between shadow-xl">
+            <h1 className="text-xl font-black tracking-tight">Fuel & Macros</h1>
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">Calories Remaining</p>
-                <h2 className="text-3xl font-black text-slate-100 mt-1">{dailyCalories.target - dailyCalories.current} <span className="text-xs font-normal text-slate-400">kcal</span></h2>
-                <p className="text-[11px] text-cyan-400 font-medium mt-1">Goal: {dailyCalories.target} kcal bulk</p>
+                <p className="text-[10px] text-slate-400 uppercase font-bold">Calories Remaining</p>
+                <h2 className="text-3xl font-black text-slate-100 mt-1">{dailyCalories.target - dailyCalories.current} <span className="text-xs text-slate-400">kcal</span></h2>
               </div>
-              <div className="relative w-16 h-16 flex items-center justify-center bg-cyan-950/40 rounded-full border-4 border-cyan-500/30 shadow-inner">
-                <span className="text-xs font-bold text-cyan-400">71%</span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl text-center shadow-md">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Protein</p>
-                <p className="text-lg font-black text-cyan-400 mt-1">{macros.protein.current}g</p>
-                <p className="text-[9px] text-slate-500">/ {macros.protein.target}g</p>
-              </div>
-              <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl text-center shadow-md">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Carbs</p>
-                <p className="text-lg font-black text-amber-400 mt-1">{macros.carbs.current}g</p>
-                <p className="text-[9px] text-slate-500">/ {macros.carbs.target}g</p>
-              </div>
-              <div className="bg-slate-900/90 border border-slate-800 p-3.5 rounded-2xl text-center shadow-md">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Fats</p>
-                <p className="text-lg font-black text-rose-400 mt-1">{macros.fats.current}g</p>
-                <p className="text-[9px] text-slate-500">/ {macros.fats.target}g</p>
+              <div className="w-16 h-16 flex items-center justify-center bg-cyan-950/40 rounded-full border-4 border-cyan-500/30">
+                <span className="text-xs font-bold text-cyan-400">0%</span>
               </div>
             </div>
-
             <button 
               onClick={() => {
-                setDailyCalories(prev => ({ ...prev, current: prev.current + 450 }));
-                setMacros(prev => ({ ...prev, protein: { ...prev.protein, current: prev.protein.current + 35 } }));
-                showToast('🥗 Meal Logged! +50 Aura');
+                setDailyCalories(prev => ({ ...prev, current: prev.current + 500 }));
                 setAura(prev => prev + 50);
+                showToast('🥗 Meal Logged! +50 Aura');
               }}
-              className="w-full bg-slate-900 hover:bg-slate-800 border border-slate-700/80 p-4 rounded-2xl text-xs font-black flex items-center justify-center text-cyan-400 transition-all shadow-lg active:scale-95"
+              className="w-full bg-slate-900 border border-slate-700 p-4 rounded-2xl text-xs font-bold text-cyan-400 flex items-center justify-center"
             >
-              <Plus className="w-4 h-4 mr-2" /> Log Elite Meal (+450 kcal, 35g Protein)
+              <Plus className="w-4 h-4 mr-2" /> Log Meal (+500 kcal)
             </button>
           </div>
         )}
 
-        {/* EXERCISE LIBRARY TAB */}
+        {/* LIBRARY TAB */}
         {activeTab === 'library' && (
           <div className="space-y-4 animate-fadeIn">
-            <h1 className="text-xl font-black tracking-tight">Exercise Database</h1>
-            
-            <div className="relative">
-              <Search className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
-              <input 
-                type="text"
-                placeholder="Search elite movements..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 pl-10 pr-4 py-3 rounded-2xl text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-colors shadow-inner"
-              />
-            </div>
-
-            <div className="flex space-x-2 overflow-x-auto pb-1 text-xs">
-              {['All', 'Legs', 'Back', 'Shoulders', 'Arms'].map(muscle => (
-                <button
-                  key={muscle}
-                  onClick={() => setSelectedMuscle(muscle)}
-                  className={`px-4 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all ${
-                    selectedMuscle === muscle 
-                      ? 'bg-cyan-500 text-slate-950 shadow-md shadow-cyan-500/20' 
-                      : 'bg-slate-900 text-slate-400 border border-slate-800 hover:border-slate-700'
-                  }`}
-                >
-                  {muscle}
-                </button>
-              ))}
-            </div>
-
+            <h1 className="text-xl font-black tracking-tight">Exercise Library</h1>
             <div className="space-y-3">
-              {filteredLibrary.map((item, index) => (
-                <div key={index} className="bg-slate-900/90 border border-slate-800 p-4 rounded-2xl space-y-2 shadow-md">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-bold text-slate-200 text-sm">{item.name}</h3>
-                    <span className="text-[9px] bg-slate-800 text-cyan-400 border border-slate-700/80 px-2 py-0.5 rounded font-extrabold">{item.muscle}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-slate-800/80 leading-relaxed">
-                    <strong className="text-cyan-400">Biomechanics Tip:</strong> {item.tips}
-                  </p>
+              {library.map((item, idx) => (
+                <div key={idx} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1">
+                  <h3 className="font-bold text-sm text-slate-200">{item.name}</h3>
+                  <p className="text-[11px] text-slate-400">Tip: {item.tips}</p>
                 </div>
               ))}
             </div>
@@ -299,23 +301,14 @@ export default function ApexStateApp() {
         {activeTab === 'achievements' && (
           <div className="space-y-4 animate-fadeIn">
             <h1 className="text-xl font-black tracking-tight">Badges & Aura</h1>
-
             <div className="space-y-3">
               {achievements.map((ach, idx) => (
-                <div key={idx} className={`border p-4 rounded-2xl flex items-center justify-between shadow-md transition-all ${ach.unlocked ? 'bg-slate-900 border-cyan-500/30 shadow-cyan-500/5' : 'bg-slate-900/40 border-slate-800/60 opacity-70'}`}>
-                  <div className="flex items-start space-x-3">
-                    <div className={`p-3 rounded-xl ${ach.unlocked ? 'bg-gradient-to-br from-cyan-400 to-indigo-500 text-slate-950 shadow-lg shadow-cyan-500/20' : 'bg-slate-800 text-slate-500'}`}>
-                      <Award className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className={`font-bold text-sm ${ach.unlocked ? 'text-slate-100' : 'text-slate-400'}`}>{ach.title}</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{ach.desc}</p>
-                      <div className="flex items-center space-x-2 mt-2">
-                        <span className="text-[9px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-bold">{ach.progress}</span>
-                        <span className="text-[9px] text-cyan-400 font-black">{ach.reward}</span>
-                      </div>
-                    </div>
+                <div key={idx} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-200">{ach.title}</h3>
+                    <p className="text-xs text-slate-400">{ach.desc}</p>
                   </div>
+                  <span className="text-xs text-cyan-400 font-bold">{ach.reward}</span>
                 </div>
               ))}
             </div>
@@ -326,35 +319,59 @@ export default function ApexStateApp() {
         {activeTab === 'profile' && (
           <div className="space-y-4 animate-fadeIn">
             <h1 className="text-xl font-black tracking-tight">Athlete Profile</h1>
-            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-4 shadow-xl">
-              <div className="w-20 h-20 bg-gradient-to-br from-cyan-400 to-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-slate-950 font-black text-2xl shadow-xl shadow-cyan-500/20 rotate-3">
-                AS
-              </div>
-              <div>
-                <h2 className="font-black text-base text-slate-100 flex items-center justify-center">
-                  Alex Vance <ShieldCheck className="w-4 h-4 text-cyan-400 ml-1.5" />
-                </h2>
-                <p className="text-[11px] text-cyan-400 font-bold mt-0.5">Elite Tier Athlete • Global Top 3.4%</p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 pt-4 border-t border-slate-800 text-center">
-                <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800/60">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Workouts Logged</p>
-                  <p className="text-lg font-black text-slate-100 mt-1">84</p>
-                </div>
-                <div className="bg-slate-950/50 p-3 rounded-xl border border-slate-800/60">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Total Aura</p>
-                  <p className="text-lg font-black text-cyan-400 mt-1">{aura}</p>
-                </div>
-              </div>
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3">
+              <div className="w-20 h-20 bg-cyan-500 rounded-2xl mx-auto flex items-center justify-center text-slate-950 font-black text-2xl">AS</div>
+              <h2 className="font-bold text-base">New Athlete</h2>
+              <p className="text-xs text-cyan-400">Ready for configuration</p>
             </div>
           </div>
         )}
 
       </main>
 
+      {/* AI Chat Modal Overlay */}
+      {isAiOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col justify-end max-w-md mx-auto">
+          <div className="bg-slate-900 border-t border-slate-800 p-4 rounded-t-3xl space-y-4 max-h-[80vh] flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <Sparkles className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-bold text-sm">Apex AI Performance Coach</h3>
+              </div>
+              <button onClick={() => setIsAiOpen(false)} className="text-xs text-slate-400 hover:text-slate-100 font-bold px-2 py-1 bg-slate-800 rounded-lg">Close</button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-3 py-2 max-h-60">
+              {aiChat.map((msg, i) => (
+                <div key={i} className={`p-3 rounded-2xl text-xs leading-relaxed ${msg.sender === 'ai' ? 'bg-slate-950 border border-slate-800 text-slate-300' : 'bg-cyan-500 text-slate-950 font-medium ml-6'}`}>
+                  {msg.text}
+                </div>
+              ))}
+            </div>
+
+            <form onSubmit={sendAiMessage} className="flex space-x-2 pt-2">
+              <input 
+                type="text"
+                placeholder="Ask about training, recovery, or diet..."
+                value={aiQuery}
+                onChange={(e) => setAiQuery(e.target.value)}
+                className="flex-1 bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+              />
+              <button type="submit" className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2.5 rounded-xl font-bold flex items-center justify-center">
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-2xl border-t border-slate-800/80 px-2 py-2 z-40 max-w-md mx-auto shadow-2xl">
         <div className="flex justify-around items-center">
+          <button onClick={() => setActiveTab('home')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'home' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
+            <Zap className="w-5 h-5" />
+            <span className="text-[9px] mt-1 font-bold">Home</span>
+          </button>
           <button onClick={() => setActiveTab('workout')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'workout' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
             <Dumbbell className="w-5 h-5" />
             <span className="text-[9px] mt-1 font-bold">Workout</span>
@@ -366,10 +383,6 @@ export default function ApexStateApp() {
           <button onClick={() => setActiveTab('library')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'library' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
             <BookOpen className="w-5 h-5" />
             <span className="text-[9px] mt-1 font-bold">Library</span>
-          </button>
-          <button onClick={() => setActiveTab('achievements')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'achievements' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
-            <Award className="w-5 h-5" />
-            <span className="text-[9px] mt-1 font-bold">Badges</span>
           </button>
           <button onClick={() => setActiveTab('profile')} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'profile' ? 'text-cyan-400 scale-105' : 'text-slate-400'}`}>
             <User className="w-5 h-5" />
