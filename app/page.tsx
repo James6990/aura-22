@@ -58,6 +58,30 @@ interface NutritionItem {
   mealType: "Breakfast" | "Lunch" | "Dinner" | "Snack";
 }
 
+interface LeagueUser {
+  rank: number;
+  name: string;
+  xp: number;
+  isPro: boolean;
+  isUser?: boolean;
+}
+
+interface FriendItem {
+  id: string;
+  name: string;
+  status: string;
+  streak: number;
+  avatarColor: string;
+}
+
+interface ChatMessage {
+  id: string;
+  sender: string;
+  text: string;
+  timestamp: string;
+  isUser?: boolean;
+}
+
 interface BadgeItem {
   id: string;
   title: string;
@@ -107,14 +131,29 @@ export default function ApexStateApp() {
   });
 
   const [steps, setSteps] = useState<number>(8920);
+  const baseCaloriesBurned = 1850;
+  const activeCaloriesBurned = Math.round(baseCaloriesBurned + (steps * 0.04));
+
+  // Boss Battle State (PvE)
+  const [bossHp, setBossHp] = useState<number>(34200);
+  const bossMaxHp = 50000;
+
+  // Recovery Debt State
   const [recoveryDebtPct, setRecoveryDebtPct] = useState<number>(user.vitalityMode ? 18 : 38);
 
+  // Audio Hype Mode State
+  const [hypeActive, setHypeActive] = useState<boolean>(false);
+  const [hypeMessage, setHypeMessage] = useState<string>("Ready to ignite your set!");
+
+  const [workoutActive, setWorkoutActive] = useState<boolean>(false);
+  const [workoutTimer, setWorkoutTimer] = useState<number>(0);
+  
   // Real Speech Recognition Hook State
   const [isListening, setIsListening] = useState<boolean>(false);
   const [voiceTranscript, setVoiceTranscript] = useState<string>("");
   const recognitionRef = useRef<any>(null);
 
-  // Badges & Bloodline State
+  // Apex Cyber-Sigils & Badges
   const [badges, setBadges] = useState<BadgeItem[]>([
     { id: "b1", title: "Iron Core Ignition", description: "Complete your first 7-day training streak", rarity: "Common", icon: "🔥", unlocked: true, xpReward: 250, chatFlair: "🔥 [Iron Core]" },
     { id: "b2", title: "Neural Surge Overlord", description: "Log 50,000 cumulative steps in a single week", rarity: "Rare", icon: "⚡", unlocked: true, xpReward: 500, chatFlair: "⚡ [Neural Surge]" },
@@ -122,6 +161,7 @@ export default function ApexStateApp() {
     { id: "b4", title: "Titan Sovereign", description: "Reach Diamond League rank and defeat 3 Raid Bosses", rarity: "Legendary", icon: "👑", unlocked: false, xpReward: 2000, chatFlair: "👑 [Titan Sovereign]" },
   ]);
 
+  // Bloodline Syndicate Pass
   const [bloodlineMembers, setBloodlineMembers] = useState<BloodlineMember[]>([
     { id: "bl1", name: "Alex Vance (You)", role: "Syndicate Commander", streak: 14, status: "Crushing hypertrophy split 💪", avatarBg: "from-emerald-500 to-cyan-500" },
     { id: "bl2", name: "Robert Vance", role: "Vitality Vanguard", streak: 28, status: "Completed Longevity Joint Mobility 🌿", avatarBg: "from-blue-500 to-indigo-500" },
@@ -137,8 +177,8 @@ export default function ApexStateApp() {
       }
     }
     return [
-      { id: 1, name: "Barbell Bench Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "90kg", completed: false },
-      { id: 2, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "120kg", completed: false },
+      { id: 1, name: user.vitalityMode ? "Gentle Wall Push-ups & Stability" : "Barbell Bench Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: user.vitalityMode ? "Bodyweight" : "90kg", completed: false },
+      { id: 2, name: user.vitalityMode ? "Seated Chair Leg Extensions" : "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: user.vitalityMode ? "Light Resistance" : "120kg", completed: false },
     ];
   });
 
@@ -155,7 +195,26 @@ export default function ApexStateApp() {
     ];
   });
 
-  // AI Chat State
+  // Camera Scanner State
+  const [cameraActive, setCameraActive] = useState(false);
+  const [scanningStatus, setScanningStatus] = useState<string>("");
+  const [scannedFoodResult, setScannedFoodResult] = useState<{name: string; cals: number; protein: number} | null>(null);
+  const [scanCount, setScanCount] = useState<number>(1);
+
+  // Social & Friends State
+  const [friends, setFriends] = useState<FriendItem[]>([
+    { id: "f1", name: "Marcus T.", status: "Just crushed Leg Day 🔥", streak: 21, avatarColor: "from-emerald-500 to-cyan-500" },
+    { id: "f2", name: "Elena R.", status: "Rest day recovery stretching", streak: 12, avatarColor: "from-purple-500 to-pink-500" },
+    { id: "f3", name: "David K.", status: "Logging 10,000 steps sprint", streak: 8, avatarColor: "from-amber-500 to-orange-500" }
+  ]);
+
+  const [squadMessages, setSquadMessages] = useState<ChatMessage[]>([
+    { id: "m1", sender: "Marcus T.", text: "Who is hitting heavy squats today? Let's get these reps in!", timestamp: "10:42 AM" },
+    { id: "m2", sender: "Elena R.", text: "I'm doing mobility, but sending massive hype your way! ⚡", timestamp: "10:45 AM" }
+  ]);
+  const [squadInput, setSquadInput] = useState<string>("");
+
+  // AI Coach Chat State
   const [aiChatMessages, setAiChatMessages] = useState<Array<{role: 'ai' | 'user', text: string}>>([
     { role: 'ai', text: `Welcome to the Apex AI Coach, ${user.name}! Ask me anything about your training splits, nutrition targets, or cycle recovery.` }
   ]);
@@ -188,7 +247,7 @@ export default function ApexStateApp() {
     if (recognitionRef.current) {
       try {
         setIsListening(true);
-        setVoiceTranscript("Listening...");
+        setVoiceTranscript("Listening to voice command...");
         recognitionRef.current.start();
       } catch (err) {
         setIsListening(false);
@@ -277,6 +336,69 @@ export default function ApexStateApp() {
       setAiChatMessages(prev => [...prev, { role: 'ai', text: reply }]);
     }, 1000);
   };
+
+  const comprehensiveWorkoutTemplates: WorkoutRoutineTemplate[] = [
+    {
+      id: "ppl-hypertrophy",
+      title: user.vitalityMode ? "Joint-Friendly Mobility & Strength Sequence" : "Push / Pull / Legs (PPL) Hypertrophy Split",
+      targetUser: user.vitalityMode ? "Vitality & Longevity Protocol" : "Intermediate Bodybuilding",
+      style: user.vitalityMode ? "Low Impact Stability" : "Hypertrophy",
+      guideline: user.vitalityMode ? "Focus on controlled range of motion and joint stability with zero axial spinal loading." : "Perform 6 days a week with 1 rest day. Focus on mechanical tension.",
+      exercises: [
+        { id: 201, name: user.vitalityMode ? "Resistance Band Press" : "Barbell Overhead Press", category: "Strength", metValue: 5.0, defaultSets: "3 sets × 10 reps", defaultWeight: "Light Band" },
+        { id: 202, name: user.vitalityMode ? "Seated Row Machine" : "Weighted Pull-Ups", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 10 reps", defaultWeight: "Moderate" },
+        { id: 203, name: user.vitalityMode ? "Bodyweight Box Squat" : "Barbell Back Squat", category: "Strength", metValue: 5.0, defaultSets: "3 sets × 10 reps", defaultWeight: "Bodyweight" }
+      ]
+    }
+  ];
+
+  const loadRoutineTemplate = (template: WorkoutRoutineTemplate) => {
+    const newItems: ExerciseItem[] = template.exercises.map((ex, idx) => ({
+      ...ex,
+      id: Date.now() + idx,
+      completed: false
+    }));
+    setExercises(newItems);
+  };
+
+  const triggerCameraScan = () => {
+    setCameraActive(true);
+    setScanningStatus("Analyzing plate via Apex AI Camera Engine...");
+    setScannedFoodResult(null);
+
+    setTimeout(() => {
+      setScanningStatus("Match found: Grilled Salmon Bowl with Quinoa & Avocado");
+      setScannedFoodResult({
+        name: "Grilled Salmon Bowl & Quinoa",
+        cals: 510,
+        protein: 38
+      });
+      setScanCount(prev => prev + 1);
+    }, 2000);
+  };
+
+  const confirmScannedFood = () => {
+    if (!scannedFoodResult) return;
+    setNutritionLog([...nutritionLog, {
+      id: Date.now(),
+      name: scannedFoodResult.name,
+      calories: scannedFoodResult.cals,
+      protein: scannedFoodResult.protein,
+      carbs: 40,
+      fats: 16,
+      mealType: "Lunch"
+    }]);
+    setCameraActive(false);
+    setScannedFoodResult(null);
+  };
+
+  const currentLeagueCohort: LeagueUser[] = [
+    { rank: 1, name: "Marcus T.", xp: 3420, isPro: true },
+    { rank: 2, name: "Elena R.", xp: 3150, isPro: true },
+    { rank: 3, name: "David K.", xp: 2950, isPro: false },
+    { rank: 4, name: `${user.name} (You)`, xp: user.xp, isPro: user.isPro, isUser: true },
+    { rank: 5, name: "Sarah J.", xp: 2680, isPro: false },
+  ];
 
   return (
     <div className={`min-h-screen ${user.vitalityMode ? "bg-slate-900 text-lg" : "bg-slate-950"} text-slate-100 font-sans antialiased flex flex-col transition-all`}>
@@ -377,7 +499,7 @@ export default function ApexStateApp() {
           </nav>
         </aside>
 
-        {/* Main Interactive Workspace */}
+        {/* Main Workspace */}
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
@@ -405,6 +527,28 @@ export default function ApexStateApp() {
                     <Mic className="h-5 w-5" /> Speak AI Command
                   </button>
                 </div>
+              </div>
+
+              {/* Raid Boss PvE Widget */}
+              <div className="bg-gradient-to-r from-red-950/30 via-slate-900 to-slate-900 border border-red-500/30 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/20 text-red-300 text-xs font-bold uppercase mb-2">
+                    <Sword className="h-3.5 w-3.5" /> Active Raid Boss: Chronos Titan
+                  </div>
+                  <h3 className="text-xl font-black text-white">Boss HP: {bossHp.toLocaleString()} / {bossMaxHp.toLocaleString()}</h3>
+                  <div className="w-full bg-slate-950 h-3 rounded-full mt-3 overflow-hidden border border-red-500/30">
+                    <div className="bg-gradient-to-r from-red-600 to-orange-500 h-full transition-all" style={{ width: `${(bossHp / bossMaxHp) * 100}%` }}></div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => {
+                    setBossHp(prev => Math.max(0, prev - 2500));
+                    setUser(u => ({ ...u, xp: u.xp + 200 }));
+                  }}
+                  className="bg-red-600 hover:bg-red-500 text-white font-black px-6 py-3 rounded-2xl text-xs uppercase shadow-lg shadow-red-950/50 transition-all shrink-0 flex items-center gap-2"
+                >
+                  <Sword className="h-4 w-4" /> Strike Boss (-2,500 HP)
+                </button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -445,6 +589,25 @@ export default function ApexStateApp() {
                 </button>
               </div>
 
+              {/* Workout Templates Selector */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {comprehensiveWorkoutTemplates.map(template => (
+                  <div key={template.id} className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                      <span className="text-xs font-bold uppercase text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">{template.style}</span>
+                      <h4 className="font-bold text-white text-base mt-2">{template.title}</h4>
+                      <p className="text-xs text-slate-400 mt-1">{template.guideline}</p>
+                    </div>
+                    <button 
+                      onClick={() => loadRoutineTemplate(template)}
+                      className="mt-4 bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 rounded-xl text-xs transition-all border border-slate-700"
+                    >
+                      Load Routine
+                    </button>
+                  </div>
+                ))}
+              </div>
+
               <div className="space-y-3">
                 {exercises.map((ex) => (
                   <div key={ex.id} className={`p-4 rounded-2xl border flex items-center justify-between transition-all ${
@@ -475,7 +638,7 @@ export default function ApexStateApp() {
 
           {activeTab === "diet" && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-cyan-950/40 via-slate-900 to-slate-900 border border-cyan-500/30 p-6 rounded-3xl flex items-center justify-between">
+              <div className="bg-gradient-to-r from-cyan-950/40 via-slate-900 to-slate-900 border border-cyan-500/30 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold uppercase mb-2">
                     <Utensils className="h-3.5 w-3.5" /> Nutrition & Camera Scanner
@@ -483,13 +646,45 @@ export default function ApexStateApp() {
                   <h2 className="text-2xl font-black text-white">Daily Macro & Calorie Log</h2>
                   <p className="text-sm text-slate-300 mt-1">Total Consumed: <strong className="text-cyan-400">1,070 kcal</strong> / Target: 2,200 kcal</p>
                 </div>
-                <button 
-                  onClick={startVoiceRecognition}
-                  className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black px-5 py-3 rounded-xl text-xs uppercase shadow-lg shadow-cyan-950/50 flex items-center gap-2"
-                >
-                  <Camera className="h-4 w-4" /> Scan Plate / Voice Meal
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={triggerCameraScan}
+                    className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-black px-4 py-3 rounded-xl text-xs uppercase shadow-lg shadow-cyan-950/50 flex items-center gap-2"
+                  >
+                    <Camera className="h-4 w-4" /> Scan Plate AI
+                  </button>
+                  <button 
+                    onClick={startVoiceRecognition}
+                    className="bg-slate-800 hover:bg-slate-700 text-cyan-400 font-bold px-4 py-3 rounded-xl text-xs uppercase border border-cyan-500/30 flex items-center gap-2"
+                  >
+                    <Mic className="h-4 w-4" /> Voice Meal
+                  </button>
+                </div>
               </div>
+
+              {cameraActive && (
+                <div className="bg-slate-900 border border-cyan-500/50 p-6 rounded-3xl text-center space-y-4 animate-fade-in">
+                  <div className="w-20 h-20 mx-auto rounded-2xl bg-cyan-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 animate-pulse">
+                    <Camera className="h-10 w-10" />
+                  </div>
+                  <h3 className="text-lg font-bold text-white">{scanningStatus}</h3>
+                  {scannedFoodResult && (
+                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 max-w-md mx-auto text-left flex items-center justify-between">
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{scannedFoodResult.name}</h4>
+                        <p className="text-xs text-slate-400 mt-0.5">Estimated Protein: <strong className="text-emerald-400">{scannedFoodResult.protein}g</strong></p>
+                      </div>
+                      <button 
+                        onClick={confirmScannedFood}
+                        className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs"
+                      >
+                        Add to Log (+{scannedFoodResult.cals} kcal)
+                      </button>
+                    </div>
+                  )}
+                  <button onClick={() => setCameraActive(false)} className="text-xs text-slate-400 underline">Close Camera Scanner</button>
+                </div>
+              )}
 
               <div className="space-y-3">
                 {nutritionLog.map((meal) => (
@@ -661,6 +856,140 @@ export default function ApexStateApp() {
             </div>
           )}
 
+          {activeTab === "leaderboard" && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-amber-950/40 via-slate-900 to-slate-900 border border-amber-500/30 p-6 rounded-3xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold uppercase mb-3">
+                  <Trophy className="h-3.5 w-3.5" /> Ruby League Cohort
+                </div>
+                <h2 className="text-2xl font-black text-white">Weekly XP Standings</h2>
+                <p className="text-sm text-slate-300 mt-1">Top 10 advance to Emerald League at the end of the week.</p>
+              </div>
+
+              <div className="space-y-3">
+                {currentLeagueCohort.map((cohortUser) => (
+                  <div key={cohortUser.rank} className={`p-4 rounded-2xl border flex items-center justify-between ${
+                    cohortUser.isUser ? "bg-amber-950/20 border-amber-500/40 shadow-lg" : "bg-slate-900/60 border-slate-800"
+                  }`}>
+                    <div className="flex items-center gap-4">
+                      <span className={`font-black text-lg w-8 text-center ${cohortUser.rank === 1 ? 'text-amber-400' : cohortUser.rank === 2 ? 'text-slate-300' : cohortUser.rank === 3 ? 'text-amber-600' : 'text-slate-400'}`}>
+                        #{cohortUser.rank}
+                      </span>
+                      <div>
+                        <h4 className="font-bold text-white text-base flex items-center gap-2">
+                          {cohortUser.name}
+                          {cohortUser.isPro && <Crown className="h-3.5 w-3.5 text-amber-400" />}
+                        </h4>
+                      </div>
+                    </div>
+                    <span className="font-black text-amber-400">{cohortUser.xp.toLocaleString()} XP</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeTab === "social" && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-500/30 p-6 rounded-3xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase mb-3">
+                  <Users className="h-3.5 w-3.5" /> Squad War Room
+                </div>
+                <h2 className="text-2xl font-black text-white">Live Squad Chat & Hype Board</h2>
+                <p className="text-sm text-slate-300 mt-1">Collaborate with friends and send instant hype signals.</p>
+              </div>
+
+              <div className="space-y-3">
+                {friends.map(friend => (
+                  <div key={friend.id} className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-10 w-10 rounded-xl bg-gradient-to-tr ${friend.avatarColor} flex items-center justify-center font-bold text-white`}>
+                        {friend.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm">{friend.name}</h4>
+                        <p className="text-xs text-slate-400">{friend.status}</p>
+                      </div>
+                    </div>
+                    <span className="text-amber-400 font-bold text-sm">{friend.streak}d 🔥</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-4 flex flex-col h-72">
+                <div className="flex-1 overflow-y-auto space-y-3 pr-2">
+                  {squadMessages.map(msg => (
+                    <div key={msg.id} className={`flex flex-col ${msg.isUser ? 'items-end' : 'items-start'}`}>
+                      <span className="text-[10px] text-slate-400 mb-0.5">{msg.sender} • {msg.timestamp}</span>
+                      <div className={`p-3 rounded-2xl text-xs max-w-[80%] ${msg.isUser ? 'bg-purple-600 text-white' : 'bg-slate-800 text-slate-200 border border-slate-700'}`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!squadInput.trim()) return;
+                  setSquadMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    sender: `${user.name} (You)`,
+                    text: squadInput,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    isUser: true
+                  }]);
+                  setSquadInput("");
+                }} className="flex gap-2 mt-3 pt-3 border-t border-slate-800">
+                  <input 
+                    type="text" 
+                    placeholder="Broadcast hype to squad..." 
+                    value={squadInput}
+                    onChange={(e) => setSquadInput(e.target.value)}
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-purple-500"
+                  />
+                  <button type="submit" className="bg-purple-600 hover:bg-purple-500 text-white font-bold px-4 py-2.5 rounded-xl text-xs">
+                    <Send className="h-3.5 w-3.5" />
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "biometrics" && (
+            <div className="space-y-6 max-w-2xl mx-auto bg-slate-900/60 border border-slate-800 p-8 rounded-3xl">
+              <h2 className="text-2xl font-black text-white">Biometric Telemetry Profile</h2>
+              <p className="text-sm text-slate-400">Configure your physiological parameters to optimize AI workout and nutrition calculations.</p>
+              
+              <div className="space-y-4 pt-4">
+                <div>
+                  <label className="text-xs uppercase text-slate-400 font-bold block mb-1">Somatotype Classification</label>
+                  <select 
+                    value={user.somatotype} 
+                    onChange={(e) => setUser(prev => ({ ...prev, somatotype: e.target.value as any }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white"
+                  >
+                    <option value="mesomorph">Mesomorph (Athletic / Muscular)</option>
+                    <option value="ectomorph">Ectomorph (Lean / Hardgainer)</option>
+                    <option value="endomorph">Endomorph (Robust / Metabolic)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs uppercase text-slate-400 font-bold block mb-1">Primary Objective</label>
+                  <select 
+                    value={user.primaryGoal} 
+                    onChange={(e) => setUser(prev => ({ ...prev, primaryGoal: e.target.value as any }))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white"
+                  >
+                    <option value="muscle-gain">Hypertrophy & Muscle Gain</option>
+                    <option value="fat-loss">Fat Loss & Definition</option>
+                    <option value="recomposition">Body Recomposition</option>
+                    <option value="longevity">Longevity & Joint Health</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === "pro" && (
             <div className="space-y-6 max-w-3xl mx-auto text-center">
               <div className="inline-flex items-center gap-4 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-widest">
@@ -708,15 +1037,6 @@ export default function ApexStateApp() {
                     Unlock Bloodline Syndicate
                   </button>
                 </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab !== "dashboard" && activeTab !== "workout" && activeTab !== "diet" && activeTab !== "ai-coach" && activeTab !== "badges" && activeTab !== "bloodline" && activeTab !== "pro" && (
-            <div className="space-y-6">
-              <div className="bg-slate-900/60 border border-slate-800 p-8 rounded-3xl text-center">
-                <h2 className="text-2xl font-black text-white uppercase tracking-tight">{activeTab} Hub</h2>
-                <p className="text-slate-400 text-sm mt-2">Telemetry active. Tap the microphone icon above at any time to execute voice commands!</p>
               </div>
             </div>
           )}
