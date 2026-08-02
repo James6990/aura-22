@@ -26,8 +26,27 @@ import {
   Globe,
   Lock,
   Crown,
-  CreditCard
+  CreditCard,
+  Smartphone,
+  ExternalLink
 } from 'lucide-react';
+
+// Official Apex Vector Logo Component
+function ApexLogo({ className = "w-6 h-6" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 5L90 85H10L50 5Z" fill="url(#apexGrad)" stroke="#06b6d4" strokeWidth="4" strokeLinejoin="round"/>
+      <path d="M50 30L70 70H30L50 30Z" fill="#020617"/>
+      <circle cx="50" cy="55" r="8" fill="#06b6d4" />
+      <defs>
+        <linearGradient id="apexGrad" x1="10" y1="5" x2="90" y2="85" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#06b6d4" />
+          <stop offset="1" stopColor="#6366f1" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
 
 export default function ApexStateApp() {
   const [activeTab, setActiveTab] = useState<'home' | 'workout' | 'nutrition' | 'library' | 'achievements' | 'profile'>('home');
@@ -44,6 +63,7 @@ export default function ApexStateApp() {
   const [authPassword, setAuthPassword] = useState('');
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [showPaywallModal, setShowPaywallModal] = useState(false);
+  const [showWidgetModal, setShowWidgetModal] = useState(false);
 
   // Profile & Predator Avatar State
   const [athleteName, setAthleteName] = useState('New Athlete');
@@ -212,15 +232,26 @@ export default function ApexStateApp() {
         </div>
       )}
 
-      {/* Cybernetic Header */}
+      {/* Cybernetic Header with Apex Logo */}
       <header className="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 px-4 py-3 flex items-center justify-between shadow-lg">
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => setActiveTab('home')}>
-          <div className="bg-gradient-to-r from-cyan-400 to-indigo-500 text-slate-950 p-1.5 rounded-xl font-black tracking-wider text-xs flex items-center shadow-lg shadow-cyan-500/20">
-            <Zap className="w-4 h-4 mr-0.5 fill-current" /> APEX
+        <div className="flex items-center space-x-2.5 cursor-pointer" onClick={() => setActiveTab('home')}>
+          <div className="bg-slate-950 border border-cyan-500/40 p-1.5 rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center">
+            <ApexLogo className="w-5 h-5" />
           </div>
-          <span className="font-extrabold text-base tracking-wider bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">STATE</span>
+          <div>
+            <span className="font-black text-sm tracking-widest bg-gradient-to-r from-cyan-400 to-indigo-400 bg-clip-text text-transparent">APEX</span>
+            <span className="font-extrabold text-xs text-slate-300 ml-1">STATE</span>
+          </div>
         </div>
-        <div className="flex items-center space-x-2.5">
+
+        <div className="flex items-center space-x-2">
+          <button 
+            onClick={() => setShowWidgetModal(true)}
+            className="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-cyan-400 p-2 rounded-xl transition-all"
+            title="Add Widget & Quick Launch"
+          >
+            <Smartphone className="w-4 h-4" />
+          </button>
           <div className="flex items-center bg-slate-800/90 px-3 py-1 rounded-full border border-slate-700/60 text-xs font-semibold">
             <Flame className="w-3.5 h-3.5 text-orange-400 mr-1.5 fill-orange-400" />
             <span className="text-slate-200">{streak}d</span>
@@ -246,11 +277,32 @@ export default function ApexStateApp() {
                   </p>
                   <h1 className="text-xl font-black text-slate-100 mt-0.5">Welcome, {selectedAvatar.split(' ')[1]}</h1>
                 </div>
-                <span className="text-xs bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 px-2.5 py-1 rounded-xl font-bold">{selectedAvatar.split(' ')[0]}</span>
+                <div className="bg-slate-950 border border-cyan-500/40 p-2 rounded-xl shadow-md">
+                  <ApexLogo className="w-8 h-8" />
+                </div>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Your performance hub is live. Track workouts offline for free, or unlock the Apex Pro Pass for worldwide online leaderboards.
+                Your performance hub is live. Use the home screen widget for instant telemetry entry or unlock Apex Pro.
               </p>
+            </div>
+
+            {/* Widget Quick-Access Banner */}
+            <div className="bg-slate-900 border border-cyan-500/30 p-4 rounded-2xl flex items-center justify-between shadow-xl">
+              <div className="flex items-center space-x-3">
+                <div className="bg-cyan-950 p-2.5 rounded-xl border border-cyan-500/40 text-cyan-400">
+                  <Smartphone className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-xs text-slate-200">Apex Home Screen Widget</h3>
+                  <p className="text-[10px] text-slate-400">One-tap entry & live streak tracker</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowWidgetModal(true)}
+                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black shadow-lg shadow-cyan-500/20 active:scale-95 transition-all"
+              >
+                Launch Widget
+              </button>
             </div>
 
             {/* Global Competition Gateway Card (If not a subscriber) */}
@@ -416,12 +468,11 @@ export default function ApexStateApp() {
           </div>
         )}
 
-        {/* PROFILE TAB WITH OFFLINE/ONLINE GATED MODES */}
+        {/* PROFILE TAB */}
         {activeTab === 'profile' && (
           <div className="space-y-4 animate-fadeIn">
             <h1 className="text-xl font-black tracking-tight">Athlete Profile & Tier</h1>
             
-            {/* Active Profile Card */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl text-center space-y-3 shadow-xl">
               <div className="w-20 h-20 bg-gradient-to-tr from-cyan-500 to-indigo-500 rounded-2xl mx-auto flex items-center justify-center text-slate-950 font-black text-3xl shadow-lg shadow-cyan-500/20">
                 {selectedAvatar.split(' ')[0]}
@@ -449,36 +500,6 @@ export default function ApexStateApp() {
                 </button>
               ) : null}
             </div>
-
-            {/* Offline/Online Gateway */}
-            {!isAuthenticated && (
-              <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-4 shadow-xl">
-                <h3 className="font-bold text-xs text-slate-300 uppercase tracking-widest">Local Offline Account</h3>
-                <form onSubmit={handleAuthSubmit} className="space-y-3">
-                  <input 
-                    type="email" 
-                    placeholder="Athlete Email" 
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
-                  />
-                  <input 
-                    type="password" 
-                    placeholder="Password" 
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 px-3.5 py-2.5 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
-                  />
-                  <button 
-                    type="submit"
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-slate-100 font-bold text-xs py-3 rounded-xl flex items-center justify-center space-x-2 transition-all"
-                  >
-                    <LogIn className="w-4 h-4" />
-                    <span>Save Local Profile</span>
-                  </button>
-                </form>
-              </div>
-            )}
 
             {/* Predator Avatar Picker */}
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl space-y-3">
@@ -511,7 +532,63 @@ export default function ApexStateApp() {
 
       </main>
 
-      {/* Paywall / Subscription Modal */}
+      {/* Interactive App Widget / Quick Launch Modal */}
+      {showWidgetModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-cyan-500/40 w-full max-w-sm p-6 rounded-3xl space-y-5 shadow-2xl animate-fadeIn">
+            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2">
+                <Smartphone className="w-5 h-5 text-cyan-400" />
+                <h3 className="font-bold text-sm text-slate-100">Apex Home Screen Widget</h3>
+              </div>
+              <button onClick={() => setShowWidgetModal(false)} className="text-xs text-slate-400 font-bold px-2 py-1 bg-slate-800 rounded-lg">Close</button>
+            </div>
+
+            {/* Simulated Live Home Screen Widget Card */}
+            <div className="bg-gradient-to-br from-slate-950 to-cyan-950/40 border border-cyan-500/30 p-4 rounded-2xl space-y-3 shadow-inner">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <div className="bg-slate-900 p-1.5 rounded-lg border border-cyan-500/40">
+                    <ApexLogo className="w-4 h-4" />
+                  </div>
+                  <span className="font-black text-xs text-slate-200 tracking-wider">APEX WIDGET</span>
+                </div>
+                <span className="text-[9px] bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded font-bold">{streak}d Streak</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-center">
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                  <p className="text-[9px] text-slate-400 uppercase font-bold">Aura Score</p>
+                  <p className="text-sm font-black text-cyan-400 mt-0.5">{aura}</p>
+                </div>
+                <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
+                  <p className="text-[9px] text-slate-400 uppercase font-bold">Avatar</p>
+                  <p className="text-sm font-black text-slate-200 mt-0.5">{selectedAvatar.split(' ')[0]}</p>
+                </div>
+              </div>
+
+              {/* Working Widget Enter Button */}
+              <button 
+                onClick={() => {
+                  setShowWidgetModal(false);
+                  setActiveTab('home');
+                  showToast('🚀 Widget Activated: Entered Apex State');
+                }}
+                className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs py-3 rounded-xl shadow-lg shadow-cyan-500/20 flex items-center justify-center space-x-2 active:scale-95 transition-all"
+              >
+                <span>Enter App From Widget</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            <p className="text-[10px] text-slate-400 text-center leading-relaxed">
+              Tip: In your mobile browser menu, select <strong className="text-slate-200">"Add to Home Screen"</strong> to place this exact widget launcher on your phone desktop.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Paywall Modal */}
       {showPaywallModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-amber-500/40 w-full max-w-sm p-6 rounded-3xl space-y-5 shadow-2xl animate-fadeIn">
