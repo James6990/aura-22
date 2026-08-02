@@ -375,92 +375,144 @@ export default function ApexStateApp() {
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
-              <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/30 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+              {/* Apex Command Header */}
+              <div className="relative bg-gradient-to-r from-slate-900 via-slate-900/90 to-emerald-950/40 border border-emerald-500/20 rounded-3xl p-6 lg:p-8 overflow-hidden shadow-2xl shadow-emerald-950/20">
+                <div className="absolute right-0 top-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                   <div>
-                    <span className="text-xs uppercase tracking-widest text-emerald-400 font-bold">Welcome back</span>
-                    <h1 className="text-2xl lg:text-3xl font-black text-white mt-1">{user.name}</h1>
-                    <p className="text-sm text-slate-400 mt-1">
-                      League: <span className="text-amber-400 font-bold">{user.league} League (#4)</span> • Streak: <span className="text-amber-400 font-bold">{user.streak} Days</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-3">
+                      <Sparkles className="h-3.5 w-3.5" /> Apex Core Online
+                    </div>
+                    <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight">{user.name}</h1>
+                    <p className="text-sm text-slate-400 mt-1.5 flex items-center gap-2">
+                      <span>Tier: <strong className="text-amber-400">{user.league} League</strong></span>
+                      <span>•</span>
+                      <span>Active Streak: <strong className="text-amber-400">{user.streak} Days 🔥</strong></span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-center">
-                      <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold">
-                        <Flame className="h-4 w-4 fill-amber-400" />
-                        <span>Streak</span>
-                      </div>
-                      <p className="text-xl font-black text-white mt-0.5">{user.streak} Days</p>
+                  
+                  <div className="flex items-center gap-3 bg-slate-950/60 border border-slate-800/80 p-2 rounded-2xl backdrop-blur-md">
+                    <div className="px-4 py-2 text-center border-r border-slate-800">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Streak</span>
+                      <span className="text-xl font-black text-amber-400">{user.streak}d</span>
                     </div>
-                    <div className="bg-slate-800/80 border border-slate-700/60 rounded-xl px-4 py-2.5 text-center">
-                      <div className="flex items-center gap-1.5 text-cyan-400 text-xs font-bold">
-                        <Zap className="h-4 w-4 fill-cyan-400" />
-                        <span>Total XP</span>
-                      </div>
-                      <p className="text-xl font-black text-white mt-0.5">{user.xp}</p>
+                    <div className="px-4 py-2 text-center">
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Total XP</span>
+                      <span className="text-xl font-black text-cyan-400">{user.xp}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-purple-950/40 via-slate-900 to-slate-900 border border-purple-500/30 rounded-2xl p-6 relative overflow-hidden">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+              {/* CNS Readiness & PvE Boss Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                {/* CNS Readiness Gauge */}
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-3xl p-6 flex flex-col justify-between relative overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider">Neural Biometrics</span>
+                      <h3 className="text-lg font-black text-white mt-0.5">CNS Readiness</h3>
+                    </div>
+                    <Activity className="h-5 w-5 text-emerald-400 animate-pulse" />
+                  </div>
+                  
+                  <div className="py-6 flex items-center justify-center">
+                    <div className="relative flex items-center justify-center">
+                      <div className="w-32 h-32 rounded-full border-4 border-slate-800 flex items-center justify-center relative">
+                        <div className="absolute inset-0 rounded-full border-4 border-emerald-500 border-t-transparent animate-spin"></div>
+                        <div className="text-center">
+                          <span className="text-3xl font-black text-white">{100 - recoveryDebtPct}%</span>
+                          <span className="text-[10px] text-emerald-400 block font-bold uppercase">Optimal</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-center text-slate-400 bg-slate-950/60 py-2.5 rounded-xl border border-slate-800/60">
+                    Recovery Debt is <span className="text-cyan-400 font-bold">{recoveryDebtPct}%</span>. Heavy load recommended.
+                  </p>
+                </div>
+
+                {/* PvE Boss Battle Card */}
+                <div className="lg:col-span-2 bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-900 border border-purple-500/30 rounded-3xl p-6 lg:p-8 flex flex-col justify-between relative overflow-hidden shadow-xl shadow-purple-950/20">
+                  <div className="absolute right-0 bottom-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2.5 py-0.5 rounded-full font-bold uppercase">
-                        Weekly PvE Boss Battle
-                      </span>
-                      <span className="text-xs text-slate-400">The Iron Titan</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/40 px-3 py-1 rounded-full font-extrabold uppercase tracking-widest">
+                          Weekly PvE Boss Battle
+                        </span>
+                        <span className="text-xs text-slate-400 hidden sm:inline">Global Raid Tier 3</span>
+                      </div>
+                      <span className="text-xs font-bold text-purple-400">Phase 1 / 3</span>
                     </div>
-                    <h3 className="text-xl font-black text-white mt-2">Defeat the Titan: {bossHp.toLocaleString()} / {bossMaxHp.toLocaleString()} HP</h3>
-                    <div className="w-full bg-slate-800 h-3 rounded-full mt-3 overflow-hidden max-w-md border border-slate-700">
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 h-full rounded-full transition-all" style={{ width: `${(bossHp / bossMaxHp) * 100}%` }}></div>
+                    
+                    <h3 className="text-2xl font-black text-white mt-3">The Iron Titan</h3>
+                    <p className="text-xs text-slate-400 mt-1">Attack daily through workouts and food logging to deplete boss HP before weekly reset.</p>
+                    
+                    <div className="mt-6 space-y-2">
+                      <div className="flex justify-between text-xs font-bold">
+                        <span className="text-purple-300">Titan HP Remaining</span>
+                        <span className="text-white">{bossHp.toLocaleString()} / {bossMaxHp.toLocaleString()}</span>
+                      </div>
+                      <div className="w-full bg-slate-950 h-4 rounded-full overflow-hidden p-0.5 border border-purple-500/30">
+                        <div className="bg-gradient-to-r from-purple-600 via-pink-500 to-amber-500 h-full rounded-full transition-all duration-500 shadow-lg shadow-purple-500/50" style={{ width: `${(bossHp / bossMaxHp) * 100}%` }}></div>
+                      </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={attackBoss}
-                    className="bg-purple-600 hover:bg-purple-500 text-white px-5 py-3 rounded-xl font-bold text-sm shadow-lg shadow-purple-950/50 flex items-center justify-center gap-2 transition-all"
-                  >
-                    <Sword className="h-4 w-4" /> Strike Boss (+150 XP)
-                  </button>
+
+                  <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+                    <span className="text-xs text-slate-400">Reward: <strong className="text-amber-400">+150 XP per strike</strong></span>
+                    <button 
+                      onClick={attackBoss}
+                      className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-6 py-3 rounded-xl font-extrabold text-sm shadow-lg shadow-purple-950/50 flex items-center gap-2 transition-all transform hover:scale-105 active:scale-95"
+                    >
+                      <Sword className="h-4 w-4" /> Strike Boss Now
+                    </button>
+                  </div>
                 </div>
+
               </div>
 
+              {/* Metric Cards Row */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 hover:border-emerald-500/40 transition-all">
                   <div className="flex items-center justify-between">
                     <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Daily Step Count</span>
-                    <Footprints className="h-5 w-5 text-emerald-400" />
+                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                      <Footprints className="h-4 w-4" />
+                    </div>
                   </div>
                   <p className="text-3xl font-black text-white mt-3">{steps.toLocaleString()}</p>
-                  <p className="text-xs text-slate-400 mt-1">Goal: 10,000 steps</p>
-                  <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
-                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min(100, (steps / 10000) * 100)}%` }}></div>
+                  <div className="w-full bg-slate-950 h-2 rounded-full mt-4 overflow-hidden border border-slate-800">
+                    <div className="bg-emerald-500 h-full rounded-full transition-all" style={{ width: `${Math.min(100, (steps / 10000) * 100)}%` }}></div>
                   </div>
                 </div>
 
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 hover:border-amber-500/40 transition-all">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Calorie Burn</span>
-                    <Flame className="h-5 w-5 text-amber-400" />
+                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Total Calorie Burn</span>
+                    <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                      <Flame className="h-4 w-4" />
+                    </div>
                   </div>
                   <p className="text-3xl font-black text-white mt-3">{activeCaloriesBurned} <span className="text-sm font-normal text-slate-400">kcal</span></p>
-                  <p className="text-xs text-slate-400 mt-1">Basal + Active Movement</p>
-                  <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
-                    <div className="bg-amber-500 h-full rounded-full" style={{ width: `${Math.min(100, (activeCaloriesBurned / 2500) * 100)}%` }}></div>
+                  <div className="w-full bg-slate-950 h-2 rounded-full mt-4 overflow-hidden border border-slate-800">
+                    <div className="bg-amber-500 h-full rounded-full transition-all" style={{ width: `${Math.min(100, (activeCaloriesBurned / 2500) * 100)}%` }}></div>
                   </div>
                 </div>
 
-                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
+                <div className="bg-slate-900/80 border border-slate-800/80 rounded-2xl p-5 hover:border-cyan-500/40 transition-all">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Recovery Debt</span>
-                    <ShieldAlert className="h-5 w-5 text-cyan-400" />
+                    <span className="text-xs uppercase tracking-wider text-slate-400 font-bold">Protein Progress</span>
+                    <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
+                      <Utensils className="h-4 w-4" />
+                    </div>
                   </div>
-                  <p className="text-3xl font-black text-white mt-3">{recoveryDebtPct}% <span className="text-sm font-normal text-cyan-400">Debt Load</span></p>
-                  <p className="text-xs text-slate-400 mt-1">Safe training window open</p>
-                  <div className="w-full bg-slate-800 h-2 rounded-full mt-4 overflow-hidden">
-                    <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${recoveryDebtPct}%` }}></div>
+                  <p className="text-3xl font-black text-white mt-3">{totalNutritionProtein} <span className="text-sm font-normal text-slate-400">/ 160g</span></p>
+                  <div className="w-full bg-slate-950 h-2 rounded-full mt-4 overflow-hidden border border-slate-800">
+                    <div className="bg-cyan-500 h-full rounded-full transition-all" style={{ width: `${Math.min(100, (totalNutritionProtein / 160) * 100)}%` }}></div>
                   </div>
                 </div>
               </div>
@@ -866,3 +918,4 @@ export default function ApexStateApp() {
     </div>
   );
 }
+
