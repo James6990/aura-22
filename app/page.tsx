@@ -6,10 +6,10 @@ import {
   ChevronRight, Lock, Unlock, Zap, Activity, Award, 
   TrendingUp, Shield, RefreshCw, CheckCircle2, Heart, 
   Send, Bot, Globe, Filter, Crown, Cpu, ArrowUpRight,
-  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera, Eye, Volume2, VolumeX
+  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera
 } from "lucide-react";
 
-type TabType = "dashboard" | "workout" | "diet" | "leaderboard" | "ai-coach" | "pro" | "biometrics";
+type TabType = "dashboard" | "workout" | "diet" | "leaderboard" | "ai-coach" | "pro" | "biometrics" | "devices";
 
 interface UserProfile {
   name: string;
@@ -22,8 +22,6 @@ interface UserProfile {
   gender: "male" | "female" | "other";
   menstrualPhase: "follicular" | "ovulatory" | "luteal" | "menstrual" | "n/a";
   cycleDay: number;
-  highContrast: boolean;
-  screenReaderVoiceEnabled: boolean;
 }
 
 interface ExerciseItem {
@@ -84,24 +82,9 @@ export default function ApexStateApp() {
       primaryGoal: "muscle-gain",
       gender: "female",
       menstrualPhase: "follicular",
-      cycleDay: 8,
-      highContrast: false,
-      screenReaderVoiceEnabled: true,
+      cycleDay: 8
     };
   });
-
-  // Screen Reader / Accessibility Live Announcement State
-  const [announcement, setAnnouncement] = useState<string>("Apex State OS loaded successfully. Screen reader accessibility mode active.");
-
-  const speakText = (text: string) => {
-    setAnnouncement(text);
-    if (user.screenReaderVoiceEnabled && typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.rate = 1.0;
-      window.speechSynthesis.speak(utterance);
-    }
-  };
 
   const [steps, setSteps] = useState<number>(8420);
   const baseCaloriesBurned = 1850;
@@ -141,6 +124,7 @@ export default function ApexStateApp() {
   const [newMealProtein, setNewMealProtein] = useState(25);
   const [newMealType, setNewMealType] = useState<"Breakfast" | "Lunch" | "Dinner" | "Snack">("Dinner");
 
+  // Camera / Google Visual Search Simulation State
   const [cameraActive, setCameraActive] = useState(false);
   const [scanningStatus, setScanningStatus] = useState<string>("");
   const [scannedFoodResult, setScannedFoodResult] = useState<{name: string; cals: number; protein: number} | null>(null);
@@ -169,11 +153,12 @@ export default function ApexStateApp() {
       title: "Push / Pull / Legs (PPL) Hypertrophy Split",
       targetUser: "Intermediate to Advanced Bodybuilding",
       style: "Hypertrophy & Aesthetics",
-      guideline: "Perform 6 days a week with 1 rest day. Focus on mechanical tension and progressive overload.",
+      guideline: "Perform 6 days a week with 1 rest day. Focus on mechanical tension, 60-90s rest intervals, and progressive overload on compound lifts.",
       exercises: [
         { id: 201, name: "Barbell Overhead Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "60kg" },
         { id: 202, name: "Weighted Pull-Ups", category: "Strength", metValue: 8.0, defaultSets: "4 sets × 8 reps", defaultWeight: "Bodyweight + 15kg" },
-        { id: 203, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "110kg" }
+        { id: 203, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "110kg" },
+        { id: 204, name: "Incline Dumbbell Flyes", category: "Strength", metValue: 5.0, defaultSets: "3 sets × 12 reps", defaultWeight: "18kg" }
       ]
     },
     {
@@ -181,10 +166,48 @@ export default function ApexStateApp() {
       title: "5x5 Powerlifting Strength Foundation",
       targetUser: "Strength Seekers & Ectomorphs",
       style: "Absolute Strength",
-      guideline: "Perform 3 days a week with long rest intervals (2-3 mins).",
+      guideline: "Perform 3 days a week. Focus on heavy compound lifting with long rest periods (2 to 3 minutes) to maximize neural adaptations.",
       exercises: [
         { id: 205, name: "Heavy Barbell Squat (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "130kg" },
-        { id: 206, name: "Flat Barbell Bench Press (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "100kg" }
+        { id: 206, name: "Flat Barbell Bench Press (5x5)", category: "Strength", metValue: 6.0, defaultSets: "5 sets × 5 reps", defaultWeight: "100kg" },
+        { id: 207, name: "Conventional Deadlift", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 5 reps", defaultWeight: "160kg" }
+      ]
+    },
+    {
+      id: "upper-lower-power",
+      title: "Upper / Lower Heavy Power Split",
+      targetUser: "Intermediate Lifters & Athletes",
+      style: "Maximal Force & Hypertrophy",
+      guideline: "4 days a week split. Focus on heavy multi-joint movements followed by targeted accessory volume for joint health and growth.",
+      exercises: [
+        { id: 214, name: "Weighted Dips", category: "Strength", metValue: 6.5, defaultSets: "4 sets × 6-8 reps", defaultWeight: "Bodyweight + 20kg" },
+        { id: 215, name: "Pendlay Barbell Row", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "85kg" },
+        { id: 216, name: "Romanian Deadlift (RDL)", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "115kg" },
+        { id: 217, name: "Standing Barbell Military Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6 reps", defaultWeight: "65kg" }
+      ]
+    },
+    {
+      id: "fat-loss-circuit",
+      title: "Metabolic Conditioning & Fat-Loss WOD",
+      targetUser: "Endomorphs & Cutting Phases",
+      style: "Cardio & HIIT Circuit",
+      guideline: "High-intensity circuits with minimal rest (30s) between stations. Maximizes EPOC (afterburn effect) and hourly caloric burn.",
+      exercises: [
+        { id: 208, name: "Kettlebell Swings", category: "Circuit", metValue: 11.0, defaultSets: "4 sets × 20 reps", defaultWeight: "24kg" },
+        { id: 209, name: "Rowing Machine Intervals", category: "Cardio", metValue: 9.5, defaultSets: "15 mins continuous", defaultWeight: "Moderate Pace" },
+        { id: 210, name: "Burpee Box Jumps", category: "Circuit", metValue: 12.0, defaultSets: "4 sets × 12 reps", defaultWeight: "Bodyweight" }
+      ]
+    },
+    {
+      id: "calisthenics-mastery",
+      title: "Bodyweight Calisthenics & Gymnastics",
+      targetUser: "Functional Fitness & Travelers",
+      style: "Bodyweight Strength",
+      guideline: "Focus on strict form, full range of motion, and advanced progressions (e.g., muscle-ups, pistol squats, handstand push-ups).",
+      exercises: [
+        { id: 211, name: "Strict Pull-Ups", category: "Strength", metValue: 8.0, defaultSets: "4 sets × max reps", defaultWeight: "Bodyweight" },
+        { id: 212, name: "Pistol Squats", category: "Strength", metValue: 7.0, defaultSets: "3 sets × 8 reps/leg", defaultWeight: "Bodyweight" },
+        { id: 213, name: "Dips on Parallel Bars", category: "Strength", metValue: 6.5, defaultSets: "4 sets × 12 reps", defaultWeight: "Bodyweight" }
       ]
     }
   ];
@@ -192,8 +215,29 @@ export default function ApexStateApp() {
   const masterExerciseLibrary: Omit<ExerciseItem, "completed">[] = [
     { id: 101, name: "Barbell Back Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "120kg" },
     { id: 102, name: "Heavy Deadlift", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 5 reps", defaultWeight: "140kg" },
+    { id: 115, name: "Front Squat", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "95kg" },
+    { id: 116, name: "Sumo Deadlift", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 5 reps", defaultWeight: "150kg" },
+    { id: 117, name: "Incline Barbell Bench Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "80kg" },
+    { id: 118, name: "Close-Grip Bench Press", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 8-10 reps", defaultWeight: "75kg" },
+    { id: 119, name: "Standing Barbell Military Press", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 6-8 reps", defaultWeight: "65kg" },
+    { id: 120, name: "Dumbbell Lateral Raises", category: "Strength", metValue: 5.0, defaultSets: "4 sets × 12-15 reps", defaultWeight: "14kg" },
+    { id: 121, name: "Barbell Bent-Over Row", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8 reps", defaultWeight: "90kg" },
+    { id: 122, name: "T-Bar Row", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "70kg" },
+    { id: 123, name: "Lat Pulldown (Wide Grip)", category: "Strength", metValue: 5.0, defaultSets: "4 sets × 10-12 reps", defaultWeight: "70kg" },
+    { id: 124, name: "Seated Cable Row", category: "Strength", metValue: 5.0, defaultSets: "4 sets × 10 reps", defaultWeight: "75kg" },
+    { id: 125, name: "Romanian Deadlift (RDL)", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 8-10 reps", defaultWeight: "110kg" },
+    { id: 126, name: "Bulgarian Split Squats", category: "Strength", metValue: 6.0, defaultSets: "3 sets × 10 reps/leg", defaultWeight: "24kg db" },
+    { id: 127, name: "Leg Press (45 Degree)", category: "Strength", metValue: 5.5, defaultSets: "4 sets × 10-12 reps", defaultWeight: "220kg" },
+    { id: 128, name: "Barbell Hip Thrust", category: "Strength", metValue: 6.0, defaultSets: "4 sets × 10 reps", defaultWeight: "140kg" },
+    { id: 129, name: "Standing Barbell Bicep Curl", category: "Strength", metValue: 4.5, defaultSets: "3 sets × 10-12 reps", defaultWeight: "35kg" },
+    { id: 130, name: "Tricep Overhead Cable Extension", category: "Strength", metValue: 4.5, defaultSets: "3 sets × 12-15 reps", defaultWeight: "30kg" },
+    { id: 131, name: "Standing Calf Raises", category: "Strength", metValue: 4.0, defaultSets: "4 sets × 15 reps", defaultWeight: "100kg" },
+    { id: 103, name: "CrossFit Circuit WOD", category: "Circuit", metValue: 10.0, defaultSets: "20 min AMRAP", defaultWeight: "Bodyweight" },
     { id: 104, name: "Brisk Outdoor Walking", category: "Cardio", metValue: 4.3, defaultSets: "30 mins", defaultWeight: "3.5 mph" },
+    { id: 105, name: "Running / Jogging", category: "Cardio", metValue: 8.3, defaultSets: "30 mins", defaultWeight: "5 mph" },
     { id: 106, name: "HIIT Sprint Intervals", category: "Cardio", metValue: 12.0, defaultSets: "20 mins", defaultWeight: "Max Effort" },
+    { id: 107, name: "Lap Swimming (Moderate)", category: "Cardio", metValue: 8.3, defaultSets: "30 mins", defaultWeight: "Free style" },
+    { id: 108, name: "Vinyasa Flow Yoga", category: "Flexibility", metValue: 4.0, defaultSets: "45 mins", defaultWeight: "Bodyweight" },
   ];
 
   const [selectedCat, setSelectedCat] = useState<string>("All");
@@ -202,7 +246,6 @@ export default function ApexStateApp() {
   const addExerciseToRoutine = (ex: Omit<ExerciseItem, "completed">) => {
     if (exercises.some(item => item.name === ex.name)) return;
     setExercises([...exercises, { ...ex, id: Date.now(), completed: false }]);
-    speakText(`Added ${ex.name} to your active workout routine.`);
   };
 
   const loadRoutineTemplate = (template: WorkoutRoutineTemplate) => {
@@ -212,7 +255,6 @@ export default function ApexStateApp() {
       completed: false
     }));
     setExercises(newItems);
-    speakText(`Loaded routine template: ${template.title}`);
   };
 
   const calculateMetCalories = (met: number, durationMins: number) => {
@@ -237,14 +279,12 @@ export default function ApexStateApp() {
     };
     setNutritionLog([...nutritionLog, newItem]);
     setNewMealName("");
-    speakText(`Logged meal: ${newMealName}, ${newMealCals} calories.`);
   };
 
   const triggerCameraScan = () => {
     setCameraActive(true);
     setScanningStatus("Analyzing image via Google Visual Search Engine...");
     setScannedFoodResult(null);
-    speakText("Google Visual Camera scanner activated. Pointing camera at meal.");
 
     setTimeout(() => {
       setScanningStatus("Match found: Avocado & Poached Eggs on Sourdough Toast");
@@ -253,7 +293,6 @@ export default function ApexStateApp() {
         cals: 420,
         protein: 22
       });
-      speakText("Scan complete. Detected Avocado and Poached Eggs on Sourdough Toast, 420 calories.");
     }, 2000);
   };
 
@@ -270,7 +309,6 @@ export default function ApexStateApp() {
     }]);
     setCameraActive(false);
     setScannedFoodResult(null);
-    speakText("Scanned meal successfully added to your daily nutrition log.");
   };
 
   const leaderboardData: LeaderboardUser[] = [
@@ -278,10 +316,11 @@ export default function ApexStateApp() {
     { rank: 2, name: "Elena Rostova", xp: 4890, streak: 30, somatotype: "Ectomorph", isPro: true },
     { rank: 3, name: "Alex Vance (You)", xp: user.xp, streak: user.streak, somatotype: user.somatotype, isPro: user.isPro },
     { rank: 4, name: "David Kim", xp: 2100, streak: 8, somatotype: "Endomorph", isPro: false },
+    { rank: 5, name: "Sarah Jenkins", xp: 1950, streak: 14, somatotype: "Mesomorph", isPro: false },
   ];
 
   const [chatMessages, setChatMessages] = useState<Array<{role: 'ai' | 'user', text: string}>>([
-    { role: 'ai', text: `Hello ${user.name}! Universal accessibility engine, screen reader voice narration, and Google visual camera scanner are fully online.` }
+    { role: 'ai', text: `Hello ${user.name}! Google Visual Camera Scanner, Leaderboards, Pro Paywall, and all biometrics are fully operational.` }
   ]);
   const [chatInput, setChatInput] = useState<string>("");
 
@@ -309,79 +348,43 @@ export default function ApexStateApp() {
     setChatInput("");
 
     setTimeout(() => {
-      let aiReply = `As a ${user.gender} (${user.somatotype}) focused on ${user.primaryGoal}, your hormonal phase is logged as ${user.menstrualPhase}.`;
-      speakText(aiReply);
+      let aiReply = `As a ${user.gender} (${user.somatotype}) focused on ${user.primaryGoal}, your hormonal phase is currently logged as ${user.menstrualPhase} (Day ${user.cycleDay}).`;
+      if (userText.toLowerCase().includes("camera") || userText.toLowerCase().includes("scan")) {
+        aiReply = `You can use the Google Visual Camera Scanner in the Nutrition tab to instantly snap or upload a meal for automatic calorie logging!`;
+      } else if (userText.toLowerCase().includes("pro") || userText.toLowerCase().includes("paywall")) {
+        aiReply = `Upgrading to Apex Pro unlocks advanced AI coaching, limitless routine templates, and priority leaderboard placements.`;
+      }
       setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
     }, 1000);
   };
 
   return (
-    <div className={`min-h-screen font-sans antialiased flex flex-col ${user.highContrast ? "bg-black text-yellow-300" : "bg-slate-950 text-slate-100"}`}>
-      
-      {/* Hidden Live Region for Screen Readers (Accessibility Compliance) */}
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        {announcement}
-      </div>
-
-      {/* Header with Quick Accessibility Toggles */}
-      <header className={`border-b sticky top-0 z-50 px-6 py-3 flex items-center justify-between backdrop-blur-md ${user.highContrast ? "bg-black border-yellow-500" : "bg-slate-900/60 border-slate-800"}`}>
+    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans antialiased flex flex-col">
+      <header className="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-black text-slate-950" aria-hidden="true">
+          <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 flex items-center justify-center font-black text-slate-950">
             AX
           </div>
           <div>
             <span className="font-extrabold text-lg bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
               APEX STATE OS
             </span>
-            <p className="text-xs text-slate-400">Accessible Inclusive Fitness & Biometrics</p>
+            <p className="text-xs text-slate-400">Camera Scanner, Leaderboards & Pro Engine</p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2">
-          {/* Voice Screen Reader Toggle */}
+        <div className="flex items-center gap-3">
           <button 
-            onClick={() => {
-              const newState = !user.screenReaderVoiceEnabled;
-              setUser({...user, screenReaderVoiceEnabled: newState});
-              speakText(newState ? "Screen reader voice narration enabled." : "Screen reader voice narration muted.");
-            }}
-            aria-label={user.screenReaderVoiceEnabled ? "Disable Screen Reader Voice Narration" : "Enable Screen Reader Voice Narration"}
-            className={`p-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all ${user.screenReaderVoiceEnabled ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-900 border-slate-700 text-slate-400"}`}
-          >
-            {user.screenReaderVoiceEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-            <span className="hidden sm:inline">Voice Aid</span>
-          </button>
-
-          {/* High Contrast Mode Toggle for Low Vision */}
-          <button 
-            onClick={() => {
-              const newState = !user.highContrast;
-              setUser({...user, highContrast: newState});
-              speakText(newState ? "High contrast mode activated." : "High contrast mode disabled.");
-            }}
-            aria-label="Toggle High Contrast Display Mode"
-            className={`p-2 rounded-xl text-xs font-bold border flex items-center gap-1.5 transition-all ${user.highContrast ? "bg-yellow-400 text-black border-yellow-300" : "bg-slate-900 border-slate-700 text-slate-400"}`}
-          >
-            <Eye className="h-4 w-4" />
-            <span className="hidden sm:inline">Contrast</span>
-          </button>
-
-          <button 
-            onClick={() => {
-              setActiveTab("pro");
-              speakText("Opened Apex Pro Membership Paywall.");
-            }} 
-            aria-label="Open Apex Pro Membership"
-            className="flex items-center gap-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-2 rounded-full font-bold uppercase hover:bg-amber-500/20 transition-all"
+            onClick={() => setActiveTab("pro")} 
+            className="flex items-center gap-1.5 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-400 px-3 py-1 rounded-full font-bold uppercase hover:bg-amber-500/20 transition-all"
           >
             <Crown className="h-3.5 w-3.5" />
-            <span>{user.isPro ? "PRO" : "UPGRADE"}</span>
+            {user.isPro ? "PRO ACTIVE" : "UPGRADE PRO"}
           </button>
         </div>
       </header>
 
       <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto">
-        <aside className="w-full lg:w-64 border-r border-slate-800 p-4 flex lg:flex-col gap-2 overflow-x-auto shrink-0" aria-label="Main Navigation">
+        <aside className="w-full lg:w-64 border-r border-slate-800 p-4 flex lg:flex-col gap-2 overflow-x-auto shrink-0">
           <nav className="flex lg:flex-col gap-1 w-full">
             {[
               { id: "dashboard", label: "Overview", icon: Activity },
@@ -391,22 +394,19 @@ export default function ApexStateApp() {
               { id: "biometrics", label: "Somatotype & Profile", icon: Calendar },
               { id: "ai-coach", label: "Apex AI Coach", icon: Bot },
               { id: "pro", label: "Apex Pro Paywall", icon: Crown },
+              { id: "devices", label: "Connected Devices", icon: Bluetooth }
             ].map(tab => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id as TabType);
-                    speakText(`Switched tab to ${tab.label}`);
-                  }}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left whitespace-nowrap w-full focus:ring-2 focus:ring-emerald-400 ${
+                  onClick={() => setActiveTab(tab.id as TabType)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-left whitespace-nowrap w-full ${
                     isActive ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold" : "text-slate-400 hover:text-slate-200"
                   }`}
                 >
-                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -414,37 +414,40 @@ export default function ApexStateApp() {
           </nav>
         </aside>
 
-        <main className="flex-1 p-6 overflow-y-auto" tabIndex={0}>
+        <main className="flex-1 p-6 overflow-y-auto">
           {activeTab === "dashboard" && (
             <div className="space-y-6">
               <div className="bg-gradient-to-r from-emerald-950/40 via-slate-900 to-slate-900 border border-emerald-500/20 p-6 rounded-2xl flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-black text-white">Full Inclusive Ecosystem Online</h1>
+                  <h1 className="text-2xl font-black text-white">Welcome back, {user.name}</h1>
                   <p className="text-sm text-slate-300 mt-1">
-                    Screen reader voice narration, high contrast modes, and Google camera food scanning are fully active for your <strong className="text-emerald-400">{user.somatotype}</strong> setup.
+                    Your <strong className="text-emerald-400">{user.somatotype}</strong> profile is configured for <strong className="text-cyan-400">{user.primaryGoal}</strong>.
                   </p>
                 </div>
                 <button 
                   onClick={() => { setActiveTab("diet"); triggerCameraScan(); }} 
-                  className="hidden sm:flex items-center gap-2 bg-emerald-500 text-slate-950 font-bold px-4 py-3 rounded-xl text-xs uppercase focus:ring-2 focus:ring-white"
-                  aria-label="Quick launch camera food scanner"
+                  className="hidden sm:flex items-center gap-2 bg-emerald-500 text-slate-950 font-bold px-4 py-3 rounded-xl text-xs uppercase"
                 >
                   <Camera className="h-4 w-4" /> Quick Camera Scan
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Global Rank</div>
-                  <div className="text-2xl font-black text-amber-400 mt-1">#3 on Leaderboard</div>
+                  <div className="text-xs text-slate-400">XP Rank</div>
+                  <div className="text-2xl font-black text-amber-400 mt-1">{user.xp} XP</div>
+                </div>
+                <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
+                  <div className="text-xs text-slate-400">Training Streak</div>
+                  <div className="text-2xl font-black text-emerald-400 mt-1">{user.streak} Days</div>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
                   <div className="text-xs text-slate-400">Daily Steps</div>
-                  <div className="text-2xl font-black text-cyan-400 mt-1">{steps.toLocaleString()} steps</div>
+                  <div className="text-2xl font-black text-cyan-400 mt-1">{steps.toLocaleString()}</div>
                 </div>
                 <div className="bg-slate-900/60 border border-slate-800 p-5 rounded-2xl">
-                  <div className="text-xs text-slate-400">Calories Consumed</div>
-                  <div className="text-2xl font-black text-emerald-400 mt-1">{totalNutritionCals} / {netCalorieTarget} kcal</div>
+                  <div className="text-xs text-slate-400">Calories Burned</div>
+                  <div className="text-2xl font-black text-rose-400 mt-1">~{activeCaloriesBurned} kcal</div>
                 </div>
               </div>
             </div>
@@ -454,15 +457,14 @@ export default function ApexStateApp() {
             <div className="space-y-8">
               <div className="flex items-center justify-between bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
                 <div>
-                  <h1 className="text-2xl font-black text-white">Workouts, Guidelines & Screen Reader Audio</h1>
-                  <p className="text-xs text-slate-400 mt-1">Select templates or track reps with spoken voice verification.</p>
+                  <h1 className="text-2xl font-black text-white">Workouts & Guidelines</h1>
+                  <p className="text-xs text-slate-400 mt-1">Select from professional splits or build your custom routine.</p>
                 </div>
-                <div className="font-mono text-xl font-bold text-emerald-400 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800" aria-label={`Workout timer: ${formatTime(workoutTimer)}`}>
+                <div className="font-mono text-xl font-bold text-emerald-400 bg-slate-950 px-4 py-2 rounded-xl border border-slate-800">
                   {formatTime(workoutTimer)}
                 </div>
               </div>
 
-              {/* Workout Templates */}
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
                 <h3 className="font-bold text-sm text-emerald-400 flex items-center gap-2">
                   <BookOpen className="h-4 w-4" /> Professional Workout Templates
@@ -477,8 +479,7 @@ export default function ApexStateApp() {
                       </div>
                       <button 
                         onClick={() => loadRoutineTemplate(template)}
-                        aria-label={`Load routine template ${template.title}`}
-                        className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 py-3 rounded-xl text-xs font-bold transition-all text-center focus:ring-2 focus:ring-white"
+                        className="w-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-slate-950 py-3 rounded-xl text-xs font-bold transition-all text-center"
                       >
                         Load Routine into Active Session
                       </button>
@@ -487,18 +488,12 @@ export default function ApexStateApp() {
                 </div>
               </div>
 
-              {/* Active Exercises */}
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-sm uppercase text-slate-200">Active Session Routine</h3>
                   <button 
-                    onClick={() => {
-                      const nextState = !workoutActive;
-                      setWorkoutActive(nextState);
-                      speakText(nextState ? "Workout session timer started." : "Workout session timer paused.");
-                    }} 
-                    aria-label={workoutActive ? "Pause workout session timer" : "Start workout session timer"}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-white ${workoutActive ? "bg-rose-500 text-white" : "bg-emerald-500 text-slate-950"}`}
+                    onClick={() => setWorkoutActive(!workoutActive)} 
+                    className={`px-4 py-2 rounded-xl text-xs font-bold ${workoutActive ? "bg-rose-500 text-white" : "bg-emerald-500 text-slate-950"}`}
                   >
                     {workoutActive ? "Pause Timer" : "Start Session Timer"}
                   </button>
@@ -508,12 +503,8 @@ export default function ApexStateApp() {
                     <div key={ex.id} className="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
                       <div className="flex items-center gap-3">
                         <button 
-                          onClick={() => {
-                            setExercises(exercises.map(i => i.id === ex.id ? {...i, completed: !i.completed} : i));
-                            speakText(`Exercise ${ex.name} marked as ${!ex.completed ? "completed" : "incomplete"}`);
-                          }}
-                          aria-label={`Mark ${ex.name} as ${ex.completed ? "incomplete" : "completed"}`}
-                          className={`w-7 h-7 rounded-lg border flex items-center justify-center focus:ring-2 focus:ring-white ${ex.completed ? "bg-emerald-500 border-emerald-500 text-slate-950" : "border-slate-700"}`}
+                          onClick={() => setExercises(exercises.map(i => i.id === ex.id ? {...i, completed: !i.completed} : i))}
+                          className={`w-7 h-7 rounded-lg border flex items-center justify-center ${ex.completed ? "bg-emerald-500 border-emerald-500 text-slate-950" : "border-slate-700"}`}
                         >
                           {ex.completed && <CheckCircle2 className="h-4 w-4" />}
                         </button>
@@ -522,7 +513,7 @@ export default function ApexStateApp() {
                           <div className="text-xs text-slate-400">{ex.defaultSets} • Burn Estimate: <span className="text-emerald-400">~{calculateMetCalories(ex.metValue, 30)} kcal</span></div>
                         </div>
                       </div>
-                      <button onClick={() => setExercises(exercises.filter(i => i.id !== ex.id))} aria-label={`Remove ${ex.name}`} className="text-xs text-rose-400">Remove</button>
+                      <button onClick={() => setExercises(exercises.filter(i => i.id !== ex.id))} className="text-xs text-rose-400">Remove</button>
                     </div>
                   ))}
                 </div>
@@ -535,12 +526,11 @@ export default function ApexStateApp() {
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl font-black text-white">Nutrition, Macros & Google Visual Camera</h1>
-                  <p className="text-xs text-slate-400 mt-1">Snap photos with your camera or screen reader interface to log meals automatically.</p>
+                  <p className="text-xs text-slate-400 mt-1">Snap or upload meal photos to automatically estimate calories and macros.</p>
                 </div>
                 <button 
                   onClick={triggerCameraScan}
-                  aria-label="Scan meal using Google Visual Camera"
-                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-extrabold px-5 py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg focus:ring-2 focus:ring-white"
+                  className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-slate-950 font-extrabold px-5 py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg"
                 >
                   <Camera className="h-4 w-4" /> Google Visual Scan Meal
                 </button>
@@ -552,14 +542,14 @@ export default function ApexStateApp() {
                     <h3 className="font-bold text-white text-base flex items-center gap-2">
                       <Camera className="h-5 w-5 text-emerald-400" /> Google Visual Search Scanner Active
                     </h3>
-                    <button onClick={() => setCameraActive(false)} aria-label="Close camera scanner" className="text-xs text-slate-400 hover:text-white">Close Camera</button>
+                    <button onClick={() => setCameraActive(false)} className="text-xs text-slate-400 hover:text-white">Close Camera</button>
                   </div>
                   
                   <div className="h-48 bg-slate-950 rounded-xl border border-slate-800 flex flex-col items-center justify-center p-4 text-center space-y-3">
                     <div className="w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 animate-pulse">
                       <Search className="h-6 w-6" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-200" aria-live="polite">{scanningStatus}</p>
+                    <p className="text-sm font-semibold text-slate-200">{scanningStatus}</p>
                   </div>
 
                   {scannedFoodResult && (
@@ -571,8 +561,7 @@ export default function ApexStateApp() {
                       </div>
                       <button 
                         onClick={confirmScannedFood}
-                        aria-label="Confirm and log scanned food item"
-                        className="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase focus:ring-2 focus:ring-white"
+                        className="bg-emerald-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs uppercase"
                       >
                         Log to Nutrition
                       </button>
@@ -581,7 +570,6 @@ export default function ApexStateApp() {
                 </div>
               )}
 
-              {/* Nutrition Log List & Form */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-4">
                   <h3 className="font-bold text-white text-sm uppercase">Today's Logged Meals</h3>
@@ -593,7 +581,7 @@ export default function ApexStateApp() {
                           <div className="font-bold text-sm text-white mt-1">{meal.name}</div>
                           <div className="text-xs text-slate-400">{meal.calories} kcal • {meal.protein}g Protein</div>
                         </div>
-                        <button onClick={() => setNutritionLog(nutritionLog.filter(m => m.id !== meal.id))} aria-label={`Remove ${meal.name}`} className="text-xs text-rose-400">Remove</button>
+                        <button onClick={() => setNutritionLog(nutritionLog.filter(m => m.id !== meal.id))} className="text-xs text-rose-400">Remove</button>
                       </div>
                     ))}
                   </div>
@@ -605,7 +593,6 @@ export default function ApexStateApp() {
                     <input 
                       type="text" 
                       placeholder="Meal Name (e.g., Salmon & Rice)" 
-                      aria-label="Meal Name"
                       value={newMealName}
                       onChange={(e) => setNewMealName(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
@@ -614,7 +601,6 @@ export default function ApexStateApp() {
                       <input 
                         type="number" 
                         placeholder="Calories" 
-                        aria-label="Calories"
                         value={newMealCals}
                         onChange={(e) => setNewMealCals(Number(e.target.value))}
                         className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
@@ -622,13 +608,12 @@ export default function ApexStateApp() {
                       <input 
                         type="number" 
                         placeholder="Protein (g)" 
-                        aria-label="Protein in grams"
                         value={newMealProtein}
                         onChange={(e) => setNewMealProtein(Number(e.target.value))}
                         className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500"
                       />
                     </div>
-                    <button type="submit" aria-label="Add meal to nutrition log" className="w-full bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs uppercase focus:ring-2 focus:ring-white">
+                    <button type="submit" className="w-full bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl text-xs uppercase">
                       Add to Nutrition Log
                     </button>
                   </form>
@@ -642,15 +627,15 @@ export default function ApexStateApp() {
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
                 <div>
                   <h1 className="text-2xl font-black text-white">Global Somatotype Leaderboard</h1>
-                  <p className="text-xs text-slate-400 mt-1">Compete globally based on XP and training streaks.</p>
+                  <p className="text-xs text-slate-400 mt-1">Compete globally based on XP, training streaks, and metabolic output.</p>
                 </div>
-                <Trophy className="h-8 w-8 text-amber-400" aria-hidden="true" />
+                <Trophy className="h-8 w-8 text-amber-400" />
               </div>
 
               <div className="bg-slate-900/60 border border-slate-800 rounded-2xl overflow-hidden">
-                <div className="divide-y divide-slate-800" role="list">
+                <div className="divide-y divide-slate-800">
                   {leaderboardData.map(item => (
-                    <div key={item.rank} role="listitem" className={`p-4 flex items-center justify-between ${item.name.includes("You") ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
+                    <div key={item.rank} className={`p-4 flex items-center justify-between ${item.name.includes("You") ? "bg-emerald-500/10 border-l-4 border-emerald-500" : ""}`}>
                       <div className="flex items-center gap-4">
                         <span className="w-8 h-8 rounded-xl bg-slate-950 text-slate-300 flex items-center justify-center font-bold text-xs">
                           #{item.rank}
@@ -658,7 +643,7 @@ export default function ApexStateApp() {
                         <div>
                           <div className="font-bold text-white text-sm flex items-center gap-2">
                             {item.name}
-                            {item.isPro && <Crown className="h-3.5 w-3.5 text-amber-400" aria-label="Pro User" />}
+                            {item.isPro && <Crown className="h-3.5 w-3.5 text-amber-400" />}
                           </div>
                           <div className="text-xs text-slate-400">{item.somatotype} • Streak: {item.streak} days</div>
                         </div>
@@ -675,19 +660,15 @@ export default function ApexStateApp() {
             <div className="space-y-6 max-w-2xl mx-auto text-center">
               <div className="bg-gradient-to-b from-amber-500/20 via-slate-900 to-slate-900 border border-amber-500/30 p-8 rounded-3xl space-y-6">
                 <div className="w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 mx-auto flex items-center justify-center shadow-xl">
-                  <Crown className="h-8 w-8" aria-hidden="true" />
+                  <Crown className="h-8 w-8" />
                 </div>
                 <div>
                   <h1 className="text-3xl font-black text-white">Apex State Pro Membership</h1>
-                  <p className="text-sm text-slate-300 mt-2">Unlock unlimited AI coach queries, high-contrast themes, voice narration expansions, and Google camera food recognition.</p>
+                  <p className="text-sm text-slate-300 mt-2">Unlock unlimited AI coach queries, advanced biometric hormone analysis, priority global leaderboard placement, and Google camera food recognition.</p>
                 </div>
                 <button 
-                  onClick={() => {
-                    setUser({...user, isPro: true});
-                    speakText("Congratulations! Apex Pro membership is now active on your account.");
-                  }}
-                  aria-label="Upgrade account to Apex Pro membership"
-                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black py-4 rounded-xl text-sm uppercase tracking-wider focus:ring-2 focus:ring-white"
+                  onClick={() => setUser({...user, isPro: true})}
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-black py-4 rounded-xl text-sm uppercase tracking-wider shadow-lg"
                 >
                   {user.isPro ? "Pro Active on Account" : "Upgrade to Pro ($9.99/mo)"}
                 </button>
@@ -698,8 +679,8 @@ export default function ApexStateApp() {
           {activeTab === "biometrics" && (
             <div className="space-y-6 max-w-2xl mx-auto">
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
-                <h1 className="text-2xl font-black text-white">Somatotype & Accessibility Settings</h1>
-                <p className="text-xs text-slate-400 mt-1">Configure your body type, goals, and screen reader options.</p>
+                <h1 className="text-2xl font-black text-white">Somatotype & Biometric Profile</h1>
+                <p className="text-xs text-slate-400 mt-1">Configure your body type and physiological profile for custom caloric and workout generation.</p>
               </div>
 
               <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl space-y-6">
@@ -713,12 +694,8 @@ export default function ApexStateApp() {
                     ].map(s => (
                       <button
                         key={s.id}
-                        onClick={() => {
-                          setUser({...user, somatotype: s.id as any});
-                          speakText(`Somatotype updated to ${s.label}`);
-                        }}
-                        aria-pressed={user.somatotype === s.id}
-                        className={`p-4 rounded-xl text-xs font-bold border text-center focus:ring-2 focus:ring-white ${user.somatotype === s.id ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950 border-slate-800 text-slate-400"}`}
+                        onClick={() => setUser({...user, somatotype: s.id as any})}
+                        className={`p-4 rounded-xl text-xs font-bold border text-center ${user.somatotype === s.id ? "bg-emerald-500/20 border-emerald-500 text-emerald-300" : "bg-slate-950 border-slate-800 text-slate-400"}`}
                       >
                         {s.label}
                       </button>
@@ -729,17 +706,38 @@ export default function ApexStateApp() {
             </div>
           )}
 
+          {activeTab === "devices" && (
+            <div className="space-y-6 max-w-2xl mx-auto">
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl">
+                <h1 className="text-2xl font-black text-white">Connected Wearables & Devices</h1>
+                <p className="text-xs text-slate-400 mt-1">Sync Apple Health, Garmin, Whoop, or Bluetooth heart rate monitors.</p>
+              </div>
+              <div className="bg-slate-900/60 border border-slate-800 p-6 rounded-2xl flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400">
+                    <Bluetooth className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-white text-base">Apex BLE Heart Rate Monitor</h3>
+                    <p className="text-xs text-emerald-400 font-semibold">Connected & Streaming Live HR</p>
+                  </div>
+                </div>
+                <span className="text-2xl font-black text-white">138 <span className="text-xs text-rose-500 font-normal">BPM</span></span>
+              </div>
+            </div>
+          )}
+
           {activeTab === "ai-coach" && (
             <div className="space-y-4 h-[75vh] flex flex-col">
               <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex items-center gap-3 shrink-0">
-                <Bot className="h-5 w-5 text-emerald-400" aria-hidden="true" />
+                <Bot className="h-5 w-5 text-emerald-400" />
                 <div>
                   <h1 className="font-black text-white text-base">Apex AI Somatotype Coach</h1>
-                  <p className="text-xs text-slate-400">Voice narration enabled for blind and low-vision accessibility.</p>
+                  <p className="text-xs text-slate-400">Your custom advisor for training splits, macros, and recovery optimization.</p>
                 </div>
               </div>
 
-              <div className="flex-1 bg-slate-900/40 border border-slate-800 rounded-2xl p-4 overflow-y-auto space-y-4 flex flex-col" role="log" aria-label="AI Chat History">
+              <div className="flex-1 bg-slate-900/40 border border-slate-800 rounded-2xl p-4 overflow-y-auto space-y-4 flex flex-col">
                 {chatMessages.map((msg, idx) => (
                   <div key={idx} className={`flex max-w-xl ${msg.role === 'user' ? 'ml-auto flex-row-reverse' : ''}`}>
                     <div className={`p-4 rounded-2xl text-sm ${msg.role === 'ai' ? 'bg-slate-900 border border-slate-800 text-slate-200' : 'bg-emerald-500 text-slate-950 font-medium'}`}>
@@ -755,10 +753,9 @@ export default function ApexStateApp() {
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Ask your AI coach anything..." 
-                  aria-label="Chat message input"
                   className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 focus:outline-none focus:border-emerald-500"
                 />
-                <button type="submit" aria-label="Send message" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 rounded-xl font-bold focus:ring-2 focus:ring-white">
+                <button type="submit" className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 px-5 rounded-xl font-bold">
                   <Send className="h-4 w-4" />
                 </button>
               </form>
