@@ -1,0 +1,1120 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { Compass, Utensils, User, Zap, Bookmark, Sparkles, Activity, Bluetooth, Download, CheckCircle2, Trophy, Award, Sliders, Calculator, Droplet, ShieldCheck, RefreshCw, Trash2, ArrowRight } from 'lucide-react';
+
+// --- TYPES ---
+interface CustomRoutineItem {
+  day: number;
+  focus: string;
+  intensity: string;
+  aiRecommendedTime: string;
+  completed?: boolean;
+}
+
+interface LoggedItem {
+  id: string;
+  name: string;
+  calories: number;
+}
+
+interface LeaderboardUser {
+  rank: number;
+  name: string;
+  auraPoints: number;
+  league: 'Active' | 'Novice' | 'Challenger' | 'Prodigy' | 'Elite' | 'Legend';
+  avatarIcon: string;
+  avatarBg: string;
+  isUser?: boolean;
+}
+
+interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  progress: number;
+  maxProgress: number;
+}
+
+// --- TAB 1: EXPLORE VIEW (AI Workout Customizer, Strain Budget & Recovery) ---
+function ExploreTab({ 
+  customRoutines, 
+  setCustomRoutines, 
+  workoutDays, 
+  setWorkoutDays, 
+  fitnessGoal, 
+  setFitnessGoal,
+  energyLevel,
+  setEnergyLevel,
+  addCaloriesBurned,
+  auraPoints,
+  setAuraPoints,
+  checkAchievements,
+  userSex,
+  lifeStage,
+  trackCycle,
+  currentCyclePhase,
+  neuralRecoveryScore,
+  strainBudget,
+  setStrainBudget
+}: {
+  customRoutines: CustomRoutineItem[];
+  setCustomRoutines: React.Dispatch<React.SetStateAction<CustomRoutineItem[]>>;
+  workoutDays: number;
+  setWorkoutDays: (days: number) => void;
+  fitnessGoal: 'hypertrophy' | 'endurance' | 'mobility';
+  setFitnessGoal: (goal: 'hypertrophy' | 'endurance' | 'mobility') => void;
+  energyLevel: number;
+  setEnergyLevel: (level: number) => void;
+  addCaloriesBurned: (cals: number) => void;
+  auraPoints: number;
+  setAuraPoints: React.Dispatch<React.SetStateAction<number>>;
+  checkAchievements: (action: string) => void;
+  userSex: 'female' | 'male';
+  lifeStage: 'standard' | 'perimenopause' | 'postmenopause';
+  trackCycle: boolean;
+  currentCyclePhase: 'follicular' | 'ovulation' | 'luteal' | 'menstruation';
+  neuralRecoveryScore: number;
+  strainBudget: number;
+  setStrainBudget: React.Dispatch<React.SetStateAction<number>>;
+}) {
+  const [bookmarks, setBookmarks] = useState<string[]>([]);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [progressionLevel, setProgressionLevel] = useState(1);
+
+  const WORKOUTS = [
+    { id: '1', title: '15-Min Core & Glow Flow', category: 'Quick Burn', energy: 'High Vibe', duration: '15m', color: 'from-emerald-950/40 via-slate-900 to-slate-950', cals: 180 },
+    { id: '2', title: 'Full Body Vibe Sculpt', category: 'Strength', energy: 'Power', duration: '30m', color: 'from-blue-950/40 via-slate-900 to-slate-950', cals: 320 },
+  ];
+
+  const handleGenerateCustomProgram = () => {
+    setIsSynthesizing(true);
+    setTimeout(() => {
+      const generated: CustomRoutineItem[] = [];
+      let baseFocus = ['Upper Body Power', 'Core Activation & Stability', 'Lower Body Hypertrophy', 'Neural Recovery & Vibe Flow'];
+      
+      let bioMod = '';
+      if (neuralRecoveryScore < 60) {
+        baseFocus = ['Active Mobility Flow', 'Deep Breathing & CNS Reset', 'Gentle Stretch & Vibe', 'Restorative Restoration'];
+        bioMod = ' [Neural Recovery Override]';
+      } else if (userSex === 'female' && (lifeStage === 'perimenopause' || lifeStage === 'postmenopause')) {
+        bioMod = ' [Bone-Loading Protocol]';
+      } else if (userSex === 'female' && trackCycle) {
+        if (currentCyclePhase === 'follicular' || currentCyclePhase === 'ovulation') {
+          bioMod = ' [Peak Estrogen Window]';
+        } else {
+          bioMod = ' [Energy-Matched Flow]';
+        }
+      }
+
+      for (let i = 1; i <= workoutDays; i++) {
+        let loadModifier = neuralRecoveryScore < 60 ? 'Recovery Flow (Low Impact)' : fitnessGoal === 'hypertrophy' ? `High Load (Lv.${progressionLevel})${bioMod}` : `Metabolic Circuit (Lv.${progressionLevel})${bioMod}`;
+        if (progressionLevel > 1 && neuralRecoveryScore >= 60) {
+          loadModifier += ' + Progressive Overload';
+        }
+
+        generated.push({
+          day: i,
+          focus: baseFocus[(i - 1) % baseFocus.length],
+          intensity: loadModifier,
+          aiRecommendedTime: i % 2 === 0 ? '07:30 AM' : '05:30 PM',
+          completed: false,
+        });
+      }
+      setCustomRoutines(generated);
+      setIsSynthesizing(false);
+      setAuraPoints(p => p + 100);
+      checkAchievements('program_created');
+    }, 400);
+  };
+
+  const toggleBookmark = (id: string) => {
+    setBookmarks(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
+  const toggleCompleteRoutine = (dayNum: number) => {
+    setCustomRoutines(prev => prev.map(item => {
+      if (item.day === dayNum) {
+        const nextState = !item.completed;
+        if (nextState) {
+          addCaloriesBurned(250); 
+          setProgressionLevel(p => p + 0.1);
+          setAuraPoints(p => p + 50);
+          setStrainBudget(prevStrain => Math.min(100, prevStrain + 20));
+          checkAchievements('workout_completed');
+        }
+        return { ...item, completed: nextState };
+      }
+      return item;
+    }));
+  };
+
+  const exportSchedulePDF = () => {
+    const content = `AURA-22 CUSTOM ${workoutDays}-DAY PROGRAM\nGoal: ${fitnessGoal.toUpperCase()} | Life Stage: ${lifeStage.toUpperCase()}\n\n` +
+      customRoutines.map(r => `Day ${r.day} [${r.aiRecommendedTime}] - ${r.focus} (${r.intensity})`).join('\n');
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Aura22_Workout_Plan_${workoutDays}Days.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-6 animate-fadeIn pb-6">
+      {/* Recovery & Strain Budget Card */}
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl relative overflow-hidden space-y-5">
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+            <RefreshCw className="w-4 h-4 animate-spin" /> CNS Neural Recovery & Strain
+          </span>
+          <span className={`text-[10px] font-bold px-3 py-1 rounded-full ${neuralRecoveryScore >= 70 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/30'}`}>
+            {neuralRecoveryScore >= 70 ? 'Optimal Readiness' : 'Rest Advised'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/60 shadow-inner">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Recovery Score</span>
+            <span className="text-2xl font-black text-emerald-400 tracking-tight">{neuralRecoveryScore}%</span>
+            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">Optimal Readiness</span>
+          </div>
+          <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/60 shadow-inner">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Strain Budget</span>
+            <span className="text-2xl font-black text-amber-400 tracking-tight">{strainBudget}%</span>
+            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">Daily Load Used</span>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex justify-between text-[11px] text-slate-400 font-semibold uppercase tracking-wider">
+            <span>Adaptive Factor ({progressionLevel.toFixed(1)}x)</span>
+            <span className="text-emerald-400">{energyLevel}% Battery</span>
+          </div>
+          <input 
+            type="range" min="20" max="100" value={energyLevel} 
+            onChange={(e) => setEnergyLevel(Number(e.target.value))}
+            className="w-full accent-emerald-400 bg-slate-800 rounded-lg h-2 cursor-pointer transition"
+          />
+        </div>
+      </div>
+
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-5">
+        <div className="flex justify-between items-start">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+              <Sliders className="w-4 h-4" /> Bio-Adaptive Routine Architect
+            </span>
+            <h2 className="text-xl font-black text-slate-100 mt-1 tracking-tight">Custom Multi-Day Program</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Calibrated for {userSex} physiology ({lifeStage}).</p>
+          </div>
+          {customRoutines.length > 0 && (
+            <button onClick={exportSchedulePDF} className="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 hover:border-emerald-500 transition flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider shadow-sm">
+              <Download className="w-3.5 h-3.5" /> Export
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-[11px] font-extrabold uppercase text-slate-400 mb-2 flex justify-between tracking-wider">
+              <span>Program Schedule Length</span>
+              <span className="text-emerald-400 font-black">{workoutDays} Days</span>
+            </label>
+            <input 
+              type="range" min="7" max="90" value={workoutDays} 
+              onChange={e => setWorkoutDays(Number(e.target.value))}
+              className="w-full accent-emerald-400 bg-slate-800 rounded-lg h-2 cursor-pointer transition"
+            />
+          </div>
+
+          <div>
+            <label className="text-[11px] font-extrabold uppercase text-slate-400 mb-2 block tracking-wider">Optimization Goal</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['hypertrophy', 'endurance', 'mobility'] as const).map(g => (
+                <button key={g} onClick={() => setFitnessGoal(g)} className={`py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition ${fitnessGoal === g ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black' : 'bg-slate-950/70 text-slate-400 border-slate-800/80 hover:border-slate-700'}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={handleGenerateCustomProgram} disabled={isSynthesizing} className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/25 hover:opacity-95 transition flex items-center justify-center gap-2">
+            {isSynthesizing ? 'Synthesizing Custom Program...' : `Launch ${workoutDays}-Day Custom Program`} <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {customRoutines.length > 0 && (
+          <div className="space-y-2.5 pt-2 max-h-72 overflow-y-auto pr-1">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 block mb-1">Optimized Schedule (Tap to Complete)</span>
+            {customRoutines.map(item => (
+              <div 
+                key={item.day} 
+                onClick={() => toggleCompleteRoutine(item.day)}
+                className={`p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition group ${item.completed ? 'bg-emerald-950/20 border-emerald-500/50 shadow-sm' : 'bg-slate-950/70 border-slate-800/80 hover:border-slate-700'}`}
+              >
+                <div>
+                  <span className={`text-[10px] font-extrabold uppercase tracking-wider ${item.completed ? 'text-emerald-300' : 'text-emerald-400'}`}>
+                    Day {item.day} • {item.aiRecommendedTime}
+                  </span>
+                  <p className={`text-xs font-bold mt-0.5 ${item.completed ? 'line-through text-slate-500' : 'text-slate-100 group-hover:text-emerald-300 transition'}`}>{item.focus}</p>
+                </div>
+                <div className="flex items-center gap-2.5">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-900 text-[10px] text-slate-400 border border-slate-800 font-medium">{item.intensity}</span>
+                  {item.completed && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-3.5">
+        <h2 className="text-xs font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1.5 px-1">
+          <Sparkles className="w-4 h-4 text-emerald-400" /> Curated Workouts
+        </h2>
+        {WORKOUTS.map(item => (
+          <div key={item.id} className={`rounded-[2rem] p-6 bg-gradient-to-br ${item.color} border border-slate-800/80 shadow-xl transition hover:border-slate-700`}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-wider bg-slate-900/90 text-emerald-300 border border-slate-800 shadow-sm">
+                {item.category}
+              </span>
+              <button 
+                onClick={() => toggleBookmark(item.id)}
+                className={`p-2.5 rounded-2xl border transition ${bookmarks.includes(item.id) ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm shadow-emerald-500/20' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200'}`}
+              >
+                <Bookmark className="w-4 h-4 fill-current" />
+              </button>
+            </div>
+            <span className="text-[11px] uppercase font-bold text-emerald-400 tracking-wider block mb-1">{item.energy} • {item.duration}</span>
+            <h3 className="text-lg font-black text-slate-100 tracking-tight">{item.title}</h3>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- TAB 2: AI NUTRITION, QUICK MACRO JUMP & HYDRATION ---
+function NutritionTab({
+  planDays,
+  setPlanDays,
+  consumedCaloriesToday,
+  setConsumedCaloriesToday,
+  loggedItems,
+  setLoggedItems,
+  setAuraPoints,
+  checkAchievements,
+  userSex,
+  lifeStage,
+  waterGlasses,
+  setWaterGlasses
+}: {
+  planDays: number;
+  setPlanDays: (days: number) => void;
+  consumedCaloriesToday: number;
+  setConsumedCaloriesToday: React.Dispatch<React.SetStateAction<number>>;
+  loggedItems: LoggedItem[];
+  setLoggedItems: React.Dispatch<React.SetStateAction<LoggedItem[]>>;
+  setAuraPoints: React.Dispatch<React.SetStateAction<number>>;
+  checkAchievements: (action: string) => void;
+  userSex: 'female' | 'male';
+  lifeStage: 'standard' | 'perimenopause' | 'postmenopause';
+  waterGlasses: number;
+  setWaterGlasses: React.Dispatch<React.SetStateAction<number>>;
+}) {
+  const [height, setHeight] = useState('175');
+  const [weight, setWeight] = useState('70');
+  const [goal, setGoal] = useState<'cut' | 'maintain' | 'bulk'>('cut');
+  const [activity, setActivity] = useState<'light' | 'moderate' | 'heavy'>('moderate');
+  const [dietPreference, setDietPreference] = useState<'omnivore' | 'vegetarian' | 'vegan' | 'gluten-free' | 'keto'>('omnivore');
+  const [plan, setPlan] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+
+  const [customFoodName, setCustomFoodName] = useState('');
+  const [customFoodCals, setCustomFoodCals] = useState('');
+
+  const generatePlan = () => {
+    setLoading(true);
+    setTimeout(() => {
+      const w = parseFloat(weight) || 70;
+      const h = parseFloat(height) || 175;
+      
+      let c = 10 * w + 6.25 * h - 25 * 25 + (userSex === 'male' ? 5 : -161);
+      c *= activity === 'light' ? 1.2 : activity === 'moderate' ? 1.55 : 1.75;
+      
+      if (goal === 'cut') c -= 500;
+      if (goal === 'bulk') c += 400;
+
+      if (userSex === 'female' && (lifeStage === 'perimenopause' || lifeStage === 'postmenopause')) {
+        c -= 150;
+      }
+
+      let mealPool = [
+        'Matcha Protein Cloud Bowl & Almond Toast',
+        'Wild Salmon Quinoa Power Greens',
+        'Tofu Cashew Stir-fry with Brown Rice',
+        'Greek Yogurt Berry & Chia Crunch',
+        'Lean Steak & Sweet Potato Mash',
+        'Avocado Egg White Cloud Wrap',
+        'Clean Fuel Iron-Rich Recovery Smoothie'
+      ];
+
+      if (dietPreference === 'vegetarian') {
+        mealPool = [
+          'Greek Yogurt Berry & Chia Crunch',
+          'Tofu Cashew Stir-fry with Brown Rice',
+          'Spinach Halloumi Quinoa Bowl',
+          'Lentil & Sweet Potato Power Curry',
+          'Avocado Egg White Cloud Wrap',
+          'Peanut Butter Banana Protein Oats',
+          'Mediterranean Chickpea Salad Wrap'
+        ];
+      } else if (dietPreference === 'vegan') {
+        mealPool = [
+          'Plant Protein Acai Vibe Bowl with Chia',
+          'Tofu Cashew Stir-fry with Brown Rice',
+          'Lentil & Sweet Potato Power Curry',
+          'Almond Butter Banana Flaxseed Oats',
+          'Roasted Chickpea & Quinoa Greens Bowl',
+          'Vegan Hemp Seed Recovery Smoothie',
+          'Black Bean & Avocado Buddha Bowl'
+        ];
+      } else if (dietPreference === 'gluten-free') {
+        mealPool = [
+          'Wild Salmon Quinoa Power Greens',
+          'Greek Yogurt Berry & Chia Crunch',
+          'Lean Steak & Sweet Potato Mash',
+          'Avocado Egg White Cloud Wrap (GF Tortilla)',
+          'Clean Fuel Iron-Rich Recovery Smoothie',
+          'Grilled Chicken & Roasted Root Vegetables',
+          'Chia Seed Coconut Milk Pudding with Berries'
+        ];
+      } else if (dietPreference === 'keto') {
+        mealPool = [
+          'Avocado & Bacon Egg White Frittata',
+          'Wild Salmon with Butter-Garlic Asparagus',
+          'Ribeye Steak & Steamed Broccoli Macadamia',
+          'MCT Oil Keto Green Protein Shake',
+          'Grilled Chicken Caesar Salad (No Croutons)',
+          'Baked Salmon with Spinach and Olive Oil',
+          'Macadamia Nut & Cheese Crunch Bowl'
+        ];
+      }
+
+      const customMenu = [];
+      for (let i = 1; i <= planDays; i++) {
+        customMenu.push({
+          day: i,
+          meal: mealPool[(i - 1) % mealPool.length],
+          aiTime: i % 2 === 0 ? '12:30 PM (Peak Metabolic Window)' : '08:00 AM (Morning Fuel)',
+          calories: Math.round(c + ((i % 3) * 20 - 30))
+        });
+      }
+
+      setPlan({
+        targetCalories: Math.round(c),
+        protein: Math.round(w * 2.2),
+        schedule: customMenu
+      });
+      setLoading(false);
+      setAuraPoints(p => p + 75);
+      checkAchievements('nutrition_logged');
+    }, 400);
+  };
+
+  const logMealItem = (name: string, cals: number) => {
+    setLoggedItems(prev => [...prev, { id: Date.now().toString(), name, calories: cals }]);
+    setConsumedCaloriesToday(prev => prev + cals);
+    setAuraPoints(p => p + 25);
+    checkAchievements('nutrition_logged');
+  };
+
+  const handleAddCustomFood = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cals = parseInt(customFoodCals);
+    if (!customFoodName || isNaN(cals)) return;
+    logMealItem(customFoodName, cals);
+    setCustomFoodName('');
+    setCustomFoodCals('');
+  };
+
+  const removeLoggedItem = (id: string, cals: number) => {
+    setLoggedItems(prev => prev.filter(item => item.id !== id));
+    setConsumedCaloriesToday(prev => Math.max(0, prev - cals));
+  };
+
+  const exportNutritionPDF = () => {
+    if (!plan) return;
+    const content = `AURA-22 NUTRITION BLUEPRINT (${planDays} DAYS)\nDiet: ${dietPreference.toUpperCase()} | Target Calories: ${plan.targetCalories} kcal | Protein: ${plan.protein}g\n\n` +
+      plan.schedule.map((d: any) => `Day ${d.day} [${d.aiTime}] - ${d.meal} (${d.calories} kcal)`).join('\n');
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Aura22_Nutrition_Plan_${planDays}Days.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const targetCals = plan ? plan.targetCalories : 2000;
+  const remainingCals = targetCals - consumedCaloriesToday;
+
+  return (
+    <div className="space-y-6 animate-fadeIn pb-6">
+      {/* Hydration Tracker Widget */}
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+            <Droplet className="w-4 h-4" /> Circadian Hydration Balance
+          </span>
+          <span className="text-[11px] font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30">{waterGlasses} / 8 Glasses</span>
+        </div>
+        <div className="flex gap-2 justify-between">
+          {Array.from({ length: 8 }).map((_, idx) => {
+            const isFilled = idx < waterGlasses;
+            return (
+              <button
+                key={idx}
+                onClick={() => {
+                  const nextVal = idx + 1 === waterGlasses ? waterGlasses - 1 : idx + 1;
+                  setWaterGlasses(nextVal);
+                  if (nextVal > waterGlasses) setAuraPoints(p => p + 5);
+                }}
+                className={`flex-1 h-12 rounded-2xl border flex items-center justify-center transition ${isFilled ? 'bg-emerald-500 border-emerald-400 text-slate-950 shadow-md shadow-emerald-500/20' : 'bg-slate-950/70 border-slate-800/80 text-slate-600 hover:text-slate-400'}`}
+              >
+                <Droplet className={`w-4 h-4 ${isFilled ? 'fill-current' : ''}`} />
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-5">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+              <Calculator className="w-4 h-4" /> Live Calorie Deficit
+            </span>
+            <h2 className="text-xl font-black text-slate-100 mt-1 tracking-tight">Energy Balance</h2>
+          </div>
+          <span className={`px-3 py-1 rounded-full text-[11px] font-extrabold border ${remainingCals >= 0 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 shadow-sm shadow-emerald-500/10' : 'bg-rose-500/10 text-rose-400 border-rose-500/30'}`}>
+            {remainingCals >= 0 ? `${remainingCals} kcal Left` : `${Math.abs(remainingCals)} kcal Over`}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/60 shadow-inner">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Target</span>
+            <span className="text-lg font-black text-slate-100 tracking-tight">{targetCals}</span>
+            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">kcal</span>
+          </div>
+          <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/60 shadow-inner">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Consumed</span>
+            <span className="text-lg font-black text-emerald-400 tracking-tight">{consumedCaloriesToday}</span>
+            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">kcal</span>
+          </div>
+          <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800/60 shadow-inner">
+            <span className="text-[10px] font-bold uppercase text-slate-400 block mb-1">Deficit</span>
+            <span className={`text-lg font-black tracking-tight ${remainingCals >= 0 ? 'text-amber-400' : 'text-rose-400'}`}>{remainingCals}</span>
+            <span className="text-[10px] text-slate-500 font-medium block mt-0.5">kcal</span>
+          </div>
+        </div>
+
+        {/* Quick Macro Jump Buttons */}
+        <div className="space-y-2">
+          <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-400 block">Quick Macro Jump</span>
+          <div className="grid grid-cols-3 gap-2">
+            <button onClick={() => logMealItem('Protein Shake', 180)} className="py-2.5 px-2 rounded-xl bg-slate-950/70 border border-slate-800/80 text-[11px] font-bold text-slate-300 hover:border-emerald-500 transition shadow-sm truncate">
+              +180c Protein
+            </button>
+            <button onClick={() => logMealItem('Chicken Meal', 450)} className="py-2.5 px-2 rounded-xl bg-slate-950/70 border border-slate-800/80 text-[11px] font-bold text-slate-300 hover:border-emerald-500 transition shadow-sm truncate">
+              +450c Chicken
+            </button>
+            <button onClick={() => logMealItem('Avocado Bowl', 320)} className="py-2.5 px-2 rounded-xl bg-slate-950/70 border border-slate-800/80 text-[11px] font-bold text-slate-300 hover:border-emerald-500 transition shadow-sm truncate">
+              +320c Avocado
+            </button>
+          </div>
+        </div>
+
+        <form onSubmit={handleAddCustomFood} className="flex gap-2">
+          <input 
+            type="text" 
+            placeholder="Custom food name..." 
+            value={customFoodName} 
+            onChange={e => setCustomFoodName(e.target.value)}
+            className="flex-1 bg-slate-950/70 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 outline-none focus:border-emerald-500 transition shadow-inner"
+          />
+          <input 
+            type="number" 
+            placeholder="Cals" 
+            value={customFoodCals} 
+            onChange={e => setCustomFoodCals(e.target.value)}
+            className="w-20 bg-slate-950/70 border border-slate-800/80 rounded-xl px-3 py-2.5 text-xs text-slate-100 outline-none focus:border-emerald-500 transition shadow-inner text-center font-bold"
+          />
+          <button type="submit" className="px-4 py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs uppercase tracking-wider hover:opacity-95 transition shadow-md shadow-emerald-500/20">
+            Log
+          </button>
+        </form>
+
+        {loggedItems.length > 0 && (
+          <div className="space-y-2 pt-1 max-h-40 overflow-y-auto pr-1">
+            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block">Today's Logged Consumptions</span>
+            {loggedItems.map(item => (
+              <div key={item.id} className="p-3 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between text-xs shadow-sm">
+                <span className="text-slate-200 font-semibold">{item.name}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-emerald-400 font-bold">+{item.calories} kcal</span>
+                  <button onClick={() => removeLoggedItem(item.id, item.calories)} className="text-slate-600 hover:text-rose-400 transition">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-5">
+        <div className="flex justify-between items-start">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+              <Utensils className="w-4 h-4" /> Scalable Nutrition Architect
+            </span>
+            <h2 className="text-xl font-black text-slate-100 mt-1 tracking-tight">Multi-Day Diet Blueprint</h2>
+          </div>
+          {plan && (
+            <button onClick={exportNutritionPDF} className="px-3.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-emerald-400 hover:border-emerald-500 transition flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider shadow-sm">
+              <Download className="w-3.5 h-3.5" /> Export
+            </button>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="text-[11px] font-extrabold uppercase text-slate-400 mb-2 flex justify-between tracking-wider">
+              <span>Diet Plan Duration</span>
+              <span className="text-emerald-400 font-black">{planDays} Days</span>
+            </label>
+            <input 
+              type="range" min="7" max="90" value={planDays} 
+              onChange={e => setPlanDays(Number(e.target.value))}
+              className="w-full accent-emerald-400 bg-slate-800 rounded-lg h-2 cursor-pointer transition"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-extrabold uppercase text-slate-400 mb-1.5 block tracking-wider">Height (cm)</label>
+              <input type="number" value={height} onChange={e => setHeight(e.target.value)} className="w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 outline-none focus:border-emerald-500 transition font-bold" />
+            </div>
+            <div>
+              <label className="text-[10px] font-extrabold uppercase text-slate-400 mb-1.5 block tracking-wider">Weight (kg)</label>
+              <input type="number" value={weight} onChange={e => setWeight(e.target.value)} className="w-full bg-slate-950/70 border border-slate-800/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-100 outline-none focus:border-emerald-500 transition font-bold" />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-extrabold uppercase text-slate-400 mb-2 block tracking-wider">Nutrition Goal</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['cut', 'maintain', 'bulk'] as const).map(g => (
+                <button key={g} onClick={() => setGoal(g)} className={`py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border transition ${goal === g ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black' : 'bg-slate-950/70 text-slate-400 border-slate-800/80 hover:border-slate-700'}`}>
+                  {g}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[10px] font-extrabold uppercase text-slate-400 mb-2 block tracking-wider">Dietary Preference & Restrictions</label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['omnivore', 'vegetarian', 'vegan', 'gluten-free', 'keto'] as const).map(d => (
+                <button 
+                  key={d} 
+                  onClick={() => setDietPreference(d)} 
+                  className={`py-2.5 px-1 rounded-xl text-[10px] font-bold uppercase tracking-wider border transition truncate ${dietPreference === d ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black' : 'bg-slate-950/70 text-slate-400 border-slate-800/80 hover:border-slate-700'}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button onClick={generatePlan} disabled={loading} className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-slate-950 font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/25 hover:opacity-95 transition flex items-center justify-center gap-2">
+            {loading ? 'Calculating Macros...' : `Generate ${planDays}-Day ${dietPreference.toUpperCase()} Plan`} <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {plan && (
+          <div className="space-y-3.5 pt-2">
+            <div className="flex gap-3">
+              <div className="flex-1 p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-center shadow-inner">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Target Cals</span>
+                <span className="text-lg font-black text-emerald-400 tracking-tight">{plan.targetCalories} kcal</span>
+              </div>
+              <div className="flex-1 p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 text-center shadow-inner">
+                <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">Target Protein</span>
+                <span className="text-lg font-black text-slate-100 tracking-tight">{plan.protein}g</span>
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-400 block mb-1">Schedule Preview ({dietPreference})</span>
+              {plan.schedule.map((item: any) => (
+                <div key={item.day} className="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between shadow-sm">
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase text-emerald-400 block mb-0.5">Day {item.day} • {item.aiTime}</span>
+                    <p className="text-xs font-bold text-slate-100">{item.meal}</p>
+                  </div>
+                  <span className="text-xs font-black text-slate-400">{item.calories} kcal</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// --- TAB 3: LEADERBOARD & ACHIEVEMENTS ---
+function LeaderboardTab({
+  auraPoints,
+  achievements
+}: {
+  auraPoints: number;
+  achievements: Achievement[];
+}) {
+  const leaderboardData: LeaderboardUser[] = [
+    { rank: 1, name: 'Valerie K.', auraPoints: 3450, league: 'Legend', avatarIcon: '👑', avatarBg: 'bg-amber-400 text-slate-950' },
+    { rank: 2, name: 'Marcus Vance', auraPoints: 2890, league: 'Elite', avatarIcon: '🦾', avatarBg: 'bg-purple-500 text-slate-100' },
+    { rank: 3, name: 'Elena Rostova', auraPoints: 2150, league: 'Elite', avatarIcon: '🧬', avatarBg: 'bg-emerald-500 text-slate-950' },
+    { rank: 4, name: 'You (Aura-22 Operator)', auraPoints: auraPoints, league: auraPoints > 2000 ? 'Legend' : auraPoints > 1000 ? 'Elite' : 'Active', avatarIcon: '⚡', avatarBg: 'bg-emerald-500 text-slate-950', isUser: true },
+    { rank: 5, name: 'Jaxson Reed', auraPoints: 920, league: 'Challenger', avatarIcon: '🥗', avatarBg: 'bg-cyan-500 text-slate-950' },
+  ].sort((a, b) => b.auraPoints - a.auraPoints).map((u, idx) => ({ ...u, rank: idx + 1 }));
+
+  return (
+    <div className="space-y-6 animate-fadeIn pb-6">
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-5">
+        <div>
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+            <Trophy className="w-4 h-4" /> Global Performance Tier
+          </span>
+          <h2 className="text-xl font-black text-slate-100 mt-1 tracking-tight">Aura Hall of Fame</h2>
+        </div>
+
+        <div className="space-y-2.5">
+          {leaderboardData.map(user => (
+            <div key={user.name} className={`p-4 rounded-2xl border flex items-center justify-between shadow-sm transition ${user.isUser ? 'bg-emerald-950/20 border-emerald-500/50 shadow-emerald-500/5' : 'bg-slate-950/70 border-slate-800/80 hover:border-slate-700'}`}>
+              <div className="flex items-center gap-3.5">
+                <span className={`w-6 text-xs font-black ${user.rank === 1 ? 'text-amber-400' : user.rank === 2 ? 'text-slate-300' : user.rank === 3 ? 'text-amber-600' : 'text-slate-500'}`}>
+                  #{user.rank}
+                </span>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-base shadow-sm ${user.avatarBg}`}>
+                  {user.avatarIcon}
+                </div>
+                <div>
+                  <h4 className={`text-xs font-extrabold tracking-tight ${user.isUser ? 'text-emerald-300' : 'text-slate-100'}`}>{user.name}</h4>
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500">{user.league} League</span>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-black text-emerald-400 tracking-tight">{user.auraPoints}</span>
+                <span className="text-[9px] text-slate-500 font-extrabold block uppercase tracking-wider">XP</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-5">
+        <div>
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+            <Award className="w-4 h-4" /> Milestones & Badges
+          </span>
+          <h3 className="text-base font-black text-slate-100 mt-1 tracking-tight">Achievements Unlocked</h3>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          {achievements.map(item => (
+            <div key={item.id} className={`p-4 rounded-2xl border flex flex-col justify-between shadow-sm transition ${item.unlocked ? 'bg-slate-950/70 border-emerald-500/40 shadow-emerald-500/5' : 'bg-slate-950/30 border-slate-900 opacity-60'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-2xl">{item.icon}</span>
+                <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full ${item.unlocked ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm' : 'bg-slate-900 text-slate-500 border border-slate-800'}`}>
+                  {item.unlocked ? 'Unlocked' : `${item.progress}/${item.maxProgress}`}
+                </span>
+              </div>
+              <div>
+                <h4 className="text-xs font-black text-slate-100 tracking-tight">{item.title}</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5 line-clamp-1 leading-snug">{item.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- TAB 4: PROFILE & STREAK SHIELD VIEW ---
+function ProfileTab({
+  userAvatarIcon,
+  setUserAvatarIcon,
+  userAvatarBg,
+  setUserAvatarBg,
+  auraPoints,
+  streakShields,
+  setStreakShields
+}: {
+  userAvatarIcon: string;
+  setUserAvatarIcon: (icon: string) => void;
+  userAvatarBg: string;
+  setUserAvatarBg: (bg: string) => void;
+  auraPoints: number;
+  streakShields: number;
+  setStreakShields: React.Dispatch<React.SetStateAction<number>>;
+}) {
+  return (
+    <div className="space-y-6 animate-fadeIn pb-6">
+      {/* Streak Shield Protection Card */}
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4" /> Habit Preservation
+            </span>
+            <h3 className="text-base font-black text-slate-100 mt-1 tracking-tight">Aura Streak Shield</h3>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black shadow-sm">
+            {streakShields} Active Shields
+          </span>
+        </div>
+        <p className="text-xs text-slate-400 leading-relaxed">Shields protect your daily workout streaks from resetting if life gets busy. Redeem XP below to secure your progress!</p>
+        <button 
+          onClick={() => {
+            if (auraPoints >= 100) {
+              setStreakShields(s => s + 1);
+            }
+          }}
+          className="w-full py-3 rounded-2xl bg-slate-950 border border-slate-800 text-emerald-400 font-black text-xs uppercase tracking-wider hover:border-emerald-500 transition shadow-sm"
+        >
+          Redeem 100 XP for Streak Shield
+        </button>
+      </div>
+
+      <div className="p-6 rounded-[2rem] bg-slate-900/90 border border-slate-800/80 shadow-2xl backdrop-blur-xl space-y-6">
+        <div>
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+            <Sparkles className="w-4 h-4" /> Identity & Fitness Persona
+          </span>
+          <h3 className="text-base font-black text-slate-100 mt-1 tracking-tight">Choose Your Aura Badge & Persona</h3>
+        </div>
+
+        <div className="flex items-center justify-center py-3">
+          <div className={`w-24 h-24 rounded-[2rem] flex items-center justify-center text-4xl font-black shadow-2xl shadow-emerald-500/20 border-2 border-emerald-500/40 ${userAvatarBg}`}>
+            {userAvatarIcon}
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-extrabold uppercase text-slate-400 mb-2 block tracking-wider">Select Unlocked Symbol (Earn XP to Unlock)</label>
+          <div className="grid grid-cols-4 gap-2.5">
+            {[
+              { icon: '⚡', minXp: 0, name: 'Neural Bolt' },
+              { icon: '🦾', minXp: 0, name: 'Iron Hypertrophy' },
+              { icon: '🥗', minXp: 0, name: 'Macro Clean' },
+              { icon: '🧬', minXp: 300, name: 'Bio-Sync DNA' },
+              { icon: '🥑', minXp: 300, name: 'Keto Fuel' },
+              { icon: '🔥', minXp: 600, name: 'Thermal Deficit' },
+              { icon: '🏋️', minXp: 600, name: 'Apex Lifter' },
+              { icon: '🎯', minXp: 1000, name: 'Precision Target' },
+              { icon: '🥛', minXp: 1000, name: 'Protein Isolate' },
+              { icon: '🐅', minXp: 1500, name: 'Beast Endurance' },
+              { icon: '🌿', minXp: 1500, name: 'Plant Vibe' },
+              { icon: '👑', minXp: 2000, name: 'Legendary Apex' },
+            ].map(badge => {
+              const isUnlocked = auraPoints >= badge.minXp;
+              return (
+                <button
+                  key={badge.icon}
+                  disabled={!isUnlocked}
+                  onClick={() => isUnlocked && setUserAvatarIcon(badge.icon)}
+                  className={`h-14 rounded-2xl text-xl flex items-center justify-center border transition relative shadow-sm ${
+                    userAvatarIcon === badge.icon 
+                      ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-500/20 font-black' 
+                      : isUnlocked 
+                      ? 'bg-slate-950/75 text-slate-200 border-slate-800/80 hover:border-emerald-500/50' 
+                      : 'bg-slate-950/30 text-slate-600 border-slate-900 cursor-not-allowed'
+                  }`}
+                >
+                  <span>{badge.icon}</span>
+                  {!isUnlocked && (
+                    <span className="absolute -bottom-1 -right-1 text-[8px] font-bold bg-slate-900 text-slate-400 px-1.5 py-0.5 rounded-lg border border-slate-800 shadow-sm">
+                      {badge.minXp}XP
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <label className="text-[10px] font-extrabold uppercase text-slate-400 mb-2 block tracking-wider">Select Aura Gradient Accent</label>
+          <div className="grid grid-cols-4 gap-2.5">
+            {[
+              { name: 'Emerald Glow', class: 'bg-emerald-500 text-slate-950', minXp: 0 },
+              { name: 'Cyber Blue', class: 'bg-cyan-500 text-slate-950', minXp: 300 },
+              { name: 'Royal Purple', class: 'bg-purple-500 text-slate-100', minXp: 1000 },
+              { name: 'Solar Gold', class: 'bg-amber-400 text-slate-950', minXp: 2000 },
+            ].map(color => {
+              const isUnlocked = auraPoints >= color.minXp;
+              return (
+                <button
+                  key={color.name}
+                  disabled={!isUnlocked}
+                  onClick={() => isUnlocked && setUserAvatarBg(color.class)}
+                  className={`py-3 px-1 rounded-2xl text-[10px] font-extrabold uppercase tracking-wider border transition truncate relative shadow-sm ${
+                    userAvatarBg === color.class 
+                      ? 'border-emerald-400 ring-2 ring-emerald-400/40 shadow-md' 
+                      : isUnlocked 
+                      ? 'border-slate-800 hover:border-slate-700' 
+                      : 'border-slate-900 opacity-40 cursor-not-allowed'
+                  } ${color.class}`}
+                >
+                  {color.name}
+                  {!isUnlocked && <span className="block text-[8px] opacity-80 mt-0.5">{color.minXp}XP Req</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- MAIN APP SHELL ---
+export default function Home() {
+  const [activeTab, setActiveTab] = useState<'explore' | 'nutrition' | 'leaderboard' | 'profile'>('explore');
+  
+  const [auraPoints, setAuraPoints] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('aura_auraPoints');
+      return saved ? JSON.parse(saved) : 450;
+    }
+    return 450;
+  });
+
+  const [userAvatarIcon, setUserAvatarIcon] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('aura_userAvatarIcon');
+      return saved ? JSON.parse(saved) : '⚡';
+    }
+    return '⚡';
+  });
+
+  const [userAvatarBg, setUserAvatarBg] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('aura_userAvatarBg');
+      return saved ? JSON.parse(saved) : 'bg-emerald-500 text-slate-950';
+    }
+    return 'bg-emerald-500 text-slate-950';
+  });
+
+  const [workoutDays, setWorkoutDays] = useState<number>(14);
+  const [fitnessGoal, setFitnessGoal] = useState<'hypertrophy' | 'endurance' | 'mobility'>('hypertrophy');
+  const [energyLevel, setEnergyLevel] = useState<number>(85);
+  const [customRoutines, setCustomRoutines] = useState<CustomRoutineItem[]>([]);
+
+  const [planDays, setPlanDays] = useState<number>(14);
+  const [consumedCaloriesToday, setConsumedCaloriesToday] = useState<number>(1450);
+  const [loggedItems, setLoggedItems] = useState<LoggedItem[]>([]);
+  const [waterGlasses, setWaterGlasses] = useState<number>(5);
+
+  const [userSex, setUserSex] = useState<'female' | 'male'>('female');
+  const [lifeStage, setLifeStage] = useState<'standard' | 'perimenopause' | 'postmenopause'>('perimenopause');
+  const [trackCycle, setTrackCycle] = useState<boolean>(true);
+  const [currentCyclePhase, setCurrentCyclePhase] = useState<'follicular' | 'ovulation' | 'luteal' | 'menstruation'>('luteal');
+
+  const [stepCount, setStepCount] = useState<number>(6420);
+  const [heartRate, setHeartRate] = useState<number>(72);
+  const [caloriesBurned, setCaloriesBurned] = useState<number>(430);
+  const [bluetoothConnected, setBluetoothConnected] = useState<boolean>(false);
+
+  // New Upgrade States
+  const [neuralRecoveryScore, setNeuralRecoveryScore] = useState<number>(78);
+  const [strainBudget, setStrainBudget] = useState<number>(45);
+  const [streakShields, setStreakShields] = useState<number>(2);
+
+  const [achievements, setAchievements] = useState<Achievement[]>([
+    { id: 'program_created', title: 'Program Architect', description: 'Generate a custom training program', icon: '📋', unlocked: true, progress: 1, maxProgress: 1 },
+    { id: 'workout_completed', title: 'Iron Vibe', description: 'Complete 3 custom workout routines', icon: '🦾', unlocked: false, progress: 1, maxProgress: 3 },
+    { id: 'nutrition_logged', title: 'Macro Master', description: 'Log meals or generate nutrition plans', icon: '🥗', unlocked: true, progress: 1, maxProgress: 1 },
+    { id: 'step_goal', title: 'Neural Walker', description: 'Reach 10,000 steps on sensor tracker', icon: '⚡', unlocked: false, progress: 6420, maxProgress: 10000 },
+  ]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('aura_auraPoints', JSON.stringify(auraPoints));
+      localStorage.setItem('aura_userAvatarIcon', JSON.stringify(userAvatarIcon));
+      localStorage.setItem('aura_userAvatarBg', JSON.stringify(userAvatarBg));
+    }
+  }, [auraPoints, userAvatarIcon, userAvatarBg]);
+
+  const addCaloriesBurned = (cals: number) => {
+    setCaloriesBurned(prev => prev + cals);
+  };
+
+  const checkAchievements = (actionId: string) => {
+    setAchievements(prev => prev.map(ach => {
+      if (ach.id === actionId && !ach.unlocked) {
+        const nextProg = ach.progress + 1;
+        if (nextProg >= ach.maxProgress) {
+          setAuraPoints(p => p + 150);
+          return { ...ach, progress: ach.maxProgress, unlocked: true };
+        }
+        return { ...ach, progress: nextProg };
+      }
+      return ach;
+    }));
+  };
+
+  return (
+    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-start pb-28 selection:bg-emerald-500 selection:text-slate-950 font-sans relative overflow-hidden">
+      
+      {/* Background Ambient Glows */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-emerald-500/5 blur-[120px] pointer-events-none rounded-full" />
+      <div className="absolute bottom-10 right-0 w-[400px] h-[300px] bg-teal-500/5 blur-[120px] pointer-events-none rounded-full" />
+
+      <header className="w-full max-w-md px-5 pt-6 pb-4 flex items-center justify-between border-b border-slate-900/80 sticky top-0 bg-slate-950/80 backdrop-blur-xl z-30 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black shadow-lg shadow-emerald-500/20 ${userAvatarBg}`}>
+            {userAvatarIcon}
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-emerald-400">AURA-22</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </div>
+            <h1 className="text-sm font-black text-slate-100 tracking-tight">Neural Fitness Core</h1>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button 
+            onClick={() => setBluetoothConnected(!bluetoothConnected)}
+            className={`px-3 py-2 rounded-2xl border transition flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider shadow-sm ${bluetoothConnected ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-400 shadow-emerald-500/10' : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'}`}
+          >
+            <Bluetooth className="w-3.5 h-3.5" />
+            <span>{bluetoothConnected ? 'SYNCED' : 'PAIR'}</span>
+          </button>
+        </div>
+      </header>
+
+      <div className="w-full max-w-md px-5 pt-4">
+        <div className="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 backdrop-blur-md flex items-center justify-between text-xs shadow-inner">
+          <div className="flex items-center gap-2.5">
+            <Activity className="w-4 h-4 text-emerald-400 animate-pulse" />
+            <span className="font-extrabold text-slate-200 tracking-tight">{stepCount.toLocaleString()} <span className="text-[10px] text-slate-400 font-semibold uppercase">Steps</span></span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-slate-400 font-bold">{heartRate} <span className="text-[10px] font-semibold uppercase">BPM</span></span>
+            <span className="text-emerald-400 font-black tracking-tight">{caloriesBurned} <span className="text-[10px] font-semibold uppercase">Cals</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div className="w-full max-w-md px-5 pt-4 flex-1">
+        {activeTab === 'explore' && (
+          <ExploreTab 
+            customRoutines={customRoutines}
+            setCustomRoutines={setCustomRoutines}
+            workoutDays={workoutDays}
+            setWorkoutDays={setWorkoutDays}
+            fitnessGoal={fitnessGoal}
+            setFitnessGoal={setFitnessGoal}
+            energyLevel={energyLevel}
+            setEnergyLevel={setEnergyLevel}
+            addCaloriesBurned={addCaloriesBurned}
+            auraPoints={auraPoints}
+            setAuraPoints={setAuraPoints}
+            checkAchievements={checkAchievements}
+            userSex={userSex}
+            lifeStage={lifeStage}
+            trackCycle={trackCycle}
+            currentCyclePhase={currentCyclePhase}
+            neuralRecoveryScore={neuralRecoveryScore}
+            strainBudget={strainBudget}
+            setStrainBudget={setStrainBudget}
+          />
+        )}
+
+        {activeTab === 'nutrition' && (
+          <NutritionTab 
+            planDays={planDays}
+            setPlanDays={setPlanDays}
+            consumedCaloriesToday={consumedCaloriesToday}
+            setConsumedCaloriesToday={setConsumedCaloriesToday}
+            loggedItems={loggedItems}
+            setLoggedItems={setLoggedItems}
+            setAuraPoints={setAuraPoints}
+            checkAchievements={checkAchievements}
+            userSex={userSex}
+            lifeStage={lifeStage}
+            waterGlasses={waterGlasses}
+            setWaterGlasses={setWaterGlasses}
+          />
+        )}
+
+        {activeTab === 'leaderboard' && (
+          <LeaderboardTab 
+            auraPoints={auraPoints}
+            achievements={achievements}
+          />
+        )}
+
+        {activeTab === 'profile' && (
+          <ProfileTab 
+            userAvatarIcon={userAvatarIcon}
+            setUserAvatarIcon={setUserAvatarIcon}
+            userAvatarBg={userAvatarBg}
+            setUserAvatarBg={setUserAvatarBg}
+            auraPoints={auraPoints}
+            streakShields={streakShields}
+            setStreakShields={setStreakShields}
+          />
+        )}
+      </div>
+
+      {/* Floating Pill Navigation */}
+      <nav className="fixed bottom-4 left-0 right-0 max-w-sm mx-auto p-1.5 bg-slate-950/90 backdrop-blur-2xl border border-slate-800/90 z-40 flex justify-around items-center rounded-3xl shadow-2xl">
+        {[
+          { id: 'explore', label: 'Explore', icon: Compass },
+          { id: 'nutrition', label: 'Nutrition', icon: Utensils },
+          { id: 'leaderboard', label: 'Rankings', icon: Trophy },
+          { id: 'profile', label: 'Profile', icon: User },
+        ].map(tab => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-2 px-3.5 rounded-2xl transition-all duration-300 ${isActive ? 'text-slate-950 bg-emerald-400 shadow-md shadow-emerald-400/25 font-black scale-105' : 'text-slate-400 hover:text-slate-200 font-bold'}`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'stroke-[2.5]' : 'stroke-2'}`} />
+              <span className={`text-[11px] uppercase tracking-wider ${isActive ? 'inline-block' : 'hidden sm:inline-block'}`}>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
+    </main>
+  );
+}
