@@ -1,6 +1,5 @@
 
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +9,7 @@ import {
   ShieldCheck, Timer, Bluetooth, MessageSquare, Camera, Send, 
   LogOut, LogIn, Globe, Lock, Crown, CreditCard, Smartphone, 
   ExternalLink, Trash2, Check, Calendar, ListOrdered, Activity, ArrowRight,
-  Mic, MicOff, Eye, History, Play, Pause, RotateCcw, X
+  Mic, MicOff, Eye, History, Play, Pause, RotateCcw, X, Calculator, Target
 } from 'lucide-react';
 
 function ApexLogo({ className = "w-6 h-6" }: { className?: string }) {
@@ -80,6 +79,23 @@ export default function ApexStateApp() {
   const [restSeconds, setRestSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
+  // Plate Calculator State
+  const [targetWeight, setTargetWeight] = useState<number>(100);
+  const [barWeight, setBarWeight] = useState<number>(20);
+
+  // PR Tracker State
+  const [personalRecords, setPersonalRecords] = useState<Array<{ id: number; lift: string; weight: string; date: string }>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('apex_prs');
+      return saved ? JSON.parse(saved) : [
+        { id: 1, lift: 'Barbell Bench Press', weight: '95 kg', date: '2026-07-20' },
+        { id: 2, lift: 'Barbell Back Squat', weight: '130 kg', date: '2026-07-25' },
+        { id: 3, lift: 'Deadlift', weight: '160 kg', date: '2026-07-28' }
+      ];
+    }
+    return [];
+  });
+
   const getApexTitle = (auraScore: number) => {
     if (auraScore >= 1000) return '👑 Apex Titan (Legendary)';
     if (auraScore >= 600) return '⚡ Alpha Predator';
@@ -100,9 +116,10 @@ export default function ApexStateApp() {
   const [exercises, setExercises] = useState([
     { 
       id: 1, name: 'Barbell Bench Press', 
+      targetWeight: 60,
       sets: [
-        { setNumber: 1, weight: '60kg', reps: '10', completed: false },
-        { setNumber: 2, weight: '65kg', reps: '8', completed: false }
+        { setNumber: 1, weight: '60kg', reps: '10', completed: false, lastWeekRef: '57.5kg x 10 (Try +2.5kg)' },
+        { setNumber: 2, weight: '65kg', reps: '8', completed: false, lastWeekRef: '62.5kg x 8 (Progressive Overload)' }
       ] 
     }
   ]);
@@ -113,7 +130,8 @@ export default function ApexStateApp() {
     localStorage.setItem('apex_aura', aura.toString());
     localStorage.setItem('apex_streak', streak.toString());
     localStorage.setItem('apex_history', JSON.stringify(workoutHistory));
-  }, [aura, streak, workoutHistory]);
+    localStorage.setItem('apex_prs', JSON.stringify(personalRecords));
+  }, [aura, streak, workoutHistory, personalRecords]);
 
   // Rest Timer Interval Logic with Audio Beep
   useEffect(() => {
@@ -201,13 +219,30 @@ export default function ApexStateApp() {
     recognition.onresult = (event) => {
       const speech = event.results[0][0].transcript;
       setIsListening(false);
-      setExercises(prev => [{ id: Date.now(), name: speech, sets: [{ setNumber: 1, weight: 'Logged', reps: 'Logged', completed: true }] }, ...prev]);
+      setExercises(prev => [{ id: Date.now(), name: speech, targetWeight: 50, sets: [{ setNumber: 1, weight: 'Logged', reps: 'Logged', completed: true, lastWeekRef: 'First entry' }] }, ...prev]);
       setAura(prev => prev + 50);
       showToast(`Voice logged: "${speech}"`);
     };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
     recognition.start();
+  };
+
+  const calculatePlates = () => {
+    if (targetWeight <= barWeight) return 'Weight must be greater than bar weight.';
+    const weightPerSide = (targetWeight - barWeight) / 2;
+    const availablePlates = [25, 20, 15, 10, 5, 2.5, 1.25];
+    let remaining = weightPerSide;
+    const breakdown: string[] = [];
+
+    for (const plate of availablePlates) {
+      const count = Math.floor(remaining / plate);
+      if (count > 0) {
+        breakdown.push(`${count}x ${plate}kg`);
+        remaining = Number((remaining % plate).toFixed(2));
+      }
+    }
+    return breakdown.join(', ') + ' per side';
   };
 
   const sendAiMessage = async (e: React.FormEvent) => {
@@ -358,19 +393,62 @@ export default function ApexStateApp() {
               </div>
             )}
 
+            {/* PLATE CALCULATOR WIDGET */}
+            <div className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-xl">
+              <div className="flex items-center space-x-2">
+                <Calculator className="w-4 h-4 text-cyan-400" />
+                <h3 className="font-bold text-xs text-cyan-300 uppercase tracking-wider">Barbell Plate Calculator</h3>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] text-slate-400 block mb-1">Target Weight (kg)</label>
+                  <input 
+                    type="number" 
+                    value={targetWeight} 
+                    onChange={(e) => setTargetWeight(Number(e.target.value))} 
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] text-slate-400 block mb-1">Bar Weight (kg)</label>
+                  <select 
+                    value={barWeight} 
+                    onChange={(e) => setBarWeight(Number(e.target.value))}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value={20}>20 kg (Standard Olympic)</option>
+                    <option value={15}>15 kg (Women's Olympic)</option>
+                    <option value={10}>10 kg (Technique Bar)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between">
+                <span className="text-[10px] text-slate-400 uppercase font-bold">Plates Needed:</span>
+                <span className="text-xs font-black text-cyan-400">{calculatePlates()}</span>
+              </div>
+            </div>
+
+            {/* EXERCISES & PROGRESSIVE OVERLOAD HINTS */}
             <div className="space-y-4">
               {exercises.map((ex) => (
                 <div key={ex.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-3 shadow-xl">
-                  <h3 className="font-bold text-sm text-cyan-300 flex items-center">
-                    <Dumbbell className="w-4 h-4 mr-2" /> {ex.name}
-                  </h3>
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-bold text-sm text-cyan-300 flex items-center">
+                      <Dumbbell className="w-4 h-4 mr-2" /> {ex.name}
+                    </h3>
+                  </div>
                   <div className="space-y-2">
                     {ex.sets.map((set, setIdx) => (
-                      <div key={setIdx} className={`flex items-center justify-between p-2.5 rounded-xl border ${set.completed ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-slate-950 border-slate-800'}`}>
-                        <span className="text-xs font-bold">Set #{set.setNumber} - {set.weight} x {set.reps}</span>
-                        <button onClick={() => toggleSetCompletion(ex.id, setIdx)} className={`px-3 py-1 rounded-lg text-xs font-bold ${set.completed ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>
-                          {set.completed ? 'Done' : 'Complete'}
-                        </button>
+                      <div key={setIdx} className={`p-3 rounded-xl border space-y-1.5 ${set.completed ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-slate-950 border-slate-800'}`}>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold">Set #{set.setNumber} - {set.weight} x {set.reps}</span>
+                          <button onClick={() => toggleSetCompletion(ex.id, setIdx)} className={`px-3 py-1 rounded-lg text-xs font-bold ${set.completed ? 'bg-emerald-500 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>
+                            {set.completed ? 'Done' : 'Complete'}
+                          </button>
+                        </div>
+                        <div className="text-[10px] text-cyan-400/80 flex items-center font-medium">
+                          <TrendingUp className="w-3 h-3 mr-1" /> Progressive Overload Target: {set.lastWeekRef}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -380,22 +458,44 @@ export default function ApexStateApp() {
           </div>
         )}
 
-        {/* WORKOUT HISTORY TAB */}
+        {/* WORKOUT HISTORY & PR TAB */}
         {activeTab === 'history' && (
-          <div className="space-y-4 animate-fadeIn">
-            <h1 className="text-xl font-black tracking-tight">Workout History & Logs</h1>
-            <p className="text-xs text-slate-400">Review your past sessions securely stored on your device.</p>
+          <div className="space-y-5 animate-fadeIn">
+            <div>
+              <h1 className="text-xl font-black tracking-tight">Personal Records (PRs)</h1>
+              <p className="text-xs text-slate-400">Track your peak strength milestones and all-time heaviest lifts.</p>
+            </div>
 
-            <div className="space-y-3">
-              {workoutHistory.map((item) => (
-                <div key={item.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-xl">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-xs text-cyan-300">{item.title}</h3>
-                    <span className="text-[10px] text-slate-400">{item.date}</span>
+            <div className="grid grid-cols-1 gap-2.5">
+              {personalRecords.map((pr) => (
+                <div key={pr.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex items-center justify-between shadow-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="bg-cyan-950 border border-cyan-500/40 p-2 rounded-xl text-cyan-400 font-bold">
+                      <Award className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs text-slate-200">{pr.lift}</h4>
+                      <p className="text-[10px] text-slate-400">Achieved on {pr.date}</p>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-300">{item.summary}</p>
+                  <span className="text-sm font-black text-cyan-400">{pr.weight}</span>
                 </div>
               ))}
+            </div>
+
+            <div className="pt-2">
+              <h2 className="text-sm font-black tracking-tight mb-2">Workout History Logs</h2>
+              <div className="space-y-3">
+                {workoutHistory.map((item) => (
+                  <div key={item.id} className="bg-slate-900 border border-slate-800 p-4 rounded-2xl space-y-1.5 shadow-xl">
+                    <div className="flex justify-between items-center">
+                      <h3 className="font-bold text-xs text-cyan-300">{item.title}</h3>
+                      <span className="text-[10px] text-slate-400">{item.date}</span>
+                    </div>
+                    <p className="text-xs text-slate-300">{item.summary}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
