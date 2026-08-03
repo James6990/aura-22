@@ -54,6 +54,74 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updatedAt").defaultNow(),
 })
 
+
+// --- APEX PERFORMANCE GENOME -----------------------------------------------
+
+// One current Performance Genome profile per authenticated user.
+export const performanceGenome = pgTable("apex_performance_genome", {
+  userId: text("userId")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  preferredName: text("preferredName").notNull(),
+
+  age: integer("age"),
+  heightCm: integer("heightCm"),
+  weightKg: integer("weightKg"),
+
+  primaryGoal: text("primaryGoal"),
+  experienceLevel: text("experienceLevel"),
+
+  equipment: jsonb("equipment")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
+
+  dietaryPreference: text("dietaryPreference")
+    .notNull()
+    .default("standard"),
+
+  allergiesAndAvoidances: text("allergiesAndAvoidances")
+    .notNull()
+    .default(""),
+
+  coachStyle: text("coachStyle")
+    .notNull()
+    .default("encouraging"),
+
+  focusMode: boolean("focusMode")
+    .notNull()
+    .default(false),
+
+  highContrast: boolean("highContrast")
+    .notNull()
+    .default(false),
+
+  reducedMotion: boolean("reducedMotion")
+    .notNull()
+    .default(false),
+
+  largerText: boolean("largerText")
+    .notNull()
+    .default(false),
+
+  onboardingCompleted: boolean("onboardingCompleted")
+    .notNull()
+    .default(false),
+
+  genomeVersion: integer("genomeVersion")
+    .notNull()
+    .default(1),
+
+  createdAt: timestamp("createdAt")
+    .notNull()
+    .defaultNow(),
+
+  updatedAt: timestamp("updatedAt")
+    .notNull()
+    .defaultNow(),
+});
+
 // --- AURA 22 app tables ----------------------------------------------------
 // Scoped per user via a plain `userId` column (no FK, per stack conventions).
 

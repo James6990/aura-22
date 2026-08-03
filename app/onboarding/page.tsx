@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { savePerformanceGenome } from "@/app/actions/performance-genome";
 import {
   ArrowRight,
   Check,
@@ -125,6 +127,8 @@ export default function OnboardingPage() {
   const router = useRouter();
 
   const [step, setStep] = useState(1);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [saveError, setSaveError] = useState("");
 
   const [data, setData] = useState<OnboardingData>({
     name: "",
@@ -192,10 +196,12 @@ export default function OnboardingPage() {
     setStep((current) => Math.max(1, current - 1));
   }
 
-  function goNext() {
-    if (!canContinue()) {
+  async function goNext() {
+    if (!canContinue() || savingProfile) {
       return;
     }
+
+    setSaveError("");
 
     if (step < TOTAL_STEPS) {
       setStep((current) => current + 1);
@@ -203,14 +209,37 @@ export default function OnboardingPage() {
       return;
     }
 
-    localStorage.setItem(
-      "apex_onboarding_v2",
-      JSON.stringify({
-        ...data,
-        completedAt: new Date().toISOString(),
-        version: 2,
-      }),
-    );
+    if (!data.goal || !data.experience) {
+      setSaveError(
+        "Please complete all required onboarding information.",
+      );
+      return;
+    }
+
+    setSavingProfile(true);
+
+    const result = await savePerformanceGenome({
+      preferredName: data.name.trim(),
+      age: Number(data.age),
+      heightCm: Number(data.heightCm),
+      weightKg: Number(data.weightKg),
+      primaryGoal: data.goal,
+      experienceLevel: data.experience,
+      equipment: data.equipment,
+      dietaryPreference: data.diet,
+      allergiesAndAvoidances: data.allergies,
+      coachStyle: data.coachStyle,
+      focusMode: data.focusMode,
+      highContrast: data.highContrast,
+      reducedMotion: data.reducedMotion,
+      largerText: data.largerText,
+    });
+
+    if (!result.success) {
+      setSaveError(result.error);
+      setSavingProfile(false);
+      return;
+    }
 
     router.replace("/");
   }
@@ -661,6 +690,15 @@ export default function OnboardingPage() {
             </div>
           )}
 
+          {saveError && (
+            <div
+              role="alert"
+              className="mt-6 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+            >
+              {saveError}
+            </div>
+          )}
+
           <footer className="mt-9 flex items-center justify-between gap-3 border-t border-slate-800 pt-6">
             <button
               type="button"
@@ -675,12 +713,14 @@ export default function OnboardingPage() {
             <button
               type="button"
               onClick={goNext}
-              disabled={!canContinue()}
+              disabled={!canContinue() || savingProfile}
               className="flex min-h-11 items-center gap-2 rounded-xl bg-emerald-500 px-5 text-sm font-black text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {step === TOTAL_STEPS
-                ? "Create my Apex profile"
-                : "Continue"}
+              {savingProfile
+                ? "Creating profile..."
+                : step === TOTAL_STEPS
+                  ? "Create my Apex profile"
+                  : "Continue"}
 
               <ArrowRight className="h-4 w-4" />
             </button>
