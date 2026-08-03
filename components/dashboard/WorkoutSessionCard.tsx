@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import type { WorkoutSession } from "@/lib/workout/generate-workout-session";
+import StartWorkoutButton from "@/components/dashboard/StartWorkoutButton";
 
 type WorkoutSessionCardProps = {
   session: WorkoutSession;
@@ -173,6 +174,26 @@ export default function WorkoutSessionCard({
               </div>
             </article>
           ))}
+        </div>
+      )}
+
+      {session.exercises.length > 0 && (
+        <div className="mt-6">
+          <StartWorkoutButton
+            title={session.title}
+            intensity={session.intensity}
+            plannedDurationMinutes={
+              session.estimatedDurationMinutes
+            }
+            exercises={session.exercises.map(
+              (exercise) => ({
+                id: exercise.id,
+                name: exercise.name,
+                sets: exercise.sets,
+                reps: exercise.reps,
+              }),
+            )}
+          />
         </div>
       )}
 

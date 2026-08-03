@@ -239,6 +239,127 @@ export const apexEvents = pgTable("apex_events", {
     .defaultNow(),
 });
 
+
+// --- APEX WORKOUT PERFORMANCE ---------------------------------------------
+
+export const workoutSessions = pgTable("apex_workout_sessions", {
+  id: text("id").primaryKey(),
+
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  date: text("date").notNull(),
+  title: text("title").notNull(),
+  intensity: text("intensity").notNull(),
+
+  plannedDurationMinutes: integer(
+    "plannedDurationMinutes",
+  ),
+
+  actualDurationMinutes: integer(
+    "actualDurationMinutes",
+  ),
+
+  status: text("status", {
+    enum: ["planned", "in-progress", "completed", "skipped"],
+  })
+    .notNull()
+    .default("planned"),
+
+  sessionRpe: integer("sessionRpe"),
+  notes: text("notes").notNull().default(""),
+
+  startedAt: timestamp("startedAt"),
+  completedAt: timestamp("completedAt"),
+
+  createdAt: timestamp("createdAt")
+    .notNull()
+    .defaultNow(),
+
+  updatedAt: timestamp("updatedAt")
+    .notNull()
+    .defaultNow(),
+});
+
+export const workoutExerciseResults = pgTable(
+  "apex_workout_exercise_results",
+  {
+    id: text("id").primaryKey(),
+
+    sessionId: text("sessionId")
+      .notNull()
+      .references(() => workoutSessions.id, {
+        onDelete: "cascade",
+      }),
+
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    exerciseId: text("exerciseId").notNull(),
+    exerciseName: text("exerciseName").notNull(),
+
+    orderIndex: integer("orderIndex").notNull(),
+
+    plannedSets: integer("plannedSets").notNull(),
+    completedSets: integer("completedSets")
+      .notNull()
+      .default(0),
+
+    targetReps: text("targetReps").notNull(),
+
+    loadKg: numeric("loadKg", {
+      precision: 7,
+      scale: 2,
+      mode: "number",
+    }),
+
+    completedReps: jsonb("completedReps")
+      .$type<number[]>()
+      .notNull()
+      .default([]),
+
+    rpe: integer("rpe"),
+    discomfortLevel: integer("discomfortLevel"),
+
+    techniqueConfidence: integer(
+      "techniqueConfidence",
+    ),
+
+    completionStatus: text("completionStatus", {
+      enum: ["not-started", "partial", "completed", "skipped"],
+    })
+      .notNull()
+      .default("not-started"),
+
+    progressionDecision: text("progressionDecision", {
+      enum: ["increase", "maintain", "reduce", "review"],
+    }),
+
+    recommendedNextLoadKg: numeric(
+      "recommendedNextLoadKg",
+      {
+        precision: 7,
+        scale: 2,
+        mode: "number",
+      },
+    ),
+
+    notes: text("notes").notNull().default(""),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+  },
+);
+
 // --- AURA 22 app tables ----------------------------------------------------
 // Scoped per user via a plain `userId` column (no FK, per stack conventions).
 
