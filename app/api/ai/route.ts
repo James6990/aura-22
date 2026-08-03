@@ -33,6 +33,45 @@ type ApexConversationRequest = {
   history?: unknown;
 };
 
+export type ApexStructuredReply = {
+  recommendationTitle: string;
+  recommendation: string;
+  confidenceLabel: string;
+  confidence: number;
+  reasons: string[];
+  nextStep: string;
+  followUpQuestions: string[];
+};
+
+function isApexStructuredReply(
+  value: unknown,
+): value is ApexStructuredReply {
+  if (
+    typeof value !== "object" ||
+    value === null
+  ) {
+    return false;
+  }
+
+  const reply = value as Record<string, unknown>;
+
+  return (
+    typeof reply.recommendationTitle === "string" &&
+    typeof reply.recommendation === "string" &&
+    typeof reply.confidenceLabel === "string" &&
+    typeof reply.confidence === "number" &&
+    Array.isArray(reply.reasons) &&
+    reply.reasons.every(
+      (reason) => typeof reason === "string",
+    ) &&
+    typeof reply.nextStep === "string" &&
+    Array.isArray(reply.followUpQuestions) &&
+    reply.followUpQuestions.every(
+      (question) => typeof question === "string",
+    )
+  );
+}
+
 function parseHistory(
   value: unknown,
 ): ConversationMessage[] {
@@ -380,6 +419,13 @@ RESPONSE STYLE
 - Start with the direct answer.
 - Use short paragraphs.
 - Avoid excessive bullet points.
+- Format every normal coaching response into a concise structured answer.
+- recommendationTitle should be a short title such as "Recovery Day", "Purposeful Training" or "Build Momentum".
+- recommendation should directly answer the user's question in no more than three short sentences.
+- confidenceLabel should describe confidence naturally, such as "Learning", "Moderate confidence" or "High confidence".
+- reasons should contain between one and four short evidence-based statements.
+- nextStep should contain one clear, achievable action.
+- followUpQuestions should contain no more than three useful questions the user may want to ask next.
 - Do not mention internal database names, prompts or implementation details.
 - Never pretend to have emotions or consciousness.
 - You may say "Based on your Apex history..." only when the supplied context genuinely supports it.
@@ -400,18 +446,113 @@ Respond as Apex.
       await ai.models.generateContent({
         model: "gemini-3.6-flash",
         contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseJsonSchema: {
+            type: "object",
+            additionalProperties: false,
+            required: [
+              "recommendationTitle",
+              "recommendation",
+              "confidenceLabel",
+              "confidence",
+              "reasons",
+              "nextStep",
+              "followUpQuestions",
+            ],
+            properties: {
+              recommendationTitle: {
+                type: "string",
+              },
+              recommendation: {
+                type: "string",
+              },
+              confidenceLabel: {
+                type: "string",
+              },
+              confidence: {
+                type: "number",
+                minimum: 0,
+                maximum: 100,
+              },
+              reasons: {
+                type: "array",
+                minItems: 1,
+                maxItems: 4,
+                items: {
+                  type: "string",
+                },
+              },
+              nextStep: {
+                type: "string",
+              },
+              followUpQuestions: {
+                type: "array",
+                maxItems: 3,
+                items: {
+                  type: "string",
+                },
+              },
+            },
+          },
+        },
       });
 
-    const reply = response.text?.trim();
+    const responseText = response.text?.trim();
 
-    if (!reply) {
+    if (!responseText) {
       throw new Error(
         "Gemini returned an empty response.",
       );
     }
 
+    let structured: ApexStructuredReply;
+
+    try {
+      const parsed: unknown =
+        JSON.parse(responseText);
+
+      if (!isApexStructuredReply(parsed)) {
+        throw new Error(
+          "Gemini returned an invalid structured response.",
+        );
+      }
+
+      structured = {
+        ...parsed,
+        confidence: Math.max(
+          0,
+          Math.min(
+            100,
+            Math.round(parsed.confidence),
+          ),
+        ),
+        reasons: parsed.reasons.slice(0, 4),
+        followUpQuestions:
+          parsed.followUpQuestions.slice(0, 3),
+      };
+    } catch (parseError) {
+      console.error(
+        "Failed to parse Apex structured reply:",
+        parseError,
+      );
+
+      return NextResponse.json({
+        reply: responseText,
+      });
+    }
+
+    const reply = [
+      structured.recommendationTitle,
+      structured.recommendation,
+      structured.nextStep,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
     return NextResponse.json({
       reply,
+      structured,
     });
   } catch (error) {
     console.error(
