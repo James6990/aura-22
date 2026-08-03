@@ -59,8 +59,9 @@ export default function AuthPage() {
         }
       }
 
-      router.push("/");
-      router.refresh();
+      router.replace(
+        mode === "sign-up" ? "/onboarding" : "/dashboard",
+      );
     } catch {
       setErrorMessage(
         "Apex could not connect to the authentication service. Please try again.",

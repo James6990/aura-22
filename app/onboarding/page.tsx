@@ -45,11 +45,17 @@ type CoachStyle =
   | "competitive"
   | "calm";
 
+type UnitSystem = "metric" | "imperial";
+
 type OnboardingData = {
   name: string;
   age: string;
   heightCm: string;
   weightKg: string;
+  heightFeet: string;
+  heightInches: string;
+  weightLb: string;
+  unitSystem: UnitSystem;
   goal: Goal | null;
   experience: Experience | null;
   equipment: Equipment[];
@@ -135,6 +141,10 @@ export default function OnboardingPage() {
     age: "",
     heightCm: "",
     weightKg: "",
+    heightFeet: "",
+    heightInches: "",
+    weightLb: "",
+    unitSystem: "metric",
     goal: null,
     experience: null,
     equipment: [],
@@ -174,10 +184,20 @@ export default function OnboardingPage() {
     }
 
     if (step === 3) {
+      if (data.unitSystem === "metric") {
+        return (
+          Number(data.age) > 0 &&
+          Number(data.heightCm) > 0 &&
+          Number(data.weightKg) > 0
+        );
+      }
+
       return (
         Number(data.age) > 0 &&
-        Number(data.heightCm) > 0 &&
-        Number(data.weightKg) > 0
+        Number(data.heightFeet) > 0 &&
+        Number(data.heightInches) >= 0 &&
+        Number(data.heightInches) < 12 &&
+        Number(data.weightLb) > 0
       );
     }
 
@@ -218,11 +238,24 @@ export default function OnboardingPage() {
 
     setSavingProfile(true);
 
+    const heightCm =
+      data.unitSystem === "metric"
+        ? Number(data.heightCm)
+        : (Number(data.heightFeet) * 12 +
+            Number(data.heightInches)) *
+          2.54;
+
+    const weightKg =
+      data.unitSystem === "metric"
+        ? Number(data.weightKg)
+        : Number(data.weightLb) * 0.45359237;
+
     const result = await savePerformanceGenome({
       preferredName: data.name.trim(),
       age: Number(data.age),
-      heightCm: Number(data.heightCm),
-      weightKg: Number(data.weightKg),
+      heightCm,
+      weightKg,
+      unitSystem: data.unitSystem,
       primaryGoal: data.goal,
       experienceLevel: data.experience,
       equipment: data.equipment,
@@ -241,7 +274,7 @@ export default function OnboardingPage() {
       return;
     }
 
-    router.replace("/");
+    router.replace("/dashboard");
   }
 
   return (
@@ -361,7 +394,35 @@ export default function OnboardingPage() {
                 description="These values help personalise future targets. They can be updated at any time."
               />
 
-              <div className="mt-8 grid gap-5 sm:grid-cols-3">
+              <div className="mt-8">
+                <p className="text-sm font-semibold text-slate-200">
+                  Preferred units
+                </p>
+
+                <div className="mt-3 grid grid-cols-2 gap-3">
+                  {(["metric", "imperial"] as UnitSystem[]).map(
+                    (system) => (
+                      <button
+                        key={system}
+                        type="button"
+                        onClick={() =>
+                          updateData("unitSystem", system)
+                        }
+                        aria-pressed={data.unitSystem === system}
+                        className={`min-h-12 rounded-xl border px-4 text-sm font-bold capitalize ${
+                          data.unitSystem === system
+                            ? "border-emerald-400 bg-emerald-500/10 text-white"
+                            : "border-slate-700 bg-slate-950 text-slate-300"
+                        }`}
+                      >
+                        {system}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-5 sm:grid-cols-3">
                 <NumberField
                   id="age"
                   label="Age"
@@ -370,21 +431,63 @@ export default function OnboardingPage() {
                   onChange={(value) => updateData("age", value)}
                 />
 
-                <NumberField
-                  id="height"
-                  label="Height"
-                  value={data.heightCm}
-                  suffix="cm"
-                  onChange={(value) => updateData("heightCm", value)}
-                />
+                {data.unitSystem === "metric" ? (
+                  <>
+                    <NumberField
+                      id="height"
+                      label="Height"
+                      value={data.heightCm}
+                      suffix="cm"
+                      onChange={(value) =>
+                        updateData("heightCm", value)
+                      }
+                    />
 
-                <NumberField
-                  id="weight"
-                  label="Weight"
-                  value={data.weightKg}
-                  suffix="kg"
-                  onChange={(value) => updateData("weightKg", value)}
-                />
+                    <NumberField
+                      id="weight"
+                      label="Weight"
+                      value={data.weightKg}
+                      suffix="kg"
+                      onChange={(value) =>
+                        updateData("weightKg", value)
+                      }
+                    />
+                  </>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 gap-3">
+                      <NumberField
+                        id="height-feet"
+                        label="Height"
+                        value={data.heightFeet}
+                        suffix="ft"
+                        onChange={(value) =>
+                          updateData("heightFeet", value)
+                        }
+                      />
+
+                      <NumberField
+                        id="height-inches"
+                        label="Inches"
+                        value={data.heightInches}
+                        suffix="in"
+                        onChange={(value) =>
+                          updateData("heightInches", value)
+                        }
+                      />
+                    </div>
+
+                    <NumberField
+                      id="weight-pounds"
+                      label="Weight"
+                      value={data.weightLb}
+                      suffix="lb"
+                      onChange={(value) =>
+                        updateData("weightLb", value)
+                      }
+                    />
+                  </>
+                )}
               </div>
 
               <PrivacyNotice />

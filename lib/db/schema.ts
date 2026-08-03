@@ -1,4 +1,13 @@
-import { pgTable, text, timestamp, boolean, integer, jsonb, unique } from "drizzle-orm/pg-core"
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  integer,
+  numeric,
+  jsonb,
+  unique,
+} from "drizzle-orm/pg-core"
 import type { Exercise } from "@/lib/aura-data"
 
 // --- Better Auth required tables -------------------------------------------
@@ -66,8 +75,23 @@ export const performanceGenome = pgTable("apex_performance_genome", {
   preferredName: text("preferredName").notNull(),
 
   age: integer("age"),
-  heightCm: integer("heightCm"),
-  weightKg: integer("weightKg"),
+  heightCm: numeric("heightCm", {
+    precision: 6,
+    scale: 2,
+    mode: "number",
+  }),
+
+  weightKg: numeric("weightKg", {
+    precision: 6,
+    scale: 2,
+    mode: "number",
+  }),
+
+  unitSystem: text("unitSystem", {
+    enum: ["metric", "imperial"],
+  })
+    .notNull()
+    .default("metric"),
 
   primaryGoal: text("primaryGoal"),
   experienceLevel: text("experienceLevel"),

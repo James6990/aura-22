@@ -11,6 +11,7 @@ export type PerformanceGenomeInput = {
   age: number;
   heightCm: number;
   weightKg: number;
+  unitSystem: "metric" | "imperial";
   primaryGoal:
     | "muscle"
     | "fat-loss"
@@ -119,8 +120,9 @@ export async function savePerformanceGenome(
         userId,
         preferredName: input.preferredName.trim(),
         age: input.age,
-        heightCm: input.heightCm,
-        weightKg: input.weightKg,
+        heightCm: Math.round(input.heightCm * 100) / 100,
+        weightKg: Math.round(input.weightKg * 100) / 100,
+        unitSystem: input.unitSystem,
         primaryGoal: input.primaryGoal,
         experienceLevel: input.experienceLevel,
         equipment: input.equipment,
@@ -141,8 +143,9 @@ export async function savePerformanceGenome(
         set: {
           preferredName: input.preferredName.trim(),
           age: input.age,
-          heightCm: input.heightCm,
-          weightKg: input.weightKg,
+          heightCm: Math.round(input.heightCm * 100) / 100,
+          weightKg: Math.round(input.weightKg * 100) / 100,
+          unitSystem: input.unitSystem,
           primaryGoal: input.primaryGoal,
           experienceLevel: input.experienceLevel,
           equipment: input.equipment,
