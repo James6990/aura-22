@@ -31,6 +31,7 @@ import { generateCoachInsight } from "@/lib/coach/generate-coach-insight";
 import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
 import { getDashboardData } from "@/lib/dashboard/get-dashboard";
+import { generateApexCore } from "@/lib/apex-core";
 
 const goalLabels: Record<string, string> = {
   muscle: "Build muscle",
@@ -122,7 +123,7 @@ const workoutRecommendation =
     dashboard.checkInDates,
   );
 
-  const apexCompanion = generateCompanionBrief({
+  const apex = generateApexCore({
     preferredName,
     readinessScore:
       dashboard.todayCheckIn?.readinessScore ??
@@ -140,10 +141,6 @@ const workoutRecommendation =
     ),
   });
 
-  const dailyBriefing =
-    generateDailyBriefing(apexCompanion);
-
-
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
@@ -153,7 +150,7 @@ const workoutRecommendation =
         />
 
         <ApexCompanionCard
-          briefing={dailyBriefing}
+          briefing={apex.dailyBriefing}
         />
 
         <ApexCoachCard insight={coachInsight} />
