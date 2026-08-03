@@ -26,6 +26,7 @@ export async function getDashboardData() {
     genome,
     todayCheckIn,
     readinessHistory,
+    checkInDates,
     recentEvents,
   ] = await Promise.all([
     db.query.performanceGenome.findFirst({
@@ -54,13 +55,20 @@ export async function getDashboardData() {
           dailyCheckIns.hydrationTargetReached,
       })
       .from(dailyCheckIns)
-      .where(
-        eq(dailyCheckIns.userId, session.user.id),
-      )
+      .where(eq(dailyCheckIns.userId, session.user.id))
       .orderBy(desc(dailyCheckIns.date))
       .limit(7),
 
-    getRecentEvents(session.user.id, 10),
+    db
+      .select({
+        date: dailyCheckIns.date,
+      })
+      .from(dailyCheckIns)
+      .where(eq(dailyCheckIns.userId, session.user.id))
+      .orderBy(desc(dailyCheckIns.date))
+      .limit(366),
+
+    getRecentEvents(session.user.id, 100),
   ]);
 
   return {
@@ -68,6 +76,7 @@ export async function getDashboardData() {
     genome,
     todayCheckIn: todayCheckIn ?? null,
     readinessHistory,
+    checkInDates: checkInDates.map((entry) => entry.date),
     recentEvents,
   };
 }

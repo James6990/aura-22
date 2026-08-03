@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Play } from "lucide-react";
 
 import { startWorkoutSession } from "@/app/actions/workout-session";
@@ -23,6 +24,8 @@ export default function StartWorkoutButton({
   plannedDurationMinutes,
   exercises,
 }: StartWorkoutButtonProps) {
+  const router = useRouter();
+
   const [starting, setStarting] = useState(false);
   const [sessionId, setSessionId] = useState<string | null>(
     null,
@@ -49,6 +52,7 @@ export default function StartWorkoutButton({
       }
 
       setSessionId(result.sessionId);
+      router.push(`/workout/${result.sessionId}`);
     } catch (caughtError) {
       console.error("Failed to start workout:", caughtError);
 
