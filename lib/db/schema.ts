@@ -185,6 +185,60 @@ export const dailyCheckIns = pgTable(
   }),
 );
 
+
+// --- APEX EVENT ENGINE -----------------------------------------------------
+
+export type ApexEventPayload = Record<
+  string,
+  string | number | boolean | null | string[] | number[]
+>;
+
+// Permanent timeline of meaningful user activity.
+// Future workout, nutrition, recovery, accessibility and gamification
+// systems can all publish events here.
+export const apexEvents = pgTable("apex_events", {
+  id: text("id").primaryKey(),
+
+  userId: text("userId")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+
+  type: text("type").notNull(),
+
+  category: text("category", {
+    enum: [
+      "profile",
+      "readiness",
+      "workout",
+      "nutrition",
+      "recovery",
+      "accessibility",
+      "progress",
+      "gamification",
+      "system",
+    ],
+  }).notNull(),
+
+  source: text("source").notNull().default("apex"),
+
+  payload: jsonb("payload")
+    .$type<ApexEventPayload>()
+    .notNull()
+    .default({}),
+
+  schemaVersion: integer("schemaVersion")
+    .notNull()
+    .default(1),
+
+  occurredAt: timestamp("occurredAt")
+    .notNull()
+    .defaultNow(),
+
+  createdAt: timestamp("createdAt")
+    .notNull()
+    .defaultNow(),
+});
+
 // --- AURA 22 app tables ----------------------------------------------------
 // Scoped per user via a plain `userId` column (no FK, per stack conventions).
 

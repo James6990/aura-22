@@ -101,7 +101,7 @@ export default function CheckInReadinessPanel({
     setSaveError("");
 
     try {
-      await saveDailyCheckIn({
+      const result = await saveDailyCheckIn({
         energy,
         workoutCompleted: workout,
         recoveryCompleted: recovery,
@@ -109,6 +109,10 @@ export default function CheckInReadinessPanel({
         readinessScore: calculatedReadiness.score,
         readinessLevel: calculatedReadiness.level,
       });
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
 
       setSubmitted(true);
       router.refresh();
