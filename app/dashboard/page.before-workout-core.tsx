@@ -79,38 +79,11 @@ export default async function DashboardPage() {
   const weeklyReview = generateWeeklyReview(
     dashboard.readinessHistory,
   );
-
-  const progression = calculateProgression(
-    dashboard.recentEvents,
-  );
-
-  const streak = calculateStreaks(
-    dashboard.checkInDates,
-  );
-
-  const readinessScore =
-    dashboard.todayCheckIn?.readinessScore ??
-    genomeMetrics.readinessBaseline;
-
-  const apex = generateApexCore({
-    preferredName,
-    readinessScore,
-    traits: adaptiveTraits,
-    currentStreak: streak.currentStreak,
-    latestWorkout: dashboard.latestWorkout,
-    recentMemories: dashboard.apexMemories.map(
-      (memory) => ({
-        title: memory.title,
-        message: memory.message,
-        category: memory.category,
-        occurredAt: memory.occurredAt,
-      }),
-    ),
-  });
-
-  const workoutRecommendation =
+const workoutRecommendation =
     generateWorkoutRecommendation({
-      readinessScore,
+      readinessScore:
+        dashboard.todayCheckIn?.readinessScore ??
+        genomeMetrics.readinessBaseline,
       consistency: adaptiveTraits.consistency,
       recovery: adaptiveTraits.recovery,
       trainingCapacity:
@@ -121,8 +94,6 @@ export default async function DashboardPage() {
         dashboard.genome.experienceLevel ??
         "beginner",
       equipment: dashboard.genome.equipment,
-      decisionPriority:
-        apex.decision.priority,
     });
 
   const workoutSession = generateWorkoutSession({
@@ -134,8 +105,7 @@ export default async function DashboardPage() {
       "beginner"
     ) as ExerciseDifficulty,
     equipment:
-      dashboard.genome
-        .equipment as ExerciseEquipment[],
+      dashboard.genome.equipment as ExerciseEquipment[],
 
     // These will later come from the user's saved
     // accessibility and movement-constraint profile.
@@ -143,6 +113,32 @@ export default async function DashboardPage() {
     movementConstraints: [],
     progressionHistory:
       dashboard.exerciseProgressionHistory,
+  });
+
+  const progression = calculateProgression(
+    dashboard.recentEvents,
+  );
+
+  const streak = calculateStreaks(
+    dashboard.checkInDates,
+  );
+
+  const apex = generateApexCore({
+    preferredName,
+    readinessScore:
+      dashboard.todayCheckIn?.readinessScore ??
+      genomeMetrics.readinessBaseline,
+    traits: adaptiveTraits,
+    currentStreak: streak.currentStreak,
+    latestWorkout: dashboard.latestWorkout,
+    recentMemories: dashboard.apexMemories.map(
+      (memory) => ({
+        title: memory.title,
+        message: memory.message,
+        category: memory.category,
+        occurredAt: memory.occurredAt,
+      }),
+    ),
   });
 
   return (

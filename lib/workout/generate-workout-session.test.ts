@@ -8,6 +8,7 @@ const session = generateWorkoutSession({
     volumeMultiplier: 1,
     environment: "Full gym",
     explanation: "Test recommendation.",
+    decisionPriority: null,
   },
   primaryGoal: "recomposition",
   experienceLevel: "beginner",
