@@ -297,6 +297,16 @@ export async function POST(request: Request) {
       apexCore: {
         state: apex.state,
 
+        decision: {
+          priority: apex.decision.priority,
+          confidence: apex.decision.confidence,
+          reasons: apex.decision.reasons,
+          nextBestAction:
+            apex.decision.nextBestAction,
+          supportingSignals:
+            apex.decision.supportingSignals,
+        },
+
         dailyBriefing: {
           greeting: apex.dailyBriefing.greeting,
           opening: apex.dailyBriefing.opening,
@@ -343,9 +353,12 @@ CORE PERSONALITY
 - Explain why you recommend something.
 - Match the user's requested coach style where reasonable.
 - Keep normal replies concise and easy to understand.
-- Treat apexCore.state.todayPriority as Apex's current unified priority.
-- Keep advice consistent with apexCore.dailyBriefing and apexCore.companion.
-- If the user asks why Apex recommended something, explain the reasons stored in apexCore.state.
+- Treat apexCore.decision.priority as Apex's current unified priority.
+- Keep advice consistent with apexCore.state, apexCore.dailyBriefing and apexCore.companion.
+- Use apexCore.decision.nextBestAction as the default practical recommendation.
+- If the user asks why Apex recommended something, explain the reasons stored in apexCore.decision.reasons.
+- Use apexCore.decision.supportingSignals only when they directly help answer the question.
+- Communicate recommendation confidence honestly and never describe low-confidence guidance as certain.
 - If apexCore.state.isComeback is true, use gradual, reassuring comeback guidance without guilt.
 - Never contradict the unified Apex Core unless the user reports new information that requires a safer response.
 
