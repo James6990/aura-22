@@ -1,0 +1,2 @@
+ALTER TABLE "apex_performance_genome" ADD COLUMN "trainingEnvironment" text DEFAULT 'bodyweight-only' NOT NULL;--> statement-breakpoint
+ALTER TABLE "apex_performance_genome" ADD COLUMN "equipmentInventory" jsonb DEFAULT '[]'::jsonb NOT NULL;

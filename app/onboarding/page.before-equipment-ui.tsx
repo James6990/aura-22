@@ -156,121 +156,6 @@ const equipmentOptions: Array<{
   },
 ];
 
-const trainingEnvironmentOptions: Array<{
-  value: TrainingEnvironment;
-  title: string;
-  description: string;
-}> = [
-  {
-    value: "commercial-gym",
-    title: "Commercial gym",
-    description:
-      "Regular access to machines, cables, barbells and cardio equipment.",
-  },
-  {
-    value: "home-gym",
-    title: "Home gym",
-    description:
-      "Train mainly at home using your own equipment.",
-  },
-  {
-    value: "outdoors",
-    title: "Outdoors",
-    description:
-      "Walking, running, cycling or outdoor exercise.",
-  },
-  {
-    value: "bodyweight-only",
-    title: "Bodyweight only",
-    description:
-      "No equipment required. Apex will use bodyweight-friendly sessions.",
-  },
-  {
-    value: "mixed",
-    title: "Mixed setup",
-    description:
-      "Use more than one environment, such as gym, home and outdoors.",
-  },
-];
-
-const equipmentInventoryOptions: Array<{
-  value: EquipmentInventoryItem;
-  title: string;
-  description: string;
-}> = [
-  {
-    value: "adjustable-dumbbells",
-    title: "Adjustable dumbbells",
-    description: "Dumbbells with changeable weight.",
-  },
-  {
-    value: "fixed-dumbbells",
-    title: "Fixed dumbbells",
-    description: "One or more fixed-weight dumbbell pairs.",
-  },
-  {
-    value: "bench",
-    title: "Bench",
-    description: "Flat or adjustable training bench.",
-  },
-  {
-    value: "barbell",
-    title: "Barbell and plates",
-    description: "A barbell with suitable weight plates.",
-  },
-  {
-    value: "squat-rack",
-    title: "Squat rack",
-    description: "Rack or stands suitable for barbell training.",
-  },
-  {
-    value: "pull-up-bar",
-    title: "Pull-up bar",
-    description: "Fixed or doorway pull-up equipment.",
-  },
-  {
-    value: "resistance-bands",
-    title: "Resistance bands",
-    description: "Loop bands, tube bands or both.",
-  },
-  {
-    value: "kettlebells",
-    title: "Kettlebells",
-    description: "One or more kettlebell weights.",
-  },
-  {
-    value: "cable-machine",
-    title: "Cable machine",
-    description: "Compact or full cable resistance system.",
-  },
-  {
-    value: "exercise-bike",
-    title: "Exercise bike",
-    description: "Upright, recumbent or spin bike.",
-  },
-  {
-    value: "treadmill",
-    title: "Treadmill",
-    description: "Walking or running treadmill.",
-  },
-  {
-    value: "rowing-machine",
-    title: "Rowing machine",
-    description: "Indoor rowing equipment.",
-  },
-  {
-    value: "yoga-mat",
-    title: "Exercise mat",
-    description: "Mat for mobility, core and floor exercises.",
-  },
-  {
-    value: "none",
-    title: "No equipment",
-    description:
-      "Use bodyweight and equipment-free sessions at home.",
-  },
-];
-
 export default function OnboardingPage() {
   const router = useRouter();
 
@@ -313,49 +198,13 @@ export default function OnboardingPage() {
     }));
   }
 
-  function selectTrainingEnvironment(
-    value: TrainingEnvironment,
-  ) {
+  function toggleEquipment(value: Equipment) {
     setData((current) => ({
       ...current,
-      trainingEnvironment: value,
-      equipmentInventory:
-        value === "bodyweight-only" ||
-        value === "outdoors"
-          ? []
-          : current.equipmentInventory,
+      equipment: current.equipment.includes(value)
+        ? current.equipment.filter((item) => item !== value)
+        : [...current.equipment, value],
     }));
-  }
-
-  function toggleEquipmentInventory(
-    value: EquipmentInventoryItem,
-  ) {
-    setData((current) => {
-      if (value === "none") {
-        return {
-          ...current,
-          equipmentInventory:
-            current.equipmentInventory.includes("none")
-              ? []
-              : ["none"],
-        };
-      }
-
-      const withoutNone =
-        current.equipmentInventory.filter(
-          (item) => item !== "none",
-        );
-
-      return {
-        ...current,
-        equipmentInventory:
-          withoutNone.includes(value)
-            ? withoutNone.filter(
-                (item) => item !== value,
-              )
-            : [...withoutNone, value],
-      };
-    });
   }
 
   function canContinue() {
@@ -386,21 +235,7 @@ export default function OnboardingPage() {
     }
 
     if (step === 5) {
-      if (
-        data.experience === null ||
-        data.trainingEnvironment === null
-      ) {
-        return false;
-      }
-
-      if (
-        data.trainingEnvironment === "home-gym" ||
-        data.trainingEnvironment === "mixed"
-      ) {
-        return data.equipmentInventory.length > 0;
-      }
-
-      return true;
+      return data.experience !== null && data.equipment.length > 0;
     }
 
     return true;
@@ -444,38 +279,20 @@ export default function OnboardingPage() {
         ? Number(data.weightKg)
         : Number(data.weightLb) * 0.45359237;
 
-    if (!data.trainingEnvironment) {
-      setSaveError(
-        "Please select your main training environment.",
-      );
-      setSavingProfile(false);
-      return;
-    }
+    const trainingEnvironment: TrainingEnvironment =
+      data.equipment.includes("full-gym")
+        ? "commercial-gym"
+        : data.equipment.includes("home-gym")
+          ? "home-gym"
+          : data.equipment.includes("outdoors")
+            ? "outdoors"
+            : "bodyweight-only";
 
-    const trainingEnvironment =
-      data.trainingEnvironment;
-
-    const equipmentInventory =
-      data.equipmentInventory;
-
-    const legacyEquipment: Equipment[] =
-      trainingEnvironment === "commercial-gym"
-        ? ["full-gym"]
-        : trainingEnvironment === "home-gym"
-          ? equipmentInventory.includes("none")
-            ? ["bodyweight"]
-            : ["home-gym", "bodyweight"]
-          : trainingEnvironment === "outdoors"
-            ? ["outdoors", "bodyweight"]
-            : trainingEnvironment ===
-                "bodyweight-only"
-              ? ["bodyweight"]
-              : [
-                  "full-gym",
-                  "home-gym",
-                  "bodyweight",
-                  "outdoors",
-                ];
+    const equipmentInventory:
+      EquipmentInventoryItem[] =
+      data.equipment.includes("home-gym")
+        ? ["none"]
+        : [];
 
     const result = await savePerformanceGenome({
       preferredName: data.name.trim(),
@@ -485,7 +302,7 @@ export default function OnboardingPage() {
       unitSystem: data.unitSystem,
       primaryGoal: data.goal,
       experienceLevel: data.experience,
-      equipment: legacyEquipment,
+      equipment: data.equipment,
       trainingEnvironment,
       equipmentInventory,
       dietaryPreference: data.diet,
@@ -753,8 +570,8 @@ export default function OnboardingPage() {
             <div>
               <StepHeading
                 eyebrow="Training setup"
-                title="Where and how do you train?"
-                description="Apex will only recommend exercises that suit your experience, environment and available equipment."
+                title="How do you currently train?"
+                description="This helps Apex recommend realistic sessions using equipment you actually have."
               />
 
               <h2 className="mt-8 font-bold text-white">
@@ -766,154 +583,50 @@ export default function OnboardingPage() {
                   {
                     value: "beginner" as const,
                     title: "Beginner",
-                    description:
-                      "New to training or returning after a long break.",
+                    description: "New or returning after a long break.",
                   },
                   {
                     value: "intermediate" as const,
                     title: "Intermediate",
-                    description:
-                      "Comfortable with regular structured training.",
+                    description: "Training consistently for some time.",
                   },
                   {
                     value: "advanced" as const,
                     title: "Advanced",
-                    description:
-                      "Experienced with programming, progression and technique.",
+                    description: "Experienced with structured programming.",
                   },
                 ].map((option) => (
                   <SelectionCard
                     key={option.value}
-                    selected={
-                      data.experience ===
-                      option.value
-                    }
+                    selected={data.experience === option.value}
                     title={option.title}
-                    description={
-                      option.description
-                    }
+                    description={option.description}
                     onClick={() =>
-                      updateData(
-                        "experience",
-                        option.value,
-                      )
+                      updateData("experience", option.value)
                     }
                   />
                 ))}
               </div>
 
               <h2 className="mt-8 font-bold text-white">
-                Main training environment
+                Equipment available
               </h2>
 
-              <p className="mt-1 text-xs leading-5 text-slate-400">
-                Choose the option that best represents
-                where you normally train. You can update
-                this later.
+              <p className="mt-1 text-xs text-slate-400">
+                Select every option you can regularly use.
               </p>
 
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                {trainingEnvironmentOptions.map(
-                  (option) => (
-                    <SelectionCard
-                      key={option.value}
-                      selected={
-                        data.trainingEnvironment ===
-                        option.value
-                      }
-                      title={option.title}
-                      description={
-                        option.description
-                      }
-                      onClick={() =>
-                        selectTrainingEnvironment(
-                          option.value,
-                        )
-                      }
-                    />
-                  ),
-                )}
+                {equipmentOptions.map((option) => (
+                  <SelectionCard
+                    key={option.value}
+                    selected={data.equipment.includes(option.value)}
+                    title={option.title}
+                    description={option.description}
+                    onClick={() => toggleEquipment(option.value)}
+                  />
+                ))}
               </div>
-
-              {(data.trainingEnvironment ===
-                "home-gym" ||
-                data.trainingEnvironment ===
-                  "mixed") && (
-                <div className="mt-8 rounded-3xl border border-cyan-500/20 bg-cyan-500/5 p-5">
-                  <h2 className="font-bold text-white">
-                    What equipment can you regularly
-                    use?
-                  </h2>
-
-                  <p className="mt-2 text-xs leading-5 text-slate-400">
-                    Select everything available. Choosing
-                    “No equipment” will create
-                    bodyweight-friendly home sessions.
-                  </p>
-
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    {equipmentInventoryOptions.map(
-                      (option) => (
-                        <SelectionCard
-                          key={option.value}
-                          selected={data.equipmentInventory.includes(
-                            option.value,
-                          )}
-                          title={option.title}
-                          description={
-                            option.description
-                          }
-                          onClick={() =>
-                            toggleEquipmentInventory(
-                              option.value,
-                            )
-                          }
-                        />
-                      ),
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {data.trainingEnvironment ===
-                "bodyweight-only" && (
-                <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <Check className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
-
-                  <p className="text-sm leading-6 text-slate-300">
-                    Apex will create sessions that need no
-                    gym equipment. You can add equipment
-                    later without restarting your Journey.
-                  </p>
-                </div>
-              )}
-
-              {data.trainingEnvironment ===
-                "commercial-gym" && (
-                <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <Dumbbell className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
-
-                  <p className="text-sm leading-6 text-slate-300">
-                    Apex will initially assume access to
-                    common commercial-gym equipment. You
-                    will be able to mark unavailable or
-                    disliked equipment later.
-                  </p>
-                </div>
-              )}
-
-              {data.trainingEnvironment ===
-                "outdoors" && (
-                <div className="mt-6 flex items-start gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-                  <Home className="mt-0.5 h-5 w-5 shrink-0 text-emerald-400" />
-
-                  <p className="text-sm leading-6 text-slate-300">
-                    Apex will prioritise walking, running,
-                    mobility and suitable outdoor
-                    activities.
-                  </p>
-                </div>
-              )}
             </div>
           )}
 

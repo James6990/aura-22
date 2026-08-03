@@ -23,6 +23,16 @@ export type PerformanceGenomeInput = {
     | "intermediate"
     | "advanced";
   equipment: string[];
+
+  trainingEnvironment:
+    | "commercial-gym"
+    | "home-gym"
+    | "outdoors"
+    | "bodyweight-only"
+    | "mixed";
+
+  equipmentInventory: string[];
+
   dietaryPreference:
     | "standard"
     | "vegetarian"
@@ -106,10 +116,40 @@ export async function savePerformanceGenome(
     };
   }
 
+  const validTrainingEnvironments = new Set([
+    "commercial-gym",
+    "home-gym",
+    "outdoors",
+    "bodyweight-only",
+    "mixed",
+  ]);
+
+  if (
+    !validTrainingEnvironments.has(
+      input.trainingEnvironment,
+    )
+  ) {
+    return {
+      success: false,
+      error: "Please select a valid training environment.",
+    };
+  }
+
   if (input.equipment.length === 0) {
     return {
       success: false,
       error: "Please select at least one training option.",
+    };
+  }
+
+  if (
+    input.trainingEnvironment === "home-gym" &&
+    input.equipmentInventory.length === 0
+  ) {
+    return {
+      success: false,
+      error:
+        "Please select your home equipment or choose no equipment.",
     };
   }
 
@@ -126,6 +166,10 @@ export async function savePerformanceGenome(
         primaryGoal: input.primaryGoal,
         experienceLevel: input.experienceLevel,
         equipment: input.equipment,
+        trainingEnvironment:
+          input.trainingEnvironment,
+        equipmentInventory:
+          input.equipmentInventory,
         dietaryPreference: input.dietaryPreference,
         allergiesAndAvoidances:
           input.allergiesAndAvoidances.trim(),
@@ -149,6 +193,10 @@ export async function savePerformanceGenome(
           primaryGoal: input.primaryGoal,
           experienceLevel: input.experienceLevel,
           equipment: input.equipment,
+          trainingEnvironment:
+            input.trainingEnvironment,
+          equipmentInventory:
+            input.equipmentInventory,
           dietaryPreference: input.dietaryPreference,
           allergiesAndAvoidances:
             input.allergiesAndAvoidances.trim(),

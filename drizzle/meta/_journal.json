@@ -43,6 +43,13 @@
       "when": 1785783956526,
       "tag": "0005_add_apex_memory_engine",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785795596365,
+      "tag": "0006_pale_falcon",
+      "breakpoints": true
     }
   ]
 }

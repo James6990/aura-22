@@ -96,7 +96,28 @@ export const performanceGenome = pgTable("apex_performance_genome", {
   primaryGoal: text("primaryGoal"),
   experienceLevel: text("experienceLevel"),
 
+  /*
+   * Legacy broad equipment values used by the current
+   * workout engine. Retained during the migration.
+   */
   equipment: jsonb("equipment")
+    .$type<string[]>()
+    .notNull()
+    .default([]),
+
+  trainingEnvironment: text("trainingEnvironment", {
+    enum: [
+      "commercial-gym",
+      "home-gym",
+      "outdoors",
+      "bodyweight-only",
+      "mixed",
+    ],
+  })
+    .notNull()
+    .default("bodyweight-only"),
+
+  equipmentInventory: jsonb("equipmentInventory")
     .$type<string[]>()
     .notNull()
     .default([]),

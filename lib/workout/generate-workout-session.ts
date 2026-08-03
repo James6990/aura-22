@@ -8,6 +8,7 @@ import type { MovementConstraint } from "@/lib/workout/apply-movement-constraint
 import { selectExercises } from "@/lib/workout/select-exercises";
 import type { WorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
 import type { ExerciseProgressionHistory } from "@/lib/workout/get-exercise-progression-history";
+import type { CoachPriority } from "@/lib/companion/generate-coach-decision";
 
 export type WorkoutSessionExercise = {
   id: string;
@@ -52,14 +53,15 @@ export type GenerateWorkoutSessionInput = {
   >;
 };
 
-function getMovementPatterns(
-  primaryGoal: string,
-  intensity: WorkoutRecommendation["intensity"],
-): MovementPattern[] {
-  if (intensity === "Recovery") {
-    return ["mobility", "cardio", "core"];
-  }
+type SessionPrescription = {
+  sets: number;
+  reps: string;
+  restSeconds: number;
+};
 
+function getGoalMovementPatterns(
+  primaryGoal: string,
+): MovementPattern[] {
   switch (primaryGoal) {
     case "muscle":
       return [
@@ -112,28 +114,177 @@ function getMovementPatterns(
   }
 }
 
-function getMaximumFatigue(
-  intensity: WorkoutRecommendation["intensity"],
-) {
+function getMovementPatterns({
+  primaryGoal,
+  intensity,
+  priority,
+}: {
+  primaryGoal: string;
+  intensity: WorkoutRecommendation["intensity"];
+  priority: CoachPriority | null;
+}): MovementPattern[] {
+  if (priority === "recover") {
+    return ["mobility", "cardio", "core"];
+  }
+
+  if (priority === "technique") {
+    return [
+      "horizontal-push",
+      "horizontal-pull",
+      "squat",
+      "hinge",
+      "core",
+      "mobility",
+    ];
+  }
+
+  if (priority === "build-consistency") {
+    return [
+      "squat",
+      "horizontal-push",
+      "horizontal-pull",
+      "core",
+      "cardio",
+    ];
+  }
+
+  if (priority === "hydrate") {
+    return [
+      "mobility",
+      "core",
+      "cardio",
+      "horizontal-pull",
+    ];
+  }
+
+  if (priority === "collect-data") {
+    return [
+      "squat",
+      "horizontal-push",
+      "horizontal-pull",
+      "core",
+    ];
+  }
+
+  if (priority === "celebrate") {
+    return ["mobility", "cardio", "core"];
+  }
+
+  if (intensity === "Recovery") {
+    return ["mobility", "cardio", "core"];
+  }
+
+  return getGoalMovementPatterns(primaryGoal);
+}
+
+function getMaximumFatigue({
+  intensity,
+  priority,
+}: {
+  intensity: WorkoutRecommendation["intensity"];
+  priority: CoachPriority | null;
+}) {
+  if (
+    priority === "recover" ||
+    priority === "hydrate" ||
+    priority === "celebrate"
+  ) {
+    return 3;
+  }
+
+  if (
+    priority === "technique" ||
+    priority === "build-consistency" ||
+    priority === "collect-data"
+  ) {
+    return 4;
+  }
+
   if (intensity === "Recovery") return 3;
   if (intensity === "Light") return 4;
   if (intensity === "High") return 8;
+
   return 6;
 }
 
-function getExerciseLimit(
-  intensity: WorkoutRecommendation["intensity"],
-) {
+function getExerciseLimit({
+  intensity,
+  priority,
+}: {
+  intensity: WorkoutRecommendation["intensity"];
+  priority: CoachPriority | null;
+}) {
+  if (priority === "recover") return 4;
+  if (priority === "technique") return 5;
+  if (priority === "build-consistency") return 4;
+  if (priority === "hydrate") return 3;
+  if (priority === "collect-data") return 4;
+  if (priority === "celebrate") return 3;
+
   if (intensity === "Recovery") return 4;
   if (intensity === "Light") return 5;
   if (intensity === "High") return 7;
+
   return 6;
 }
 
-function getPrescription(
-  intensity: WorkoutRecommendation["intensity"],
-  difficulty: ExerciseDifficulty,
-) {
+function getPrescription({
+  intensity,
+  difficulty,
+  priority,
+}: {
+  intensity: WorkoutRecommendation["intensity"];
+  difficulty: ExerciseDifficulty;
+  priority: CoachPriority | null;
+}): SessionPrescription {
+  if (priority === "recover") {
+    return {
+      sets: 2,
+      reps: "8–12 comfortable reps",
+      restSeconds: 60,
+    };
+  }
+
+  if (priority === "technique") {
+    return {
+      sets: 2,
+      reps: "6–10 slow, controlled reps",
+      restSeconds: 105,
+    };
+  }
+
+  if (priority === "build-consistency") {
+    return {
+      sets: 2,
+      reps: "8–12 confident reps",
+      restSeconds: 75,
+    };
+  }
+
+  if (priority === "hydrate") {
+    return {
+      sets: 2,
+      reps: "8–10 comfortable reps",
+      restSeconds: 90,
+    };
+  }
+
+  if (priority === "collect-data") {
+    return {
+      sets: 2,
+      reps: "8–10 controlled baseline reps",
+      restSeconds: 90,
+    };
+  }
+
+  if (priority === "celebrate") {
+    return {
+      sets: 2,
+      reps: "8–12 relaxed reps",
+      restSeconds: 75,
+    };
+  }
+
   if (intensity === "Recovery") {
     return {
       sets: 2,
@@ -167,9 +318,22 @@ function getPrescription(
 
 function getProgressionExplanation(
   history: ExerciseProgressionHistory | undefined,
+  priority: CoachPriority | null,
 ) {
   if (!history?.progressionDecision) {
     return null;
+  }
+
+  if (
+    priority === "recover" ||
+    priority === "technique" ||
+    priority === "hydrate" ||
+    priority === "celebrate"
+  ) {
+    return (
+      "Apex has preserved your previous progression data, " +
+      "but today’s priority does not require increasing the challenge."
+    );
   }
 
   if (history.progressionDecision === "increase") {
@@ -195,6 +359,7 @@ function getProgressionExplanation(
 
 function getSuggestedLoad(
   history: ExerciseProgressionHistory | undefined,
+  priority: CoachPriority | null,
 ) {
   if (!history) {
     return null;
@@ -204,10 +369,46 @@ function getSuggestedLoad(
     return history.previousLoadKg;
   }
 
+  if (
+    priority === "recover" ||
+    priority === "technique" ||
+    priority === "hydrate" ||
+    priority === "celebrate"
+  ) {
+    return history.previousLoadKg;
+  }
+
   return (
     history.recommendedNextLoadKg ??
     history.previousLoadKg
   );
+}
+
+function getPrioritySafetyMessage(
+  priority: CoachPriority | null,
+) {
+  switch (priority) {
+    case "recover":
+      return "Keep every movement comfortable. Stop or reduce the session if fatigue, pain or discomfort begins to increase.";
+
+    case "technique":
+      return "Use conservative loads and controlled movement. Technique and comfort matter more than completing every prescribed set.";
+
+    case "build-consistency":
+      return "Completing a smaller session is the goal today. You do not need to add extra exercises or intensity.";
+
+    case "hydrate":
+      return "Address hydration before beginning. Delay or reduce the session if you feel unwell, dizzy or unusually fatigued.";
+
+    case "collect-data":
+      return "Treat this as a baseline session. Record honest effort, comfort and technique rather than testing your limits.";
+
+    case "celebrate":
+      return "Recent progress does not need to be followed immediately by another demanding session. Recover and enjoy the achievement.";
+
+    default:
+      return null;
+  }
 }
 
 export function generateWorkoutSession({
@@ -219,10 +420,14 @@ export function generateWorkoutSession({
   movementConstraints = [],
   progressionHistory = {},
 }: GenerateWorkoutSessionInput): WorkoutSession {
-  const movementPatterns = getMovementPatterns(
+  const priority =
+    recommendation.decisionPriority;
+
+  const movementPatterns = getMovementPatterns({
     primaryGoal,
-    recommendation.intensity,
-  );
+    intensity: recommendation.intensity,
+    priority,
+  });
 
   const selection = selectExercises({
     movementPatterns,
@@ -230,48 +435,80 @@ export function generateWorkoutSession({
     experienceLevel,
     accessibilityNeeds,
     movementConstraints,
-    maximumFatigueScore: getMaximumFatigue(
-      recommendation.intensity,
-    ),
-    limit: getExerciseLimit(recommendation.intensity),
+    maximumFatigueScore: getMaximumFatigue({
+      intensity: recommendation.intensity,
+      priority,
+    }),
+    limit: getExerciseLimit({
+      intensity: recommendation.intensity,
+      priority,
+    }),
+    primaryGoal,
+    decisionPriority: priority,
   });
 
-  const prescription = getPrescription(
-    recommendation.intensity,
-    experienceLevel,
+  const prescription = getPrescription({
+    intensity: recommendation.intensity,
+    difficulty: experienceLevel,
+    priority,
+  });
+
+  const exercises = selection.exercises.map(
+    (exercise) => {
+      const history =
+        progressionHistory[exercise.id];
+
+      return {
+        id: exercise.id,
+        name: exercise.name,
+        movementPattern:
+          exercise.movementPattern,
+        sets: Math.max(
+          1,
+          Math.round(
+            prescription.sets *
+              recommendation.volumeMultiplier,
+          ),
+        ),
+        reps: prescription.reps,
+        restSeconds:
+          prescription.restSeconds,
+        fatigueScore:
+          exercise.fatigueScore,
+        substitutions:
+          exercise.substitutions,
+
+        suggestedLoadKg: getSuggestedLoad(
+          history,
+          priority,
+        ),
+        previousLoadKg:
+          history?.previousLoadKg ?? null,
+        progressionDecision:
+          history?.progressionDecision ?? null,
+        progressionExplanation:
+          getProgressionExplanation(
+            history,
+            priority,
+          ),
+      };
+    },
   );
 
-  const exercises = selection.exercises.map((exercise) => {
-    const history =
-      progressionHistory[exercise.id];
+  const prioritySafetyMessage =
+    getPrioritySafetyMessage(priority);
 
-    return {
-      id: exercise.id,
-      name: exercise.name,
-      movementPattern: exercise.movementPattern,
-      sets: Math.max(
-        1,
-        Math.round(
-          prescription.sets *
-            recommendation.volumeMultiplier,
-        ),
-      ),
-      reps: prescription.reps,
-      restSeconds: prescription.restSeconds,
-      fatigueScore: exercise.fatigueScore,
-      substitutions: exercise.substitutions,
+  let safetyMessage =
+    selection.message ??
+    prioritySafetyMessage;
 
-      suggestedLoadKg: getSuggestedLoad(history),
-      previousLoadKg:
-        history?.previousLoadKg ?? null,
-      progressionDecision:
-        history?.progressionDecision ?? null,
-      progressionExplanation:
-        getProgressionExplanation(history),
-    };
-  });
-
-  let safetyMessage = selection.message;
+  if (
+    selection.message &&
+    prioritySafetyMessage
+  ) {
+    safetyMessage =
+      `${selection.message} ${prioritySafetyMessage}`;
+  }
 
   if (exercises.length === 0) {
     safetyMessage =
