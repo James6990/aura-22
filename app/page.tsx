@@ -6,17 +6,29 @@ import {
   ChevronRight, Lock, Unlock, Zap, Activity, Award, 
   TrendingUp, Shield, RefreshCw, CheckCircle2, Heart, 
   Send, Bot, Globe, Filter, Crown, Cpu, ArrowUpRight,
-  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera, Volume2, ShieldAlert, Sword, Eye, Mic, Layers, Smile
+  Bluetooth, Footprints, Calendar, BatteryCharging, Radio, Plus, Search, BookOpen, Clock, PieChart, Camera, Volume2, ShieldAlert, Sword, Eye, Mic, Layers, Smile, UserPlus
 } from "lucide-react";
 
-type TabType = "dashboard" | "workout" | "diet" | "bloodline" | "leaderboard" | "ai-coach" | "biometrics" | "devices" | "badges" | "social" | "pro";
+type TabType = "dashboard" | "workout" | "diet" | "bloodline" | "leaderboard" | "ai-coach" | "biometrics" | "devices" | "badges" | "social" | "pro" | "family-hub";
 
 type UserArchetype = "bodybuilder" | "fatloss" | "athlete" | "endurance" | "vitality";
 type DietaryRestriction = "standard" | "plant-based" | "gluten-free" | "keto" | "dairy-free";
+type LeagueTier = "Pawn" | "Scout" | "Gladiator" | "Centurion" | "Spartan" | "Titan" | "Warlord" | "Immortal" | "Mythic Iron" | "Apex Colosseum Sovereign";
+
+interface FamilyMember {
+  id: string;
+  name: string;
+  archetype: string;
+  streak: number;
+  activeToday: boolean;
+}
 
 interface UserProfile {
   name: string;
   isPro: boolean;
+  isFamilyManager: boolean;
+  familySlotsTotal: number;
+  familyMembers: FamilyMember[];
   xp: number;
   streak: number;
   weightKg: number;
@@ -27,8 +39,9 @@ interface UserProfile {
   gender: "male" | "female" | "other";
   menstrualPhase: "follicular" | "ovulatory" | "luteal" | "menstrual" | "n/a";
   cycleDay: number;
-  league: "Bronze" | "Silver" | "Gold" | "Sapphire" | "Ruby" | "Emerald" | "Diamond";
+  league: LeagueTier;
   leagueRank: number;
+  streakShieldActive: boolean;
 }
 
 interface ExerciseItem {
@@ -79,7 +92,7 @@ export default function ApexStateOS() {
 
   const [user, setUser] = useState<UserProfile>(() => {
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("apex_user_profile_v2");
+      const saved = localStorage.getItem("apex_user_profile_v4");
       if (saved) {
         try { return JSON.parse(saved); } catch (e) { /* fallback */ }
       }
@@ -87,6 +100,12 @@ export default function ApexStateOS() {
     return {
       name: "Alex Vance",
       isPro: false,
+      isFamilyManager: true,
+      familySlotsTotal: 5,
+      familyMembers: [
+        { id: "f1", name: "Valerie Vance", archetype: "bodybuilder", streak: 18, activeToday: true },
+        { id: "f2", name: "Kurosh_X", archetype: "athlete", streak: 12, activeToday: false }
+      ],
       xp: 2840,
       streak: 14,
       weightKg: 75,
@@ -97,8 +116,9 @@ export default function ApexStateOS() {
       gender: "female",
       menstrualPhase: "follicular",
       cycleDay: 8,
-      league: "Ruby",
-      leagueRank: 4
+      league: "Titan",
+      leagueRank: 4,
+      streakShieldActive: true
     };
   });
 
@@ -113,10 +133,6 @@ export default function ApexStateOS() {
   // Recovery Debt State & Pacing Safeguards
   const [recoveryDebtPct, setRecoveryDebtPct] = useState<number>(38);
   const [pacingSafeguardEnabled, setPacingSafeguardEnabled] = useState<boolean>(true);
-
-  // Audio Hype Mode State
-  const [hypeActive, setHypeActive] = useState<boolean>(false);
-  const [hypeMessage, setHypeMessage] = useState<string>("Ready to ignite your set!");
 
   const [workoutActive, setWorkoutActive] = useState<boolean>(false);
   const [workoutTimer, setWorkoutTimer] = useState<number>(0);
@@ -154,7 +170,7 @@ export default function ApexStateOS() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("apex_user_profile_v2", JSON.stringify(user));
+      localStorage.setItem("apex_user_profile_v4", JSON.stringify(user));
     }
   }, [user]);
 
@@ -205,7 +221,6 @@ export default function ApexStateOS() {
     }, 2000);
   };
 
-  // Dynamic Meal Plan Generator based on Archetype and Dietary Restriction
   const generateDynamicMealPlan = () => {
     let sampleMeal = { name: "Adaptive Grilled Chicken & Rice", cals: 650, protein: 45, carbs: 60, fats: 12 };
     
@@ -245,8 +260,8 @@ export default function ApexStateOS() {
       let aiReply = `Analyzing your ${user.archetype} protocol with ${user.dietaryRestriction} nutrition parameters. Everything looks optimal.`;
       if (userText.toLowerCase().includes("recovery") || userText.toLowerCase().includes("debt")) {
         aiReply = `Your Recovery Debt is at ${recoveryDebtPct}%. Because pacing safeguards are ${pacingSafeguardEnabled ? 'active' : 'disabled'}, your training load is dynamically regulated.`;
-      } else if (userText.toLowerCase().includes("voice") || userText.toLowerCase().includes("accessibility")) {
-        aiReply = `Accessibility subsystems are fully engaged: voice logging, screen reader landmarks, and $44 \times 44px$ tap targets are active.`;
+      } else if (userText.toLowerCase().includes("family") || userText.toLowerCase().includes("bloodline")) {
+        aiReply = `Your Bloodline Family Pass is active with ${user.familyMembers.length} members linked. The 20% XP squad multiplier is fully engaged!`;
       }
       setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
     }, 1000);
@@ -329,7 +344,7 @@ export default function ApexStateOS() {
       {/* Main Container */}
       <div className="flex-1 flex flex-col lg:flex-row max-w-7xl w-full mx-auto">
         
-        {/* 11-Tab Sidebar Navigation (Optimized for Switch Controls & Minimum 44x44px touch targets) */}
+        {/* Expanded 12-Tab Sidebar Navigation */}
         <aside role="navigation" aria-label="Main App Modules" className="w-full lg:w-72 border-r border-slate-800 p-4 flex lg:flex-col gap-2 overflow-x-auto shrink-0 bg-slate-950/60">
           <nav className="flex lg:flex-col gap-1 w-full">
             {[
@@ -337,7 +352,8 @@ export default function ApexStateOS() {
               { id: "workout", label: "Workouts & Pacing", icon: Dumbbell },
               { id: "diet", label: "Nutrition & AI Engine", icon: Utensils },
               { id: "bloodline", label: "Bloodline Squads", icon: Users },
-              { id: "leaderboard", label: `${user.league} League`, icon: Trophy },
+              { id: "family-hub", label: "Family Pass Hub", icon: Shield },
+              { id: "leaderboard", label: `${user.league} Arena`, icon: Trophy },
               { id: "biometrics", label: "Somatotype & Profile", icon: Calendar },
               { id: "badges", label: "Milestones & Badges", icon: Award },
               { id: "social", label: "Squad Comms", icon: Globe },
@@ -398,7 +414,7 @@ export default function ApexStateOS() {
                       </div>
                       <h1 className="text-3xl lg:text-4xl font-black text-white tracking-tight">{user.name}</h1>
                       <p className="text-sm text-slate-400 mt-1.5 flex items-center gap-2">
-                        <span>League: <strong className="text-amber-400">{user.league} League</strong></span>
+                        <span>Colosseum Tier: <strong className="text-amber-400">{user.league} Arena</strong></span>
                         <span>•</span>
                         <span>Streak: <strong className="text-amber-400">{user.streak} Days 🔥</strong></span>
                       </p>
@@ -599,30 +615,27 @@ export default function ApexStateOS() {
                 <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
                   <h3 className="font-bold text-white text-base">Active Squad Members</h3>
                   <div className="space-y-3">
-                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
-                      <div>
-                        <h4 className="font-bold text-white text-sm">Valerie Vance</h4>
-                        <span className="text-xs text-emerald-400">Streak: 18 Days 🔥 (Partner Synced)</span>
+                    {user.familyMembers.map((member) => (
+                      <div key={member.id} className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+                        <div>
+                          <h4 className="font-bold text-white text-sm">{member.name}</h4>
+                          <span className="text-xs text-emerald-400">Streak: {member.streak} Days 🔥 ({member.archetype})</span>
+                        </div>
+                        <span className={`text-xs px-3 py-1 rounded-full font-bold ${member.activeToday ? "bg-emerald-500/20 text-emerald-300" : "bg-slate-800 text-slate-300"}`}>
+                          {member.activeToday ? "Active" : "Resting"}
+                        </span>
                       </div>
-                      <span className="text-xs bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full font-bold">Active</span>
-                    </div>
-                    <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
-                      <div>
-                        <h4 className="font-bold text-white text-sm">Kurosh_X</h4>
-                        <span className="text-xs text-amber-400">Streak: 12 Days 🔥</span>
-                      </div>
-                      <span className="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full font-bold">Resting</span>
-                    </div>
+                    ))}
                   </div>
                 </div>
 
                 <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between">
                   <div>
                     <h3 className="font-bold text-white text-base">Bloodline Multiplier</h3>
-                    <p className="text-xs text-slate-400 mt-1">Squad sync grants a <strong className="text-emerald-400">+15% XP Bonus</strong> on all completed workout sets.</p>
+                    <p className="text-xs text-slate-400 mt-1">Squad sync grants a <strong className="text-emerald-400">+20% XP Bonus</strong> on all completed workout sets.</p>
                   </div>
                   <div className="mt-6 bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
-                    <span className="text-3xl font-black text-cyan-400">1.15x Multiplier</span>
+                    <span className="text-3xl font-black text-cyan-400">1.20x Multiplier</span>
                     <span className="text-[10px] text-slate-400 block mt-1">Active across all bloodline links</span>
                   </div>
                 </div>
@@ -630,14 +643,68 @@ export default function ApexStateOS() {
             </div>
           )}
 
-          {/* ================= 5. LEADERBOARD ================= */}
+          {/* ================= 5. FAMILY PASS HUB ================= */}
+          {activeTab === "family-hub" && (
+            <div className="space-y-6">
+              <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-indigo-500/30 rounded-3xl p-6 lg:p-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                <div>
+                  <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Duolingo-Style Family & Squad Pass</span>
+                  <h1 className="text-2xl lg:text-3xl font-black text-white mt-1">Apex Bloodline Family Hub</h1>
+                  <p className="text-xs text-slate-300 mt-1">Share Pro benefits and sync streaks with up to 5 family members or workout partners.</p>
+                </div>
+                <div className="bg-slate-950/80 border border-slate-800 px-5 py-3 rounded-2xl text-center">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Slots Occupied</span>
+                  <span className="text-xl font-black text-indigo-400">{user.familyMembers.length} / {user.familySlotsTotal}</span>
+                </div>
+              </div>
+
+              <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-bold text-white text-base">Linked Pass Members</h3>
+                  <button 
+                    onClick={() => {
+                      const newName = prompt("Enter new squad member name:");
+                      if (newName) {
+                        setUser(prev => ({
+                          ...prev,
+                          familyMembers: [...prev.familyMembers, { id: Date.now().toString(), name: newName, archetype: "athlete", streak: 1, activeToday: true }]
+                        }));
+                      }
+                    }}
+                    className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 py-2 rounded-xl text-xs min-h-[44px]"
+                  >
+                    <UserPlus className="h-4 w-4" /> Invite Member Slot
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {user.familyMembers.map((mem) => (
+                    <div key={mem.id} className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center font-bold text-indigo-300 text-sm">
+                          {mem.name.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm">{mem.name}</h4>
+                          <span className="text-xs text-slate-400">Streak: {mem.streak}d • Pro Unlocked via Manager</span>
+                        </div>
+                      </div>
+                      <span className="text-xs bg-emerald-500/20 text-emerald-400 px-3 py-1 rounded-full font-bold">Active Pass</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ================= 6. LEADERBOARD (Gladiator & Iron Athlete Tiers) ================= */}
           {activeTab === "leaderboard" && (
             <div className="space-y-6">
               <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
                 <div>
-                  <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Cohort Ranking</span>
-                  <h1 className="text-2xl font-black text-white mt-1">{user.league} League Leaderboard</h1>
-                  <p className="text-xs text-slate-400 mt-1">Top 5 users promote to the next tier at weekly reset.</p>
+                  <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Gladiator & Iron Athlete Colosseum</span>
+                  <h1 className="text-2xl font-black text-white mt-1">{user.league} Arena Cohort</h1>
+                  <p className="text-xs text-slate-400 mt-1">Top 7 warriors promote at Monday colosseum reset. Bottom 5 face exile.</p>
                 </div>
                 <div className="bg-amber-500/10 border border-amber-500/30 px-4 py-3 rounded-2xl text-center">
                   <span className="text-[10px] uppercase font-bold text-amber-400 block">Your Standing</span>
@@ -645,27 +712,48 @@ export default function ApexStateOS() {
                 </div>
               </div>
 
+              {/* Tier Selector for Preview */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-2">
+                {(["Pawn", "Scout", "Gladiator", "Centurion", "Spartan", "Titan", "Warlord", "Immortal", "Mythic Iron", "Apex Colosseum Sovereign"] as LeagueTier[]).map(tier => (
+                  <button 
+                    key={tier}
+                    onClick={() => setUser({...user, league: tier})}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap min-h-[36px] ${user.league === tier ? "bg-amber-500 text-slate-950" : "bg-slate-900 text-slate-400 border border-slate-800"}`}
+                  >
+                    {tier}
+                  </button>
+                ))}
+              </div>
+
               <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-6 space-y-3">
                 {[
-                  { rank: 1, name: "Marcus T.", xp: 3420, pro: true },
-                  { rank: 2, name: "Elena R.", xp: 3150, pro: true },
-                  { rank: 3, name: "David K.", xp: 2950, pro: false },
-                  { rank: 4, name: `${user.name} (You)`, xp: user.xp, pro: user.isPro, user: true },
-                  { rank: 5, name: "Sarah J.", xp: 2680, pro: false }
+                  { rank: 1, name: "Marcus T.", xp: 3420, zone: "promotion" },
+                  { rank: 2, name: "Elena R.", xp: 3150, zone: "promotion" },
+                  { rank: 3, name: "David K.", xp: 2950, zone: "promotion" },
+                  { rank: 4, name: `${user.name} (You)`, xp: user.xp, zone: "safe", user: true },
+                  { rank: 5, name: "Sarah J.", xp: 2680, zone: "safe" },
+                  { rank: 26, name: "Caleb W.", xp: 1100, zone: "relegation" },
+                  { rank: 27, name: "Zack M.", xp: 950, zone: "relegation" }
                 ].map(item => (
                   <div key={item.rank} className={`p-4 rounded-2xl flex items-center justify-between border ${item.user ? "bg-emerald-500/10 border-emerald-500/40" : "bg-slate-950 border-slate-800"}`}>
                     <div className="flex items-center gap-4">
-                      <span className="w-8 h-8 rounded-xl bg-slate-900 text-white font-black flex items-center justify-center text-xs">#{item.rank}</span>
+                      <span className={`w-8 h-8 rounded-xl font-black flex items-center justify-center text-xs ${item.zone === 'promotion' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : item.zone === 'relegation' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-slate-900 text-white'}`}>
+                        #{item.rank}
+                      </span>
                       <span className="font-bold text-white text-sm">{item.name}</span>
                     </div>
-                    <span className="font-black text-emerald-400">{item.xp} XP</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-black text-emerald-400">{item.xp} XP</span>
+                      {item.zone === 'promotion' && <span className="text-[10px] text-amber-400 font-bold uppercase hidden md:inline">Promoting ↗</span>}
+                      {item.zone === 'relegation' && <span className="text-[10px] text-rose-400 font-bold uppercase hidden md:inline">Exile ↘</span>}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* ================= 6. BIOMETRICS & PROFILE ================= */}
+          {/* ================= 7. BIOMETRICS & PROFILE ================= */}
           {activeTab === "biometrics" && (
             <div className="space-y-6">
               <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6">
@@ -707,7 +795,7 @@ export default function ApexStateOS() {
             </div>
           )}
 
-          {/* ================= 7. BADGES & MILESTONES ================= */}
+          {/* ================= 8. BADGES & MILESTONES ================= */}
           {activeTab === "badges" && (
             <div className="space-y-6">
               <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6">
@@ -745,7 +833,7 @@ export default function ApexStateOS() {
             </div>
           )}
 
-          {/* ================= 8. SQUAD COMMS ================= */}
+          {/* ================= 9. SQUAD COMMS ================= */}
           {activeTab === "social" && (
             <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 flex flex-col h-[550px]">
               <h1 className="text-xl font-black text-white mb-1">Squad Comms Feed</h1>
@@ -776,7 +864,7 @@ export default function ApexStateOS() {
             </div>
           )}
 
-          {/* ================= 9. AI COACH ================= */}
+          {/* ================= 10. AI COACH ================= */}
           {activeTab === "ai-coach" && (
             <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 flex flex-col h-[550px]">
               <h1 className="text-xl font-black text-white mb-1">Apex Neural AI Coach</h1>
@@ -805,7 +893,7 @@ export default function ApexStateOS() {
             </div>
           )}
 
-          {/* ================= 10. CONNECTED WEARABLES ================= */}
+          {/* ================= 11. CONNECTED WEARABLES ================= */}
           {activeTab === "devices" && (
             <div className="space-y-6">
               <div className="bg-slate-900/80 border border-slate-800 rounded-3xl p-6">
@@ -823,7 +911,7 @@ export default function ApexStateOS() {
             </div>
           )}
 
-          {/* ================= 11. PRO CLUB ================= */}
+          {/* ================= 12. PRO CLUB & PAYWALL ================= */}
           {activeTab === "pro" && (
             <div className="bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-950 border border-amber-500/30 rounded-3xl p-8 lg:p-12 space-y-6">
               <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase tracking-widest">
@@ -836,7 +924,7 @@ export default function ApexStateOS() {
                 onClick={() => setUser({...user, isPro: true})}
                 className="bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-slate-950 font-black px-8 py-4 rounded-2xl text-sm shadow-xl min-h-[44px]"
               >
-                {user.isPro ? "Apex Pro Active 👑" : "Activate Apex Pro ($19.99/mo)"}
+                {user.isPro ? "Apex Pro Active 👑" : "Activate Apex Pro ($19.99/mo) or Family Pass ($29.99/mo)"}
               </button>
             </div>
           )}
