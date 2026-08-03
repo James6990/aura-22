@@ -108,6 +108,8 @@ export default async function DashboardPage() {
     // accessibility and movement-constraint profile.
     accessibilityNeeds: [],
     movementConstraints: [],
+    progressionHistory:
+      dashboard.exerciseProgressionHistory,
   });
 
   const progression = calculateProgression(

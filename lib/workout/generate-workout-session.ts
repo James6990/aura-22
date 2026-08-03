@@ -7,6 +7,7 @@ import type {
 import type { MovementConstraint } from "@/lib/workout/apply-movement-constraints";
 import { selectExercises } from "@/lib/workout/select-exercises";
 import type { WorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
+import type { ExerciseProgressionHistory } from "@/lib/workout/get-exercise-progression-history";
 
 export type WorkoutSessionExercise = {
   id: string;
@@ -17,6 +18,16 @@ export type WorkoutSessionExercise = {
   restSeconds: number;
   fatigueScore: number;
   substitutions: string[];
+
+  suggestedLoadKg: number | null;
+  previousLoadKg: number | null;
+  progressionDecision:
+    | "increase"
+    | "maintain"
+    | "reduce"
+    | "review"
+    | null;
+  progressionExplanation: string | null;
 };
 
 export type WorkoutSession = {
@@ -35,6 +46,10 @@ export type GenerateWorkoutSessionInput = {
   equipment: ExerciseEquipment[];
   accessibilityNeeds?: ExerciseAccessibility[];
   movementConstraints?: MovementConstraint[];
+  progressionHistory?: Record<
+    string,
+    ExerciseProgressionHistory
+  >;
 };
 
 function getMovementPatterns(
@@ -144,10 +159,55 @@ function getPrescription(
   }
 
   return {
-    sets: difficulty === "beginner" ? 3 : 3,
+    sets: 3,
     reps: "8–12 reps",
     restSeconds: 90,
   };
+}
+
+function getProgressionExplanation(
+  history: ExerciseProgressionHistory | undefined,
+) {
+  if (!history?.progressionDecision) {
+    return null;
+  }
+
+  if (history.progressionDecision === "increase") {
+    return history.recommendedNextLoadKg !== null
+      ? `Your previous result supports trying ${history.recommendedNextLoadKg} kg. You can keep the previous load if preferred.`
+      : "Your previous result showed progression potential.";
+  }
+
+  if (history.progressionDecision === "maintain") {
+    return history.previousLoadKg !== null
+      ? `Apex recommends maintaining ${history.previousLoadKg} kg while building confident, repeatable performance.`
+      : "Apex recommends maintaining the previous difficulty.";
+  }
+
+  if (history.progressionDecision === "reduce") {
+    return history.recommendedNextLoadKg !== null
+      ? `Apex recommends reducing the load to approximately ${history.recommendedNextLoadKg} kg.`
+      : "Apex recommends reducing this exercise’s difficulty.";
+  }
+
+  return "Previous discomfort, technique feedback or performance data means this exercise should be reviewed before progression.";
+}
+
+function getSuggestedLoad(
+  history: ExerciseProgressionHistory | undefined,
+) {
+  if (!history) {
+    return null;
+  }
+
+  if (history.progressionDecision === "review") {
+    return history.previousLoadKg;
+  }
+
+  return (
+    history.recommendedNextLoadKg ??
+    history.previousLoadKg
+  );
 }
 
 export function generateWorkoutSession({
@@ -157,6 +217,7 @@ export function generateWorkoutSession({
   equipment,
   accessibilityNeeds = [],
   movementConstraints = [],
+  progressionHistory = {},
 }: GenerateWorkoutSessionInput): WorkoutSession {
   const movementPatterns = getMovementPatterns(
     primaryGoal,
@@ -180,22 +241,35 @@ export function generateWorkoutSession({
     experienceLevel,
   );
 
-  const exercises = selection.exercises.map((exercise) => ({
-    id: exercise.id,
-    name: exercise.name,
-    movementPattern: exercise.movementPattern,
-    sets: Math.max(
-      1,
-      Math.round(
-        prescription.sets *
-          recommendation.volumeMultiplier,
+  const exercises = selection.exercises.map((exercise) => {
+    const history =
+      progressionHistory[exercise.id];
+
+    return {
+      id: exercise.id,
+      name: exercise.name,
+      movementPattern: exercise.movementPattern,
+      sets: Math.max(
+        1,
+        Math.round(
+          prescription.sets *
+            recommendation.volumeMultiplier,
+        ),
       ),
-    ),
-    reps: prescription.reps,
-    restSeconds: prescription.restSeconds,
-    fatigueScore: exercise.fatigueScore,
-    substitutions: exercise.substitutions,
-  }));
+      reps: prescription.reps,
+      restSeconds: prescription.restSeconds,
+      fatigueScore: exercise.fatigueScore,
+      substitutions: exercise.substitutions,
+
+      suggestedLoadKg: getSuggestedLoad(history),
+      previousLoadKg:
+        history?.previousLoadKg ?? null,
+      progressionDecision:
+        history?.progressionDecision ?? null,
+      progressionExplanation:
+        getProgressionExplanation(history),
+    };
+  });
 
   let safetyMessage = selection.message;
 

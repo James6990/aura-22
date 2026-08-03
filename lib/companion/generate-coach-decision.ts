@@ -118,7 +118,7 @@ export function generateCoachDecision({
     completedWithinHours(latestWorkout.completedAt, 24)
   ) {
     const reasons = [
-      `The latest workout was completed within the past 24 hours.`,
+      `You completed a workout within the past 24 hours.`,
       `${latestWorkout.completedExercises} of ${latestWorkout.totalExercises} exercises were completed.`,
     ];
 
@@ -138,10 +138,10 @@ export function generateCoachDecision({
         dataConfidence,
         signalStrength: 90,
       }),
-      eyebrow: "Workout analysed",
-      headline: `Excellent work, ${preferredName}.`,
+      eyebrow: "Apex has reviewed your workout",
+      headline: `Good work, ${preferredName}.`,
       message:
-        "Your completed session is now part of your Performance Genome and will help Apex shape your next workout.",
+        "Your workout is saved. I am now using the results to shape your recovery and future training.",
       action:
         "Prioritise hydration, food and recovery before your next demanding session.",
       reasons,
@@ -191,10 +191,10 @@ export function generateCoachDecision({
         dataConfidence,
         signalStrength: 90,
       }),
-      eyebrow: "Strong readiness",
-      headline: `You’re ready, ${preferredName}.`,
+      eyebrow: "Your daily direction",
+      headline: `Today looks like a strong training day, ${preferredName}.`,
       message:
-        "Your readiness and recovery support a productive session today.",
+        "Your readiness and recovery currently support a productive session.",
       action:
         "Follow today’s personalised workout while keeping technique controlled.",
       reasons: [

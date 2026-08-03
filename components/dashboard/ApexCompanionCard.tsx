@@ -129,11 +129,18 @@ export default function ApexCompanionCard({
           </div>
 
           <p className="mt-3 text-xs leading-5 text-slate-500">
-            Lower confidence means Apex needs more reliable history
-            before making stronger recommendations.
+            {companion.confidence < 50
+              ? "I am still learning your patterns. More completed check-ins and workouts will make my recommendations increasingly personal."
+              : companion.confidence < 80
+                ? "I have enough information to offer useful guidance, but additional history will improve the accuracy of future recommendations."
+                : "I have a strong history of your recent behaviour and can make more personalised recommendations with higher confidence."}
           </p>
         </div>
       </details>
+
+      <p className="mt-5 text-right text-sm font-bold text-cyan-300">
+        — Apex
+      </p>
     </section>
   );
 }

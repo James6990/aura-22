@@ -9,6 +9,7 @@ import {
 } from "@/lib/db/schema";
 import { getRecentEvents } from "@/lib/events/get-recent-events";
 import { getLatestWorkoutSummary } from "@/lib/workout/get-latest-workout-summary";
+import { getExerciseProgressionHistory } from "@/lib/workout/get-exercise-progression-history";
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -30,6 +31,7 @@ export async function getDashboardData() {
     checkInDates,
     recentEvents,
     latestWorkout,
+    exerciseProgressionHistory,
   ] = await Promise.all([
     db.query.performanceGenome.findFirst({
       where: eq(
@@ -73,6 +75,8 @@ export async function getDashboardData() {
     getRecentEvents(session.user.id, 100),
 
     getLatestWorkoutSummary(session.user.id),
+
+    getExerciseProgressionHistory(session.user.id),
   ]);
 
   return {
@@ -83,5 +87,6 @@ export async function getDashboardData() {
     checkInDates: checkInDates.map((entry) => entry.date),
     recentEvents,
     latestWorkout,
+    exerciseProgressionHistory,
   };
 }

@@ -159,6 +159,33 @@ export default function WorkoutSessionCard({
                     />
                   </div>
 
+                  {exercise.progressionDecision && (
+                    <div className="mt-4 rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+                          Apex progression
+                        </p>
+
+                        <span className="rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1 text-xs font-bold capitalize text-cyan-200">
+                          {exercise.progressionDecision}
+                        </span>
+                      </div>
+
+                      {exercise.suggestedLoadKg !== null && (
+                        <p className="mt-3 font-black text-white">
+                          Suggested load:{" "}
+                          {exercise.suggestedLoadKg} kg
+                        </p>
+                      )}
+
+                      {exercise.progressionExplanation && (
+                        <p className="mt-2 text-sm leading-6 text-slate-400">
+                          {exercise.progressionExplanation}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
                   {exercise.substitutions.length > 0 && (
                     <details className="mt-4 rounded-xl border border-slate-800 bg-slate-900/60 px-4 py-3">
                       <summary className="cursor-pointer text-sm font-bold text-slate-300">
