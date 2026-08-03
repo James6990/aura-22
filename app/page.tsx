@@ -249,22 +249,93 @@ export default function ApexStateOS() {
     }]);
   };
 
-  const handleSendChat = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!chatInput.trim()) return;
-    const userText = chatInput;
-    setChatMessages(prev => [...prev, { role: 'user', text: userText }]);
-    setChatInput("");
+  const [chatLoading, setChatLoading] =
+    useState<boolean>(false);
 
-    setTimeout(() => {
-      let aiReply = `Analyzing your ${user.archetype} protocol with ${user.dietaryRestriction} nutrition parameters. Everything looks optimal.`;
-      if (userText.toLowerCase().includes("recovery") || userText.toLowerCase().includes("debt")) {
-        aiReply = `Your Recovery Debt is at ${recoveryDebtPct}%. Because pacing safeguards are ${pacingSafeguardEnabled ? 'active' : 'disabled'}, your training load is dynamically regulated.`;
-      } else if (userText.toLowerCase().includes("family") || userText.toLowerCase().includes("bloodline")) {
-        aiReply = `Your Bloodline Family Pass is active with ${user.familyMembers.length} members linked. The 20% XP squad multiplier is fully engaged!`;
+  const [chatError, setChatError] =
+    useState<string>("");
+
+  const handleSendChat = async (
+    e: React.FormEvent,
+  ) => {
+    e.preventDefault();
+
+    const userText = chatInput.trim();
+
+    if (!userText || chatLoading) {
+      return;
+    }
+
+    const previousMessages = chatMessages;
+
+    setChatMessages((current) => [
+      ...current,
+      {
+        role: "user",
+        text: userText,
+      },
+    ]);
+
+    setChatInput("");
+    setChatError("");
+    setChatLoading(true);
+
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: userText,
+          history: previousMessages.map(
+            (item) => ({
+              role:
+                item.role === "ai"
+                  ? "assistant"
+                  : "user",
+              text: item.text,
+            }),
+          ),
+        }),
+      });
+
+      const data = (await response.json()) as {
+        reply?: string;
+      };
+
+      if (
+        !response.ok ||
+        typeof data.reply !== "string"
+      ) {
+        throw new Error(
+          data.reply ??
+            "Apex returned an invalid response.",
+        );
       }
-      setChatMessages(prev => [...prev, { role: 'ai', text: aiReply }]);
-    }, 1000);
+
+      setChatMessages((current) => [
+        ...current,
+        {
+          role: "ai",
+          text: data.reply as string,
+        },
+      ]);
+    } catch (error) {
+      console.error(
+        "Apex chat request failed:",
+        error,
+      );
+
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Apex could not answer just now.";
+
+      setChatError(message);
+    } finally {
+      setChatLoading(false);
+    }
   };
 
   const handleSendSquadMessage = (e: React.FormEvent) => {
@@ -859,7 +930,18 @@ export default function ApexStateOS() {
                   placeholder="Broadcast message to squad..."
                   className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-3 text-sm text-white min-h-[44px]"
                 />
-                <button type="submit" className="bg-emerald-500 text-slate-950 font-bold px-6 py-3 rounded-2xl text-sm min-h-[44px]">Send</button>
+                <button
+                  type="submit"
+                  disabled={
+                    chatLoading ||
+                    !chatInput.trim()
+                  }
+                  className="min-h-[44px] rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {chatLoading
+                    ? "Thinking..."
+                    : "Send"}
+                </button>
               </form>
             </div>
           )}
@@ -872,13 +954,47 @@ export default function ApexStateOS() {
 
               <div className="flex-1 overflow-y-auto space-y-3 pr-2">
                 {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-md p-4 rounded-2xl text-sm ${msg.role === 'user' ? "bg-emerald-500 text-slate-950 font-medium" : "bg-slate-950 border border-slate-800 text-slate-200"}`}>
+                  <div
+                    key={idx}
+                    className={`flex ${
+                      msg.role === "user"
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`max-w-md rounded-2xl p-4 text-sm leading-6 ${
+                        msg.role === "user"
+                          ? "bg-emerald-500 font-medium text-slate-950"
+                          : "border border-slate-800 bg-slate-950 text-slate-200"
+                      }`}
+                    >
                       {msg.text}
                     </div>
                   </div>
                 ))}
+
+                {chatLoading && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className="flex justify-start"
+                  >
+                    <div className="max-w-md rounded-2xl border border-slate-800 bg-slate-950 p-4 text-sm text-slate-400">
+                      Apex is reviewing your data...
+                    </div>
+                  </div>
+                )}
               </div>
+
+              {chatError && (
+                <div
+                  role="alert"
+                  className="mt-3 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+                >
+                  {chatError}
+                </div>
+              )}
 
               <form onSubmit={handleSendChat} className="mt-4 pt-4 border-t border-slate-800 flex gap-2">
                 <input 

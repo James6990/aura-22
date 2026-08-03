@@ -2,9 +2,12 @@ import { redirect } from "next/navigation";
 
 import GreetingCard from "@/components/dashboard/GreetingCard";
 import ApexCompanionCard from "@/components/dashboard/ApexCompanionCard";
-import { generateCoachDecision } from "@/lib/companion/generate-coach-decision";
+import { generateCompanionBrief } from "@/lib/companion/generate-companion-brief";
+import { generateDailyBriefing } from "@/lib/companion/generate-daily-briefing";
 import ApexCoachCard from "@/components/dashboard/ApexCoachCard";
 import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
+import ApexMemoriesCard from "@/components/dashboard/ApexMemoriesCard";
+import SyncMemoriesButton from "@/components/dashboard/SyncMemoriesButton";
 import ProgressionCard from "@/components/dashboard/ProgressionCard";
 import StreakCard from "@/components/dashboard/StreakCard";
 import { calculateStreaks } from "@/lib/progression/calculate-streaks";
@@ -75,8 +78,7 @@ export default async function DashboardPage() {
   const weeklyReview = generateWeeklyReview(
     dashboard.readinessHistory,
   );
-
-  const workoutRecommendation =
+const workoutRecommendation =
     generateWorkoutRecommendation({
       readinessScore:
         dashboard.todayCheckIn?.readinessScore ??
@@ -120,7 +122,7 @@ export default async function DashboardPage() {
     dashboard.checkInDates,
   );
 
-  const apexCompanion = generateCoachDecision({
+  const apexCompanion = generateCompanionBrief({
     preferredName,
     readinessScore:
       dashboard.todayCheckIn?.readinessScore ??
@@ -128,7 +130,19 @@ export default async function DashboardPage() {
     traits: adaptiveTraits,
     currentStreak: streak.currentStreak,
     latestWorkout: dashboard.latestWorkout,
+    recentMemories: dashboard.apexMemories.map(
+      (memory) => ({
+        title: memory.title,
+        message: memory.message,
+        category: memory.category,
+        occurredAt: memory.occurredAt,
+      }),
+    ),
   });
+
+  const dailyBriefing =
+    generateDailyBriefing(apexCompanion);
+
 
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
@@ -139,7 +153,7 @@ export default async function DashboardPage() {
         />
 
         <ApexCompanionCard
-          companion={apexCompanion}
+          briefing={dailyBriefing}
         />
 
         <ApexCoachCard insight={coachInsight} />
@@ -176,6 +190,14 @@ export default async function DashboardPage() {
         <ReadinessHistory
           entries={dashboard.readinessHistory}
         />
+
+        <ApexMemoriesCard
+          memories={dashboard.apexMemories}
+        />
+
+        {dashboard.apexMemories.length === 0 && (
+          <SyncMemoriesButton />
+        )}
 
         <ActivityTimeline
           events={dashboard.recentEvents}

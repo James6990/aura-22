@@ -11,6 +11,7 @@ import {
   workoutExerciseResults,
   workoutSessions,
 } from "@/lib/db/schema";
+import { processApexMemories } from "@/lib/memory/process-apex-memories";
 
 export type StartWorkoutExerciseInput = {
   id: string;
@@ -693,6 +694,8 @@ export async function completeWorkoutSession(
         occurredAt: now,
       });
     });
+
+    await processApexMemories(userId);
 
     return {
       success: true,

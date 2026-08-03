@@ -360,6 +360,65 @@ export const workoutExerciseResults = pgTable(
   },
 );
 
+
+// --- APEX MEMORY ENGINE -----------------------------------------------------
+
+export const apexMemories = pgTable(
+  "apex_memories",
+  {
+    id: text("id").primaryKey(),
+
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    key: text("key").notNull(),
+
+    category: text("category", {
+      enum: [
+        "first",
+        "workout",
+        "progress",
+        "consistency",
+        "genome",
+        "wellbeing",
+        "nutrition",
+        "community",
+        "anniversary",
+      ],
+    }).notNull(),
+
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+
+    payload: jsonb("payload")
+      .$type<Record<
+        string,
+        string | number | boolean | null
+      >>()
+      .notNull()
+      .default({}),
+
+    occurredAt: timestamp("occurredAt")
+      .notNull()
+      .defaultNow(),
+
+    celebratedAt: timestamp("celebratedAt"),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("apex_memories_user_key_unique").on(
+      table.userId,
+      table.key,
+    ),
+  ],
+);
+
 // --- AURA 22 app tables ----------------------------------------------------
 // Scoped per user via a plain `userId` column (no FK, per stack conventions).
 

@@ -36,6 +36,13 @@
       "when": 1785779325006,
       "tag": "0004_add_workout_performance",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1785783956526,
+      "tag": "0005_add_apex_memory_engine",
+      "breakpoints": true
     }
   ]
 }
