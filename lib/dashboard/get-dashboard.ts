@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import {
   dailyCheckIns,
   performanceGenome,
+  workoutSessions,
 } from "@/lib/db/schema";
 import { getRecentEvents } from "@/lib/events/get-recent-events";
 import { getLatestWorkoutSummary } from "@/lib/workout/get-latest-workout-summary";
@@ -34,6 +35,7 @@ export async function getDashboardData() {
     latestWorkout,
     exerciseProgressionHistory,
     apexMemories,
+    recentWorkouts,
   ] = await Promise.all([
     db.query.performanceGenome.findFirst({
       where: eq(
@@ -81,6 +83,23 @@ export async function getDashboardData() {
     getExerciseProgressionHistory(session.user.id),
 
     getApexMemories(session.user.id, 10),
+
+    db
+      .select({
+        date: workoutSessions.date,
+        status: workoutSessions.status,
+        intensity: workoutSessions.intensity,
+        sessionRpe: workoutSessions.sessionRpe,
+      })
+      .from(workoutSessions)
+      .where(
+        eq(
+          workoutSessions.userId,
+          session.user.id,
+        ),
+      )
+      .orderBy(desc(workoutSessions.date))
+      .limit(21),
   ]);
 
   return {
@@ -93,5 +112,6 @@ export async function getDashboardData() {
     latestWorkout,
     exerciseProgressionHistory,
     apexMemories,
+    recentWorkouts,
   };
 }

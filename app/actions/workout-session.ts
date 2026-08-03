@@ -12,6 +12,10 @@ import {
   workoutSessions,
 } from "@/lib/db/schema";
 import { processApexMemories } from "@/lib/memory/process-apex-memories";
+import {
+  calculateProgressionDecision,
+  type ProgressionDecision,
+} from "@/lib/workout/calculate-progression-decision";
 
 export type StartWorkoutExerciseInput = {
   id: string;
@@ -405,83 +409,6 @@ export type CompleteWorkoutSessionResult =
       success: false;
       error: string;
     };
-
-type ProgressionDecision =
-  | "increase"
-  | "maintain"
-  | "reduce"
-  | "review";
-
-function roundLoad(value: number) {
-  return Math.round(value * 4) / 4;
-}
-
-function calculateProgressionDecision(exercise: {
-  plannedSets: number;
-  completedSets: number;
-  loadKg: number | null;
-  rpe: number | null;
-  discomfortLevel: number | null;
-  techniqueConfidence: number | null;
-}): {
-  decision: ProgressionDecision;
-  recommendedNextLoadKg: number | null;
-} {
-  const discomfort = exercise.discomfortLevel ?? 0;
-  const technique = exercise.techniqueConfidence;
-  const load = exercise.loadKg;
-
-  if (discomfort >= 6) {
-    return {
-      decision: "review",
-      recommendedNextLoadKg:
-        load === null ? null : roundLoad(load * 0.9),
-    };
-  }
-
-  if (
-    discomfort >= 4 ||
-    (technique !== null && technique < 60)
-  ) {
-    return {
-      decision: "review",
-      recommendedNextLoadKg: load,
-    };
-  }
-
-  if (exercise.completedSets < exercise.plannedSets) {
-    return {
-      decision: "maintain",
-      recommendedNextLoadKg: load,
-    };
-  }
-
-  if (exercise.rpe !== null && exercise.rpe >= 9) {
-    return {
-      decision: "maintain",
-      recommendedNextLoadKg: load,
-    };
-  }
-
-  if (
-    load !== null &&
-    load > 0 &&
-    exercise.rpe !== null &&
-    exercise.rpe <= 7 &&
-    discomfort <= 2 &&
-    (technique === null || technique >= 75)
-  ) {
-    return {
-      decision: "increase",
-      recommendedNextLoadKg: roundLoad(load * 1.025),
-    };
-  }
-
-  return {
-    decision: "maintain",
-    recommendedNextLoadKg: load,
-  };
-}
 
 export async function completeWorkoutSession(
   input: CompleteWorkoutSessionInput,

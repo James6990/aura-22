@@ -9,6 +9,11 @@ import { selectExercises } from "@/lib/workout/select-exercises";
 import type { WorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
 import type { ExerciseProgressionHistory } from "@/lib/workout/get-exercise-progression-history";
 import type { CoachPriority } from "@/lib/companion/generate-coach-decision";
+import type {
+  EquipmentInventoryItem,
+  TrainingEnvironment,
+} from "@/lib/workout/equipment-capabilities";
+import { getTrainingGoalProfile } from "@/lib/workout/training-goal-profile";
 
 export type WorkoutSessionExercise = {
   id: string;
@@ -45,6 +50,8 @@ export type GenerateWorkoutSessionInput = {
   primaryGoal: string;
   experienceLevel: ExerciseDifficulty;
   equipment: ExerciseEquipment[];
+  trainingEnvironment?: TrainingEnvironment;
+  equipmentInventory?: EquipmentInventoryItem[];
   accessibilityNeeds?: ExerciseAccessibility[];
   movementConstraints?: MovementConstraint[];
   progressionHistory?: Record<
@@ -58,61 +65,6 @@ type SessionPrescription = {
   reps: string;
   restSeconds: number;
 };
-
-function getGoalMovementPatterns(
-  primaryGoal: string,
-): MovementPattern[] {
-  switch (primaryGoal) {
-    case "muscle":
-      return [
-        "horizontal-push",
-        "horizontal-pull",
-        "vertical-push",
-        "vertical-pull",
-        "squat",
-        "hinge",
-      ];
-
-    case "fat-loss":
-      return [
-        "squat",
-        "hinge",
-        "horizontal-push",
-        "horizontal-pull",
-        "cardio",
-        "core",
-      ];
-
-    case "performance":
-      return [
-        "squat",
-        "hinge",
-        "single-leg",
-        "horizontal-push",
-        "horizontal-pull",
-        "core",
-      ];
-
-    case "recomposition":
-      return [
-        "horizontal-push",
-        "horizontal-pull",
-        "squat",
-        "hinge",
-        "core",
-      ];
-
-    default:
-      return [
-        "horizontal-push",
-        "horizontal-pull",
-        "squat",
-        "hinge",
-        "core",
-        "cardio",
-      ];
-  }
-}
 
 function getMovementPatterns({
   primaryGoal,
@@ -174,7 +126,9 @@ function getMovementPatterns({
     return ["mobility", "cardio", "core"];
   }
 
-  return getGoalMovementPatterns(primaryGoal);
+  return getTrainingGoalProfile(
+    primaryGoal,
+  ).movementPatterns;
 }
 
 function getMaximumFatigue({
@@ -232,10 +186,12 @@ function getPrescription({
   intensity,
   difficulty,
   priority,
+  primaryGoal,
 }: {
   intensity: WorkoutRecommendation["intensity"];
   difficulty: ExerciseDifficulty;
   priority: CoachPriority | null;
+  primaryGoal: string;
 }): SessionPrescription {
   if (priority === "recover") {
     return {
@@ -293,26 +249,45 @@ function getPrescription({
     };
   }
 
+  const goalProfile =
+    getTrainingGoalProfile(primaryGoal);
+
   if (intensity === "Light") {
     return {
-      sets: 2,
-      reps: "10–12 reps",
-      restSeconds: 75,
+      sets: Math.max(
+        1,
+        goalProfile.standardPrescription.sets - 1,
+      ),
+      reps:
+        goalProfile.standardPrescription.reps,
+      restSeconds: Math.max(
+        60,
+        goalProfile.standardPrescription
+          .restSeconds - 15,
+      ),
     };
   }
 
   if (intensity === "High") {
+    const highPrescription =
+      goalProfile.highReadinessPrescription;
+
     return {
-      sets: difficulty === "beginner" ? 3 : 4,
-      reps: "6–10 reps",
-      restSeconds: 120,
+      sets:
+        difficulty === "beginner"
+          ? Math.min(
+              3,
+              highPrescription.sets,
+            )
+          : highPrescription.sets,
+      reps: highPrescription.reps,
+      restSeconds:
+        highPrescription.restSeconds,
     };
   }
 
   return {
-    sets: 3,
-    reps: "8–12 reps",
-    restSeconds: 90,
+    ...goalProfile.standardPrescription,
   };
 }
 
@@ -416,6 +391,8 @@ export function generateWorkoutSession({
   primaryGoal,
   experienceLevel,
   equipment,
+  trainingEnvironment = "commercial-gym",
+  equipmentInventory = [],
   accessibilityNeeds = [],
   movementConstraints = [],
   progressionHistory = {},
@@ -445,12 +422,16 @@ export function generateWorkoutSession({
     }),
     primaryGoal,
     decisionPriority: priority,
+    trainingEnvironment,
+    equipmentInventory,
+    progressionHistory,
   });
 
   const prescription = getPrescription({
     intensity: recommendation.intensity,
     difficulty: experienceLevel,
     priority,
+    primaryGoal,
   });
 
   const exercises = selection.exercises.map(
@@ -467,7 +448,10 @@ export function generateWorkoutSession({
           1,
           Math.round(
             prescription.sets *
-              recommendation.volumeMultiplier,
+              recommendation.volumeMultiplier *
+              getTrainingGoalProfile(
+                primaryGoal,
+              ).volumeBias,
           ),
         ),
         reps: prescription.reps,

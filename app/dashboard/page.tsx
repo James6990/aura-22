@@ -17,11 +17,13 @@ import GenomeInsightsCard from "@/components/dashboard/GenomeInsightsCard";
 import WeeklyReviewCard from "@/components/dashboard/WeeklyReviewCard";
 import WorkoutRecommendationCard from "@/components/dashboard/WorkoutRecommendationCard";
 import WorkoutSessionCard from "@/components/dashboard/WorkoutSessionCard";
+import AdaptivePlanCard from "@/components/dashboard/AdaptivePlanCard";
 import { generateWorkoutSession } from "@/lib/workout/generate-workout-session";
 import type {
   ExerciseDifficulty,
   ExerciseEquipment,
 } from "@/lib/workout/exercise-library";
+import type { EquipmentInventoryItem } from "@/lib/workout/equipment-capabilities";
 import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
 import { generateWeeklyReview } from "@/lib/reviews/generate-weekly-review";
 import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
@@ -32,6 +34,8 @@ import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
 import { getDashboardData } from "@/lib/dashboard/get-dashboard";
 import { generateApexCore } from "@/lib/apex-core";
+import { generateAdaptivePlan } from "@/lib/planning/generate-adaptive-plan";
+import { generateTrainingBlock } from "@/lib/planning/generate-training-block";
 
 const goalLabels: Record<string, string> = {
   muscle: "Build muscle",
@@ -136,6 +140,11 @@ export default async function DashboardPage() {
     equipment:
       dashboard.genome
         .equipment as ExerciseEquipment[],
+    trainingEnvironment:
+      dashboard.genome.trainingEnvironment,
+    equipmentInventory:
+      dashboard.genome
+        .equipmentInventory as EquipmentInventoryItem[],
 
     // These will later come from the user's saved
     // accessibility and movement-constraint profile.
@@ -143,6 +152,67 @@ export default async function DashboardPage() {
     movementConstraints: [],
     progressionHistory:
       dashboard.exerciseProgressionHistory,
+  });
+
+  const recentSkippedSessions =
+    dashboard.recentWorkouts.filter(
+      (workout) =>
+        workout.status === "skipped",
+    ).length;
+
+  const trainingBlock = generateTrainingBlock({
+    primaryGoal:
+      dashboard.genome.primaryGoal ?? "health",
+    experienceLevel:
+      dashboard.genome.experienceLevel ??
+      "beginner",
+    blockLengthWeeks: 8,
+    trainingDaysPerWeek: 3,
+    currentWeek: 1,
+    recentConsistency:
+      adaptiveTraits.consistency,
+    recentRecovery:
+      adaptiveTraits.recovery,
+    missedSessions:
+      recentSkippedSessions,
+  });
+
+  const currentBlockWeek =
+    trainingBlock.weeks[
+      trainingBlock.currentWeek - 1
+    ];
+
+  const adaptivePlan = generateAdaptivePlan({
+    primaryGoal:
+      dashboard.genome.primaryGoal ?? "health",
+    experienceLevel:
+      dashboard.genome.experienceLevel ??
+      "beginner",
+    currentPriority:
+      apex.decision.priority,
+    readinessScore,
+    recoveryScore:
+      adaptiveTraits.recovery,
+    consistencyScore:
+      adaptiveTraits.consistency,
+    latestWorkoutCompletedAt:
+      dashboard.latestWorkout?.completedAt ??
+      null,
+    latestWorkoutRpe:
+      dashboard.latestWorkout?.sessionRpe ??
+      null,
+    latestWorkoutDiscomfort:
+      dashboard.latestWorkout
+        ?.highestDiscomfort ?? 0,
+    progressionReadyCount:
+      dashboard.latestWorkout
+        ?.progressionReady ?? 0,
+    recentWorkouts:
+      dashboard.recentWorkouts,
+    availableTrainingDays:
+      currentBlockWeek.trainingDaysTarget,
+    blockWeek:
+      currentBlockWeek,
   });
 
   return (
@@ -165,6 +235,10 @@ export default async function DashboardPage() {
 
         <WorkoutSessionCard
           session={workoutSession}
+        />
+
+        <AdaptivePlanCard
+          plan={adaptivePlan}
         />
 
         <PerformanceGenomeCard

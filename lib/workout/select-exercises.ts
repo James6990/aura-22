@@ -11,6 +11,12 @@ import {
   type MovementConstraint,
 } from "@/lib/workout/apply-movement-constraints";
 import type { CoachPriority } from "@/lib/companion/generate-coach-decision";
+import type { ExerciseProgressionHistory } from "@/lib/workout/get-exercise-progression-history";
+import {
+  canUseExerciseEquipment,
+  type EquipmentInventoryItem,
+  type TrainingEnvironment,
+} from "@/lib/workout/equipment-capabilities";
 
 export type SelectExercisesInput = {
   movementPatterns: MovementPattern[];
@@ -23,6 +29,14 @@ export type SelectExercisesInput = {
 
   primaryGoal?: string;
   decisionPriority?: CoachPriority | null;
+
+  trainingEnvironment?: TrainingEnvironment;
+  equipmentInventory?: EquipmentInventoryItem[];
+
+  progressionHistory?: Record<
+    string,
+    ExerciseProgressionHistory
+  >;
 };
 
 export type SelectExercisesResult = {
@@ -250,16 +264,85 @@ function getPriorityScore(
   }
 }
 
+function getProgressionScore(
+  history: ExerciseProgressionHistory | undefined,
+) {
+  if (!history) {
+    return 0;
+  }
+
+  let score = 0;
+
+  if (history.progressionDecision === "increase") {
+    score += 8;
+  }
+
+  if (history.progressionDecision === "maintain") {
+    score += 5;
+  }
+
+  if (history.progressionDecision === "reduce") {
+    score -= 4;
+  }
+
+  if (history.progressionDecision === "review") {
+    score -= 12;
+  }
+
+  if (
+    history.previousDiscomfortLevel !== null
+  ) {
+    score -= Math.max(
+      0,
+      history.previousDiscomfortLevel - 2,
+    ) * 2;
+  }
+
+  if (
+    history.previousTechniqueConfidence !== null
+  ) {
+    if (
+      history.previousTechniqueConfidence >= 80
+    ) {
+      score += 4;
+    } else if (
+      history.previousTechniqueConfidence < 60
+    ) {
+      score -= 6;
+    }
+  }
+
+  if (history.previousRpe !== null) {
+    if (
+      history.previousRpe >= 6 &&
+      history.previousRpe <= 8
+    ) {
+      score += 2;
+    }
+
+    if (history.previousRpe >= 9) {
+      score -= 3;
+    }
+  }
+
+  return score;
+}
+
 function scoreExercise({
   exercise,
   primaryGoal,
   decisionPriority,
   patternOrder,
+  progressionHistory,
 }: {
   exercise: ExerciseDefinition;
   primaryGoal: string;
   decisionPriority: CoachPriority | null;
   patternOrder: Map<MovementPattern, number>;
+  progressionHistory: Record<
+    string,
+    ExerciseProgressionHistory
+  >;
 }) {
   const goalScore = getGoalScore(
     exercise,
@@ -283,10 +366,16 @@ function scoreExercise({
   const lowerFatigueTieBreaker =
     Math.max(0, 10 - exercise.fatigueScore);
 
+  const progressionScore =
+    getProgressionScore(
+      progressionHistory[exercise.id],
+    );
+
   return (
     goalScore * 10 +
     priorityScore * 10 +
     requestedPatternScore * 2 +
+    progressionScore * 4 +
     lowerFatigueTieBreaker
   );
 }
@@ -348,6 +437,9 @@ export function selectExercises({
   limit = 6,
   primaryGoal = "health",
   decisionPriority = null,
+  trainingEnvironment = "commercial-gym",
+  equipmentInventory = [],
+  progressionHistory = {},
 }: SelectExercisesInput): SelectExercisesResult {
   const userDifficulty = difficultyRank(
     experienceLevel,
@@ -384,6 +476,13 @@ export function selectExercises({
       (exercise) =>
         exercise.fatigueScore <=
         maximumFatigueScore,
+    )
+    .filter((exercise) =>
+      canUseExerciseEquipment({
+        exerciseId: exercise.id,
+        trainingEnvironment,
+        equipmentInventory,
+      }),
     );
 
   /*
@@ -403,12 +502,14 @@ export function selectExercises({
           primaryGoal,
           decisionPriority,
           patternOrder,
+          progressionHistory,
         }) -
         scoreExercise({
           exercise: a,
           primaryGoal,
           decisionPriority,
           patternOrder,
+          progressionHistory,
         });
 
       if (scoreDifference !== 0) {
