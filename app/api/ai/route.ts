@@ -10,6 +10,10 @@ import {
   performanceGenome,
 } from "@/lib/db/schema";
 import { getLatestWorkoutSummary } from "@/lib/workout/get-latest-workout-summary";
+import { generateApexCore } from "@/lib/apex-core";
+import { calculateAdaptiveTraits } from "@/lib/genome/calculate-adaptive-traits";
+import { calculateStreaks } from "@/lib/progression/calculate-streaks";
+import { getApexMemories } from "@/lib/memory/get-apex-memories";
 
 const apiKey = process.env.GEMINI_API_KEY;
 
@@ -175,6 +179,7 @@ export async function POST(request: Request) {
       genome,
       recentCheckIns,
       latestWorkout,
+      recentMemories,
     ] = await Promise.all([
       db.query.performanceGenome.findFirst({
         where: eq(
@@ -206,9 +211,11 @@ export async function POST(request: Request) {
           ),
         )
         .orderBy(desc(dailyCheckIns.date))
-        .limit(7),
+        .limit(90),
 
       getLatestWorkoutSummary(session.user.id),
+
+      getApexMemories(session.user.id, 5),
     ]);
 
     if (!genome) {
@@ -222,6 +229,47 @@ export async function POST(request: Request) {
         },
       );
     }
+
+    const adaptiveTraits =
+      calculateAdaptiveTraits(
+        recentCheckIns.map((checkIn) => ({
+          energy: checkIn.energy,
+          readinessScore:
+            checkIn.readinessScore,
+          workoutCompleted:
+            checkIn.workoutCompleted,
+          recoveryCompleted:
+            checkIn.recoveryCompleted,
+          hydrationTargetReached:
+            checkIn.hydrationTargetReached,
+        })),
+      );
+
+    const streak = calculateStreaks(
+      recentCheckIns.map(
+        (checkIn) => checkIn.date,
+      ),
+    );
+
+    const readinessScore =
+      recentCheckIns[0]?.readinessScore ??
+      adaptiveTraits.trainingCapacity;
+
+    const apex = generateApexCore({
+      preferredName: genome.preferredName,
+      readinessScore,
+      traits: adaptiveTraits,
+      currentStreak: streak.currentStreak,
+      latestWorkout,
+      recentMemories: recentMemories.map(
+        (memory) => ({
+          title: memory.title,
+          message: memory.message,
+          category: memory.category,
+          occurredAt: memory.occurredAt,
+        }),
+      ),
+    });
 
     const trustedContext = {
       preferredName: genome.preferredName,
@@ -245,6 +293,43 @@ export async function POST(request: Request) {
       },
       recentCheckIns,
       latestWorkout,
+
+      apexCore: {
+        state: apex.state,
+
+        dailyBriefing: {
+          greeting: apex.dailyBriefing.greeting,
+          opening: apex.dailyBriefing.opening,
+          focus: apex.dailyBriefing.focus,
+          win: apex.dailyBriefing.win,
+          nextAction:
+            apex.dailyBriefing.nextAction,
+          tone: apex.dailyBriefing.tone,
+          isComeback:
+            apex.dailyBriefing.isComeback,
+        },
+
+        companion: {
+          greeting: apex.companion.greeting,
+          todayFocus:
+            apex.companion.todayFocus,
+          encouragement:
+            apex.companion.encouragement,
+          tone: apex.companion.tone,
+          isComeback:
+            apex.companion.isComeback,
+          daysSinceLastWorkout:
+            apex.companion.daysSinceLastWorkout,
+        },
+      },
+
+      recentJourneyMemories:
+        recentMemories.map((memory) => ({
+          title: memory.title,
+          message: memory.message,
+          category: memory.category,
+          occurredAt: memory.occurredAt,
+        })),
     };
 
     const prompt = `
@@ -258,6 +343,11 @@ CORE PERSONALITY
 - Explain why you recommend something.
 - Match the user's requested coach style where reasonable.
 - Keep normal replies concise and easy to understand.
+- Treat apexCore.state.todayPriority as Apex's current unified priority.
+- Keep advice consistent with apexCore.dailyBriefing and apexCore.companion.
+- If the user asks why Apex recommended something, explain the reasons stored in apexCore.state.
+- If apexCore.state.isComeback is true, use gradual, reassuring comeback guidance without guilt.
+- Never contradict the unified Apex Core unless the user reports new information that requires a safer response.
 
 SAFETY AND TRUST
 - Use only the trusted Apex context supplied below.
