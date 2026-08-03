@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
 import GreetingCard from "@/components/dashboard/GreetingCard";
+import ApexCompanionCard from "@/components/dashboard/ApexCompanionCard";
+import { generateCoachDecision } from "@/lib/companion/generate-coach-decision";
 import ApexCoachCard from "@/components/dashboard/ApexCoachCard";
 import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
 import ProgressionCard from "@/components/dashboard/ProgressionCard";
@@ -116,12 +118,26 @@ export default async function DashboardPage() {
     dashboard.checkInDates,
   );
 
+  const apexCompanion = generateCoachDecision({
+    preferredName,
+    readinessScore:
+      dashboard.todayCheckIn?.readinessScore ??
+      genomeMetrics.readinessBaseline,
+    traits: adaptiveTraits,
+    currentStreak: streak.currentStreak,
+    latestWorkout: dashboard.latestWorkout,
+  });
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
         <GreetingCard
           preferredName={preferredName}
           primaryGoal={primaryGoal}
+        />
+
+        <ApexCompanionCard
+          companion={apexCompanion}
         />
 
         <ApexCoachCard insight={coachInsight} />

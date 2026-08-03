@@ -8,6 +8,7 @@ import {
   performanceGenome,
 } from "@/lib/db/schema";
 import { getRecentEvents } from "@/lib/events/get-recent-events";
+import { getLatestWorkoutSummary } from "@/lib/workout/get-latest-workout-summary";
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
@@ -28,6 +29,7 @@ export async function getDashboardData() {
     readinessHistory,
     checkInDates,
     recentEvents,
+    latestWorkout,
   ] = await Promise.all([
     db.query.performanceGenome.findFirst({
       where: eq(
@@ -69,6 +71,8 @@ export async function getDashboardData() {
       .limit(366),
 
     getRecentEvents(session.user.id, 100),
+
+    getLatestWorkoutSummary(session.user.id),
   ]);
 
   return {
@@ -78,5 +82,6 @@ export async function getDashboardData() {
     readinessHistory,
     checkInDates: checkInDates.map((entry) => entry.date),
     recentEvents,
+    latestWorkout,
   };
 }
