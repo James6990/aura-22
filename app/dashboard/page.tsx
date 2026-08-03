@@ -3,8 +3,15 @@ import { redirect } from "next/navigation";
 import GreetingCard from "@/components/dashboard/GreetingCard";
 import ApexCoachCard from "@/components/dashboard/ApexCoachCard";
 import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
+import ProgressionCard from "@/components/dashboard/ProgressionCard";
+import StreakCard from "@/components/dashboard/StreakCard";
+import { calculateStreaks } from "@/lib/progression/calculate-streaks";
+import { calculateProgression } from "@/lib/progression/calculate-xp";
 import PerformanceGenomeCard from "@/components/dashboard/PerformanceGenomeCard";
+import GenomeInsightsCard from "@/components/dashboard/GenomeInsightsCard";
+import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
 import { calculateGenomeMetrics } from "@/lib/genome/calculate-genome-metrics";
+import { calculateAdaptiveTraits } from "@/lib/genome/calculate-adaptive-traits";
 import { generateCoachInsight } from "@/lib/coach/generate-coach-insight";
 import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
@@ -44,6 +51,23 @@ export default async function DashboardPage() {
     dashboard.readinessHistory,
   );
 
+  const adaptiveTraits = calculateAdaptiveTraits(
+    dashboard.readinessHistory,
+  );
+
+  const genomeInsights = generateGenomeInsights(
+    dashboard.readinessHistory,
+    adaptiveTraits,
+  );
+
+  const progression = calculateProgression(
+    dashboard.recentEvents,
+  );
+
+  const streak = calculateStreaks(
+    dashboard.checkInDates,
+  );
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
@@ -54,7 +78,18 @@ export default async function DashboardPage() {
 
         <ApexCoachCard insight={coachInsight} />
 
-        <PerformanceGenomeCard metrics={genomeMetrics} />
+        <PerformanceGenomeCard
+          metrics={genomeMetrics}
+          adaptiveTraits={adaptiveTraits}
+        />
+
+        <GenomeInsightsCard
+          insights={genomeInsights}
+        />
+
+        <ProgressionCard progression={progression} />
+
+        <StreakCard streak={streak} />
 
         <CheckInReadinessPanel
           initialCheckIn={dashboard.todayCheckIn}
