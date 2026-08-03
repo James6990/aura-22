@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import GreetingCard from "@/components/dashboard/GreetingCard";
+import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
 import { getDashboardData } from "@/lib/dashboard/get-dashboard";
 
@@ -38,7 +39,13 @@ export default async function DashboardPage() {
           primaryGoal={primaryGoal}
         />
 
-        <CheckInReadinessPanel />
+        <CheckInReadinessPanel
+          initialCheckIn={dashboard.todayCheckIn}
+        />
+
+        <ReadinessHistory
+          entries={dashboard.readinessHistory}
+        />
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <DashboardStat

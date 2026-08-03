@@ -1,32 +1,132 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
+import { saveDailyCheckIn } from "@/app/actions/daily-check-in";
 import ReadinessCard from "@/components/dashboard/ReadinessCard";
-import { calculateReadiness } from "@/lib/readiness/calculate-readiness";
+import {
+  calculateReadiness,
+  type ReadinessResult,
+} from "@/lib/readiness/calculate-readiness";
 
-export default function CheckInReadinessPanel() {
-  const [energy, setEnergy] = useState(7);
-  const [workout, setWorkout] = useState(false);
-  const [recovery, setRecovery] = useState(false);
-  const [water, setWater] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+type SavedCheckIn = {
+  energy: number;
+  workoutCompleted: boolean;
+  recoveryCompleted: boolean;
+  hydrationTargetReached: boolean;
+  readinessScore: number;
+  readinessLevel: string;
+};
 
-  const readiness = calculateReadiness({
+type CheckInReadinessPanelProps = {
+  initialCheckIn?: SavedCheckIn | null;
+};
+
+function isReadinessLevel(
+  value: string,
+): value is ReadinessResult["level"] {
+  return ["Low", "Moderate", "High", "Peak"].includes(value);
+}
+
+function getExplanation(level: ReadinessResult["level"]) {
+  if (level === "Peak") {
+    return "Your check-in suggests you are ready for a demanding session.";
+  }
+
+  if (level === "High") {
+    return "Your check-in suggests good readiness for your planned training.";
+  }
+
+  if (level === "Moderate") {
+    return "Consider a controlled session and avoid unnecessary fatigue.";
+  }
+
+  return "Prioritise recovery and consider reducing today's training load.";
+}
+
+export default function CheckInReadinessPanel({
+  initialCheckIn = null,
+}: CheckInReadinessPanelProps) {
+  const router = useRouter();
+
+  const [energy, setEnergy] = useState(
+    initialCheckIn?.energy ?? 7,
+  );
+
+  const [workout, setWorkout] = useState(
+    initialCheckIn?.workoutCompleted ?? false,
+  );
+
+  const [recovery, setRecovery] = useState(
+    initialCheckIn?.recoveryCompleted ?? false,
+  );
+
+  const [water, setWater] = useState(
+    initialCheckIn?.hydrationTargetReached ?? false,
+  );
+
+  const [submitted, setSubmitted] = useState(
+    initialCheckIn !== null,
+  );
+
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  const calculatedReadiness = calculateReadiness({
     energy,
     workout,
     recovery,
     water,
   });
 
-  const explanation =
-    readiness.level === "Peak"
-      ? "Your check-in suggests you are ready for a demanding session."
-      : readiness.level === "High"
-        ? "Your check-in suggests good readiness for your planned training."
-        : readiness.level === "Moderate"
-          ? "Consider a controlled session and avoid unnecessary fatigue."
-          : "Prioritise recovery and consider reducing today's training load.";
+  const savedLevel =
+    initialCheckIn &&
+    isReadinessLevel(initialCheckIn.readinessLevel)
+      ? initialCheckIn.readinessLevel
+      : calculatedReadiness.level;
+
+  const readiness: ReadinessResult =
+    submitted && initialCheckIn
+      ? {
+          score: initialCheckIn.readinessScore,
+          level: savedLevel,
+        }
+      : calculatedReadiness;
+
+  async function handleCalculate() {
+    if (saving) return;
+
+    setSaving(true);
+    setSaveError("");
+
+    try {
+      await saveDailyCheckIn({
+        energy,
+        workoutCompleted: workout,
+        recoveryCompleted: recovery,
+        hydrationTargetReached: water,
+        readinessScore: calculatedReadiness.score,
+        readinessLevel: calculatedReadiness.level,
+      });
+
+      setSubmitted(true);
+      router.refresh();
+    } catch (error) {
+      console.error("Failed to save daily check-in:", error);
+
+      setSaveError(
+        "Apex could not save today's check-in. Please try again.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function markChanged() {
+    setSubmitted(false);
+    setSaveError("");
+  }
 
   return (
     <section className="grid gap-6 lg:grid-cols-2">
@@ -38,6 +138,12 @@ export default function CheckInReadinessPanel() {
         <h2 className="mt-2 text-2xl font-black text-white">
           How are you feeling today?
         </h2>
+
+        {initialCheckIn && (
+          <p className="mt-2 text-sm text-emerald-300">
+            Today&apos;s saved check-in has been restored.
+          </p>
+        )}
 
         <div className="mt-7">
           <label
@@ -55,7 +161,7 @@ export default function CheckInReadinessPanel() {
             value={energy}
             onChange={(event) => {
               setEnergy(Number(event.target.value));
-              setSubmitted(false);
+              markChanged();
             }}
             className="mt-3 w-full"
           />
@@ -67,7 +173,7 @@ export default function CheckInReadinessPanel() {
             checked={workout}
             onChange={() => {
               setWorkout((current) => !current);
-              setSubmitted(false);
+              markChanged();
             }}
           />
 
@@ -76,7 +182,7 @@ export default function CheckInReadinessPanel() {
             checked={recovery}
             onChange={() => {
               setRecovery((current) => !current);
-              setSubmitted(false);
+              markChanged();
             }}
           />
 
@@ -85,34 +191,48 @@ export default function CheckInReadinessPanel() {
             checked={water}
             onChange={() => {
               setWater((current) => !current);
-              setSubmitted(false);
+              markChanged();
             }}
           />
         </div>
 
+        {saveError && (
+          <div
+            role="alert"
+            className="mt-5 rounded-xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+          >
+            {saveError}
+          </div>
+        )}
+
         <button
           type="button"
-          onClick={() => setSubmitted(true)}
-          className="mt-7 min-h-12 w-full rounded-xl bg-emerald-500 px-5 font-black text-slate-950 transition hover:bg-emerald-400"
+          onClick={handleCalculate}
+          disabled={saving}
+          className="mt-7 min-h-12 w-full rounded-xl bg-emerald-500 px-5 font-black text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Calculate readiness
+          {saving
+            ? "Saving check-in..."
+            : initialCheckIn
+              ? "Update today's readiness"
+              : "Calculate readiness"}
         </button>
       </article>
 
       {submitted ? (
         <ReadinessCard
           result={readiness}
-          explanation={explanation}
+          explanation={getExplanation(readiness.level)}
         />
       ) : (
         <article className="flex min-h-72 items-center justify-center rounded-3xl border border-dashed border-slate-700 bg-slate-900/30 p-6 text-center">
           <div>
             <p className="font-bold text-white">
-              Your readiness result will appear here
+              Your updated readiness will appear here
             </p>
 
             <p className="mt-2 text-sm text-slate-400">
-              Complete today&apos;s check-in to receive your planning estimate.
+              Save today&apos;s check-in to update your planning estimate.
             </p>
           </div>
         </article>
