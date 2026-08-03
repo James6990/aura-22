@@ -146,6 +146,45 @@ export const performanceGenome = pgTable("apex_performance_genome", {
     .defaultNow(),
 });
 
+
+// One daily readiness check-in per user and calendar date.
+export const dailyCheckIns = pgTable(
+  "apex_daily_check_ins",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+
+    date: text("date").notNull(),
+
+    energy: integer("energy").notNull(),
+    workoutCompleted: boolean("workoutCompleted")
+      .notNull()
+      .default(false),
+    recoveryCompleted: boolean("recoveryCompleted")
+      .notNull()
+      .default(false),
+    hydrationTargetReached: boolean("hydrationTargetReached")
+      .notNull()
+      .default(false),
+
+    readinessScore: integer("readinessScore").notNull(),
+    readinessLevel: text("readinessLevel").notNull(),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userDateUnique: unique(
+      "apex_daily_check_ins_user_date_unique",
+    ).on(table.userId, table.date),
+  }),
+);
+
 // --- AURA 22 app tables ----------------------------------------------------
 // Scoped per user via a plain `userId` column (no FK, per stack conventions).
 
