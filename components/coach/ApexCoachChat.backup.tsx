@@ -190,20 +190,13 @@ function StructuredReplyCard({
 export default function ApexCoachChat({
   preferredName,
 }: ApexCoachChatProps) {
-  const storageKey = "apex-coach-session-v1";
-
-  const initialMessage: ChatMessage = {
-    role: "assistant",
-    text:
-      `Welcome, ${preferredName}. Ask me about your latest workout, recovery, progression, nutrition or Apex Journey.`,
-  };
-
   const [messages, setMessages] = useState<ChatMessage[]>([
-    initialMessage,
+    {
+      role: "assistant",
+      text:
+        `Welcome, ${preferredName}. Ask me about your latest workout, recovery, progression, nutrition or Apex Journey.`,
+    },
   ]);
-
-  const [sessionLoaded, setSessionLoaded] =
-    useState(false);
 
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -211,62 +204,6 @@ export default function ApexCoachChat({
 
   const conversationEndRef =
     useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    try {
-      const savedConversation =
-        window.sessionStorage.getItem(storageKey);
-
-      if (savedConversation) {
-        const parsed: unknown =
-          JSON.parse(savedConversation);
-
-        if (Array.isArray(parsed)) {
-          const validMessages = parsed.filter(
-            (item): item is ChatMessage =>
-              typeof item === "object" &&
-              item !== null &&
-              "role" in item &&
-              "text" in item &&
-              (
-                item.role === "user" ||
-                item.role === "assistant"
-              ) &&
-              typeof item.text === "string",
-          );
-
-          if (validMessages.length > 0) {
-            setMessages(validMessages);
-          }
-        }
-      }
-    } catch (error) {
-      console.error(
-        "Could not restore Apex conversation:",
-        error,
-      );
-    } finally {
-      setSessionLoaded(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!sessionLoaded) {
-      return;
-    }
-
-    try {
-      window.sessionStorage.setItem(
-        storageKey,
-        JSON.stringify(messages),
-      );
-    } catch (error) {
-      console.error(
-        "Could not preserve Apex conversation:",
-        error,
-      );
-    }
-  }, [messages, sessionLoaded]);
 
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({
@@ -360,21 +297,6 @@ export default function ApexCoachChat({
     await sendMessage(input);
   }
 
-  function startNewConversation() {
-    setMessages([initialMessage]);
-    setInput("");
-    setError("");
-
-    try {
-      window.sessionStorage.removeItem(storageKey);
-    } catch (error) {
-      console.error(
-        "Could not clear Apex conversation:",
-        error,
-      );
-    }
-  }
-
   return (
     <section className="rounded-3xl border border-cyan-500/20 bg-slate-900/70 p-5 sm:p-6">
       <div className="flex items-start justify-between gap-4">
@@ -464,20 +386,9 @@ export default function ApexCoachChat({
         </div>
       )}
 
-      <div className="mt-6 flex justify-end border-t border-slate-800 pt-5">
-        <button
-          type="button"
-          onClick={startNewConversation}
-          disabled={loading}
-          className="min-h-11 rounded-xl border border-slate-700 bg-slate-950 px-4 text-sm font-bold text-slate-300 transition hover:border-slate-600 hover:text-white disabled:opacity-50"
-        >
-          Start new conversation
-        </button>
-      </div>
-
       <form
         onSubmit={handleSubmit}
-        className="mt-4"
+        className="mt-6 border-t border-slate-800 pt-5"
       >
         <label
           htmlFor="apex-message"
