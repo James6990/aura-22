@@ -1,6 +1,6 @@
 import { selectExercises } from "@/lib/workout/select-exercises";
 
-const seatedExercises = selectExercises({
+const result = selectExercises({
   movementPatterns: [
     "horizontal-push",
     "horizontal-pull",
@@ -13,23 +13,39 @@ const seatedExercises = selectExercises({
   ],
   experienceLevel: "beginner",
   accessibilityNeeds: ["seated"],
+  movementConstraints: [
+    {
+      bodyArea: "shoulder",
+      avoidPatterns: ["vertical-push"],
+      avoidExercises: ["machine-shoulder-press"],
+      allowedExercises: [],
+      clinicianGuidance: "",
+      status: "unassessed",
+    },
+  ],
   maximumFatigueScore: 5,
   limit: 10,
 });
 
-if (seatedExercises.length === 0) {
+if (result.exercises.length === 0) {
   throw new Error(
-    "Expected at least one seated exercise.",
+    "Expected at least one suitable seated exercise.",
   );
 }
 
 if (
-  seatedExercises.some(
+  result.exercises.some(
     (exercise) =>
       !exercise.accessibility.includes("seated"),
   )
 ) {
   throw new Error(
     "Exercise selector returned a non-seated exercise.",
+  );
+}
+
+if (!result.requiresProfessionalReview) {
+  throw new Error(
+    "Expected unassessed constraint to require professional review.",
   );
 }

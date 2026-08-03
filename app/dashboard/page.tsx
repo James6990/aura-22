@@ -9,6 +9,16 @@ import { calculateStreaks } from "@/lib/progression/calculate-streaks";
 import { calculateProgression } from "@/lib/progression/calculate-xp";
 import PerformanceGenomeCard from "@/components/dashboard/PerformanceGenomeCard";
 import GenomeInsightsCard from "@/components/dashboard/GenomeInsightsCard";
+import WeeklyReviewCard from "@/components/dashboard/WeeklyReviewCard";
+import WorkoutRecommendationCard from "@/components/dashboard/WorkoutRecommendationCard";
+import WorkoutSessionCard from "@/components/dashboard/WorkoutSessionCard";
+import { generateWorkoutSession } from "@/lib/workout/generate-workout-session";
+import type {
+  ExerciseDifficulty,
+  ExerciseEquipment,
+} from "@/lib/workout/exercise-library";
+import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
+import { generateWeeklyReview } from "@/lib/reviews/generate-weekly-review";
 import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
 import { calculateGenomeMetrics } from "@/lib/genome/calculate-genome-metrics";
 import { calculateAdaptiveTraits } from "@/lib/genome/calculate-adaptive-traits";
@@ -60,6 +70,44 @@ export default async function DashboardPage() {
     adaptiveTraits,
   );
 
+  const weeklyReview = generateWeeklyReview(
+    dashboard.readinessHistory,
+  );
+
+  const workoutRecommendation =
+    generateWorkoutRecommendation({
+      readinessScore:
+        dashboard.todayCheckIn?.readinessScore ??
+        genomeMetrics.readinessBaseline,
+      consistency: adaptiveTraits.consistency,
+      recovery: adaptiveTraits.recovery,
+      trainingCapacity:
+        adaptiveTraits.trainingCapacity,
+      primaryGoal:
+        dashboard.genome.primaryGoal ?? "health",
+      experienceLevel:
+        dashboard.genome.experienceLevel ??
+        "beginner",
+      equipment: dashboard.genome.equipment,
+    });
+
+  const workoutSession = generateWorkoutSession({
+    recommendation: workoutRecommendation,
+    primaryGoal:
+      dashboard.genome.primaryGoal ?? "health",
+    experienceLevel: (
+      dashboard.genome.experienceLevel ??
+      "beginner"
+    ) as ExerciseDifficulty,
+    equipment:
+      dashboard.genome.equipment as ExerciseEquipment[],
+
+    // These will later come from the user's saved
+    // accessibility and movement-constraint profile.
+    accessibilityNeeds: [],
+    movementConstraints: [],
+  });
+
   const progression = calculateProgression(
     dashboard.recentEvents,
   );
@@ -78,6 +126,14 @@ export default async function DashboardPage() {
 
         <ApexCoachCard insight={coachInsight} />
 
+        <WorkoutRecommendationCard
+          recommendation={workoutRecommendation}
+        />
+
+        <WorkoutSessionCard
+          session={workoutSession}
+        />
+
         <PerformanceGenomeCard
           metrics={genomeMetrics}
           adaptiveTraits={adaptiveTraits}
@@ -85,6 +141,10 @@ export default async function DashboardPage() {
 
         <GenomeInsightsCard
           insights={genomeInsights}
+        />
+
+        <WeeklyReviewCard
+          review={weeklyReview}
         />
 
         <ProgressionCard progression={progression} />

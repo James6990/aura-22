@@ -6,14 +6,26 @@ import {
   type ExerciseEquipment,
   type MovementPattern,
 } from "@/lib/workout/exercise-library";
+import {
+  applyMovementConstraints,
+  type MovementConstraint,
+} from "@/lib/workout/apply-movement-constraints";
 
 export type SelectExercisesInput = {
   movementPatterns: MovementPattern[];
   equipment: ExerciseEquipment[];
   experienceLevel: ExerciseDifficulty;
   accessibilityNeeds?: ExerciseAccessibility[];
+  movementConstraints?: MovementConstraint[];
   maximumFatigueScore?: number;
   limit?: number;
+};
+
+export type SelectExercisesResult = {
+  exercises: ExerciseDefinition[];
+  blockedExerciseIds: string[];
+  requiresProfessionalReview: boolean;
+  message: string | null;
 };
 
 function difficultyRank(value: ExerciseDifficulty) {
@@ -47,12 +59,13 @@ export function selectExercises({
   equipment,
   experienceLevel,
   accessibilityNeeds = [],
+  movementConstraints = [],
   maximumFatigueScore = 10,
   limit = 6,
-}: SelectExercisesInput) {
+}: SelectExercisesInput): SelectExercisesResult {
   const userDifficulty = difficultyRank(experienceLevel);
 
-  return exerciseLibrary
+  const candidates = exerciseLibrary
     .filter((exercise) =>
       movementPatterns.includes(exercise.movementPattern),
     )
@@ -83,6 +96,15 @@ export function selectExercises({
       }
 
       return a.name.localeCompare(b.name);
-    })
-    .slice(0, limit);
+    });
+
+  const constrained = applyMovementConstraints(
+    candidates,
+    movementConstraints,
+  );
+
+  return {
+    ...constrained,
+    exercises: constrained.exercises.slice(0, limit),
+  };
 }
