@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 
 import GreetingCard from "@/components/dashboard/GreetingCard";
+import ApexCoachCard from "@/components/dashboard/ApexCoachCard";
+import { generateCoachInsight } from "@/lib/coach/generate-coach-insight";
 import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
 import { getDashboardData } from "@/lib/dashboard/get-dashboard";
@@ -31,6 +33,10 @@ export default async function DashboardPage() {
     goalLabels[dashboard.genome.primaryGoal ?? ""] ??
     "Build consistent progress";
 
+  const coachInsight = generateCoachInsight(
+    dashboard.readinessHistory,
+  );
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
@@ -38,6 +44,8 @@ export default async function DashboardPage() {
           preferredName={preferredName}
           primaryGoal={primaryGoal}
         />
+
+        <ApexCoachCard insight={coachInsight} />
 
         <CheckInReadinessPanel
           initialCheckIn={dashboard.todayCheckIn}
