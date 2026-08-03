@@ -2,6 +2,9 @@ import { redirect } from "next/navigation";
 
 import GreetingCard from "@/components/dashboard/GreetingCard";
 import ApexCoachCard from "@/components/dashboard/ApexCoachCard";
+import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
+import PerformanceGenomeCard from "@/components/dashboard/PerformanceGenomeCard";
+import { calculateGenomeMetrics } from "@/lib/genome/calculate-genome-metrics";
 import { generateCoachInsight } from "@/lib/coach/generate-coach-insight";
 import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
@@ -37,6 +40,10 @@ export default async function DashboardPage() {
     dashboard.readinessHistory,
   );
 
+  const genomeMetrics = calculateGenomeMetrics(
+    dashboard.readinessHistory,
+  );
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
@@ -47,12 +54,18 @@ export default async function DashboardPage() {
 
         <ApexCoachCard insight={coachInsight} />
 
+        <PerformanceGenomeCard metrics={genomeMetrics} />
+
         <CheckInReadinessPanel
           initialCheckIn={dashboard.todayCheckIn}
         />
 
         <ReadinessHistory
           entries={dashboard.readinessHistory}
+        />
+
+        <ActivityTimeline
+          events={dashboard.recentEvents}
         />
 
         <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
