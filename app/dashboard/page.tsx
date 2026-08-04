@@ -29,6 +29,7 @@ import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
 import { analyseRecentTrainingLoad } from "@/lib/workout/analyse-recent-training-load";
 import { analyseExerciseRotation } from "@/lib/workout/analyse-exercise-rotation";
 import { analyseRecoveryStatus } from "@/lib/workout/analyse-recovery-status";
+import { analyseRecoveryForecast } from "@/lib/workout/analyse-recovery-forecast";
 import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
 import { generateWeeklyReview } from "@/lib/reviews/generate-weekly-review";
 import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
@@ -209,6 +210,14 @@ export default async function DashboardPage() {
       exerciseRotation,
     });
 
+  const recoveryForecast =
+    analyseRecoveryForecast({
+      recoveryIntelligence,
+      recentTrainingLoad,
+      blockWeek:
+        currentBlockWeek,
+    });
+
   const workoutRecommendation =
     generateWorkoutRecommendation({
       readinessScore,
@@ -302,6 +311,7 @@ export default async function DashboardPage() {
     completedProgrammeSessions:
       completedWorkoutCount,
     recoveryIntelligence,
+    recoveryForecast,
   });
 
   return (

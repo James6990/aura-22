@@ -11,6 +11,10 @@ import type {
   RecoveryIntelligence,
 } from "@/lib/workout/analyse-recovery-status";
 import type {
+  RecoveryForecast,
+  RecoveryForecastDay,
+} from "@/lib/workout/analyse-recovery-forecast";
+import type {
   MovementPattern,
 } from "@/lib/workout/exercise-library";
 
@@ -54,6 +58,7 @@ export type AdaptivePlanningInput = {
   programmeSessions?: ProgrammeSession[];
   completedProgrammeSessions?: number;
   recoveryIntelligence?: RecoveryIntelligence;
+  recoveryForecast?: RecoveryForecast;
 };
 
 export type AdaptivePlanDay = {
@@ -457,6 +462,44 @@ function sessionConflictsWithRecovery({
   );
 }
 
+function sessionConflictsWithForecast({
+  session,
+  forecastDay,
+}: {
+  session: ProgrammeSession;
+  forecastDay: RecoveryForecastDay | undefined;
+}) {
+  if (!forecastDay) {
+    return false;
+  }
+
+  if (
+    session.role === "mobility" ||
+    session.role === "recovery"
+  ) {
+    return false;
+  }
+
+  const relevantPatterns =
+    rolePatterns[session.role];
+
+  return relevantPatterns.some(
+    (pattern) =>
+      forecastDay.avoidPatterns.includes(
+        pattern,
+      ),
+  );
+}
+
+function forecastRequiresRecovery(
+  forecastDay: RecoveryForecastDay | undefined,
+) {
+  return (
+    forecastDay?.status === "recovering" ||
+    forecastDay?.status === "avoid-today"
+  );
+}
+
 export function generateAdaptivePlan(
   input: AdaptivePlanningInput,
 ): AdaptivePlan {
@@ -522,6 +565,12 @@ export function generateAdaptivePlan(
   let demandingSessionsPlaced = 0;
 
   for (let offset = 0; offset < 7; offset += 1) {
+    const forecastDay =
+      input.recoveryForecast?.days.find(
+        (day) =>
+          day.dayOffset === offset,
+      );
+
     if (offset === 0 && recoveryNeeded) {
       days.push(
         createRecoveryDay(
@@ -552,12 +601,27 @@ export function generateAdaptivePlan(
       continue;
     }
 
+    if (
+      offset > 0 &&
+      forecastRequiresRecovery(forecastDay)
+    ) {
+      days.push(
+        createRecoveryDay(
+          offset,
+          forecastDay?.explanation ??
+            "Forecast recovery does not yet support a demanding session.",
+        ),
+      );
+      continue;
+    }
+
     const previousDay = days[offset - 1];
 
     const canPlaceTraining =
       demandingSessionsPlaced <
         availableTrainingDays &&
       previousDay?.type !== "train" &&
+      previousDay?.type !== "conditioning" &&
       !(
         blockFoundation &&
         highEffortCount >= 2
@@ -572,23 +636,40 @@ export function generateAdaptivePlan(
             ]
           : undefined;
 
-      const currentRecoveryConflict =
+      const measuredRecoveryConflict =
         programmeSession &&
-        offset <= 1 &&
+        offset === 0 &&
         sessionConflictsWithRecovery({
           session: programmeSession,
           recoveryIntelligence:
             input.recoveryIntelligence,
         });
 
-      if (currentRecoveryConflict) {
+      const forecastRecoveryConflict =
+        programmeSession &&
+        offset > 0 &&
+        sessionConflictsWithForecast({
+          session: programmeSession,
+          forecastDay,
+        });
+
+      if (
+        measuredRecoveryConflict ||
+        forecastRecoveryConflict
+      ) {
         days.push(
           createRecoveryDay(
             offset,
-            `${programmeSession.title} has been postponed because current recovery signals conflict with its main movement demands.`,
+            forecastDay?.explanation ??
+              `${programmeSession.title} has been postponed because recovery signals conflict with its main movement demands.`,
           ),
         );
 
+        /*
+         * Programme order is deliberately
+         * unchanged. The postponed session is
+         * reconsidered on the next suitable day.
+         */
         continue;
       }
 
