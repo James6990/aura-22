@@ -25,6 +25,9 @@ Decision Memory and Event-Driven Intelligence Foundations
 - Existing Apex event-writer adapter
 - Versioned Decision Memory Event Contracts
 - Canonical event-type registry
+- Runtime Decision Memory Event Validation
+- Validating event-sink boundary
+- Validation before PostgreSQL event persistence
 
 ## Current test state
 
@@ -36,7 +39,7 @@ Passing:
 
 ## Current task
 
-Event Validation
+Event Replay Engine
 
 ## Next tasks
 

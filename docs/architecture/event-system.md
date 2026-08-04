@@ -54,3 +54,23 @@ Decision Memory events now use a shared contract containing:
 The publisher imports these contracts instead of maintaining its own duplicate event definitions.
 
 Event validation remains the next build and will enforce these contracts at runtime before events reach persistence.
+
+## Runtime event validation
+
+Decision Memory events are now validated before persistence or downstream delivery.
+
+Validation enforces:
+
+- registered event types;
+- canonical source and category;
+- supported schema versions;
+- valid timestamps;
+- required payload fields;
+- confidence ranges;
+- learning-count consistency;
+- duplicate learning-ID rejection;
+- lifecycle-specific payload requirements.
+
+The existing PostgreSQL event-writer adapter now validates every Decision Memory event before writing to `apex_events`.
+
+A reusable validating sink decorator is also available for replay, sync, analytics, and future subscribers.

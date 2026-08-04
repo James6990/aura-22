@@ -28,6 +28,9 @@
 - Apex event-writer adapter
 - Versioned Decision Memory Event Contracts
 - Canonical event-type registry
+- Runtime Decision Memory Event Validation
+- Validating event-sink boundary
+- Validation before PostgreSQL event persistence
 
 ### Architecture
 
@@ -38,4 +41,4 @@
 
 ### Next
 
-Event Validation
+Event Replay Engine

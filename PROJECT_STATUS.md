@@ -47,10 +47,11 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 - Decision Memory Service
 - Decision Memory Event Publisher
 - Versioned Event Contracts
+- Runtime Event Validation
 
 ## Current build target
 
-Event Validation
+Event Replay Engine
 
 ## Agreed next development order
 
