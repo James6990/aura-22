@@ -19,3 +19,4 @@ export * from "./build-apex-reasoning-trace";
 export * from "./create-decision-memory";
 export * from "./update-decision-memory";
 export * from "./create-decision-memory-service";
+export * from "./create-decision-memory-event-publisher";

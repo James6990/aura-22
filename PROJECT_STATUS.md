@@ -45,10 +45,12 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 - Decision Memory Contract
 - Decision Memory Manager
 - Decision Memory Service
+- Decision Memory Event Publisher
+- Versioned Event Contracts
 
 ## Current build target
 
-Decision Memory Event Publisher
+Event Validation
 
 ## Agreed next development order
 

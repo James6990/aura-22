@@ -21,6 +21,10 @@ Decision Memory and Event-Driven Intelligence Foundations
 - Decision Memory Service
 - Repository port separation
 - Event-driven architecture selected
+- Decision Memory Event Publisher
+- Existing Apex event-writer adapter
+- Versioned Decision Memory Event Contracts
+- Canonical event-type registry
 
 ## Current test state
 
@@ -32,7 +36,7 @@ Passing:
 
 ## Current task
 
-Decision Memory Event Publisher
+Event Validation
 
 ## Next tasks
 

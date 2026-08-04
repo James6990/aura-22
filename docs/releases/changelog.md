@@ -24,6 +24,10 @@
 - Decision Memory Contract
 - Decision Memory Manager
 - Decision Memory Service
+- Decision Memory Event Publisher
+- Apex event-writer adapter
+- Versioned Decision Memory Event Contracts
+- Canonical event-type registry
 
 ### Architecture
 
@@ -34,4 +38,4 @@
 
 ### Next
 
-Decision Memory Event Publisher
+Event Validation
