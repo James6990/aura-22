@@ -12,9 +12,13 @@ import {
 } from "lucide-react";
 
 import type { DailyBriefing } from "@/lib/companion/generate-daily-briefing";
+import type {
+  ApexCoachingState,
+} from "@/lib/apex-core/build-apex-coaching-state";
 
 type ApexCompanionCardProps = {
   briefing: DailyBriefing;
+  coachingState?: ApexCoachingState;
 };
 
 function CompanionIcon({
@@ -52,8 +56,21 @@ function CompanionIcon({
 
 export default function ApexCompanionCard({
   briefing,
+  coachingState,
 }: ApexCompanionCardProps) {
   const decision = briefing.companion.decision;
+
+  const resolvedCoachingState = {
+    headline:
+      coachingState?.headline ??
+      briefing.focus,
+    nextAction:
+      coachingState?.nextAction ??
+      briefing.nextAction,
+    confidence:
+      coachingState?.confidence ??
+      decision.confidence,
+  };
 
   return (
     <section className="rounded-3xl border border-cyan-500/20 bg-gradient-to-br from-slate-900 to-cyan-950/30 p-6">
@@ -91,7 +108,7 @@ export default function ApexCompanionCard({
           </div>
 
           <p className="mt-3 text-lg font-black text-white">
-            {briefing.focus}
+            {resolvedCoachingState.headline}
           </p>
         </article>
 
@@ -132,7 +149,7 @@ export default function ApexCompanionCard({
             </p>
 
             <p className="mt-2 text-sm font-bold leading-6 text-white">
-              {briefing.nextAction}
+              {resolvedCoachingState.nextAction}
             </p>
           </div>
         </div>
@@ -185,7 +202,7 @@ export default function ApexCompanionCard({
             </span>
 
             <span className="font-black text-cyan-300">
-              {decision.confidence}%
+              {resolvedCoachingState.confidence}%
             </span>
           </div>
 
@@ -195,20 +212,20 @@ export default function ApexCompanionCard({
             aria-label="Apex recommendation confidence"
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-valuenow={decision.confidence}
+            aria-valuenow={resolvedCoachingState.confidence}
           >
             <div
               className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-emerald-400"
               style={{
-                width: `${decision.confidence}%`,
+                width: `${resolvedCoachingState.confidence}%`,
               }}
             />
           </div>
 
           <p className="mt-3 text-xs leading-5 text-slate-500">
-            {decision.confidence < 50
+            {resolvedCoachingState.confidence < 50
               ? "I am still learning your patterns. More history will make my guidance increasingly personal."
-              : decision.confidence < 80
+              : resolvedCoachingState.confidence < 80
                 ? "I have useful context, but more consistent history will strengthen future guidance."
                 : "I have a strong recent history and can offer more personalised guidance with higher confidence."}
           </p>

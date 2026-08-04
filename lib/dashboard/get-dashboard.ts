@@ -186,3 +186,10 @@ export async function getDashboardData() {
         : null,
   };
 }
+
+export type DashboardData =
+  NonNullable<
+    Awaited<
+      ReturnType<typeof getDashboardData>
+    >
+  >;

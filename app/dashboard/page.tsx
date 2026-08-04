@@ -10,8 +10,6 @@ import ApexMemoriesCard from "@/components/dashboard/ApexMemoriesCard";
 import SyncMemoriesButton from "@/components/dashboard/SyncMemoriesButton";
 import ProgressionCard from "@/components/dashboard/ProgressionCard";
 import StreakCard from "@/components/dashboard/StreakCard";
-import { calculateStreaks } from "@/lib/progression/calculate-streaks";
-import { calculateProgression } from "@/lib/progression/calculate-xp";
 import PerformanceGenomeCard from "@/components/dashboard/PerformanceGenomeCard";
 import GenomeInsightsCard from "@/components/dashboard/GenomeInsightsCard";
 import WeeklyReviewCard from "@/components/dashboard/WeeklyReviewCard";
@@ -30,24 +28,16 @@ import type {
   TrainingEnvironment,
 } from "@/lib/workout/equipment-capabilities";
 import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
-import { analyseRecentTrainingLoad } from "@/lib/workout/analyse-recent-training-load";
-import { analyseExerciseRotation } from "@/lib/workout/analyse-exercise-rotation";
-import { analyseRecoveryStatus } from "@/lib/workout/analyse-recovery-status";
-import { analyseRecoveryForecast } from "@/lib/workout/analyse-recovery-forecast";
 import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
-import { generateWeeklyReview } from "@/lib/reviews/generate-weekly-review";
-import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
-import { calculateGenomeMetrics } from "@/lib/genome/calculate-genome-metrics";
-import { calculateAdaptiveTraits } from "@/lib/genome/calculate-adaptive-traits";
-import { generateCoachInsight } from "@/lib/coach/generate-coach-insight";
 import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
-import { getDashboardData } from "@/lib/dashboard/get-dashboard";
 import {
-  buildApexDecisionContext,
-  generateApexCore,
-  orchestrateApexDecision,
-} from "@/lib/apex-core";
+  buildDashboardState,
+  buildDecisionPipeline,
+  buildDerivedAthleteState,
+  buildTrainingIntelligence,
+  getDashboardData,
+} from "@/lib/dashboard";
 import { generateAdaptivePlan } from "@/lib/planning/generate-adaptive-plan";
 import { generateTrainingBlock } from "@/lib/planning/generate-training-block";
 import { generateProgrammeStructure } from "@/lib/planning/generate-programme-structure";
@@ -78,54 +68,26 @@ export default async function DashboardPage() {
     goalLabels[dashboard.genome.primaryGoal ?? ""] ??
     "Build consistent progress";
 
-  const coachInsight = generateCoachInsight(
-    dashboard.readinessHistory,
-  );
+  const derivedAthleteState =
+    buildDerivedAthleteState(
+      dashboard,
+    );
 
-  const genomeMetrics = calculateGenomeMetrics(
-    dashboard.readinessHistory,
-  );
-
-  const adaptiveTraits = calculateAdaptiveTraits(
-    dashboard.readinessHistory,
-  );
-
-  const genomeInsights = generateGenomeInsights(
-    dashboard.readinessHistory,
+  const {
+    coachInsight,
+    genomeMetrics,
     adaptiveTraits,
-  );
-
-  const weeklyReview = generateWeeklyReview(
-    dashboard.readinessHistory,
-  );
-
-  const progression = calculateProgression(
-    dashboard.recentEvents,
-  );
-
-  const streak = calculateStreaks(
-    dashboard.checkInDates,
-  );
+    genomeInsights,
+    weeklyReview,
+    progression,
+    streak,
+  } = derivedAthleteState;
 
   const readinessScore =
     dashboard.todayCheckIn?.readinessScore ??
     genomeMetrics.readinessBaseline;
 
-  const apex = generateApexCore({
-    preferredName,
-    readinessScore,
-    traits: adaptiveTraits,
-    currentStreak: streak.currentStreak,
-    latestWorkout: dashboard.latestWorkout,
-    recentMemories: dashboard.apexMemories.map(
-      (memory) => ({
-        title: memory.title,
-        message: memory.message,
-        category: memory.category,
-        occurredAt: memory.occurredAt,
-      }),
-    ),
-  });
+
 
   const recentSkippedSessions =
     dashboard.recentWorkouts.filter(
@@ -199,95 +161,54 @@ export default async function DashboardPage() {
         dashboard.genome.equipmentInventory,
     });
 
-  const recentTrainingLoad =
-    analyseRecentTrainingLoad(
-      dashboard.recentTrainingPerformances,
-    );
-
-  const exerciseRotation =
-    analyseExerciseRotation(
-      dashboard.recentTrainingPerformances,
-    );
-
-  const recoveryIntelligence =
-    analyseRecoveryStatus({
+  const trainingIntelligence =
+    buildTrainingIntelligence({
+      data: dashboard,
       readinessScore,
       adaptiveRecoveryScore:
         adaptiveTraits.recovery,
-      recentTrainingLoad,
-      exerciseRotation,
-    });
-
-  const recoveryForecast =
-    analyseRecoveryForecast({
-      recoveryIntelligence,
-      recentTrainingLoad,
       blockWeek:
         currentBlockWeek,
     });
 
-  const decisionContext =
-    buildApexDecisionContext({
-      identity: {
-        userId: dashboard.user.id,
-        preferredName,
-      },
-      profile: {
-        primaryGoal:
-          dashboard.genome.primaryGoal ??
-          "health",
-        experienceLevel:
-          dashboard.genome.experienceLevel ??
-          "beginner",
-        trainingEnvironment:
-          dashboard.genome.trainingEnvironment,
-        equipment:
-          dashboard.genome.equipment,
-        equipmentInventory:
-          dashboard.genome.equipmentInventory,
-        accessibilityNeeds: [],
-        movementConstraints: [],
-      },
-      today: {
-        readinessScore,
-        recoveryScore:
-          adaptiveTraits.recovery,
-        consistencyScore:
-          adaptiveTraits.consistency,
-        trainingCapacity:
-          adaptiveTraits.trainingCapacity,
-        coachPriority:
-          apex.decision.priority,
-      },
-      programme: {
-        structure: programme,
-        currentSession:
-          programmeSession ?? null,
-        completedProgrammeSessions:
-          completedWorkoutCount,
-        blockWeek:
-          currentBlockWeek,
-      },
-      intelligence: {
-        recentTrainingLoad,
-        exerciseRotation,
-        recovery:
-          recoveryIntelligence,
-        recoveryForecast,
-      },
-      evidence: {
-        rulesetVersion:
-          "apex-rules-v1",
-        confidence:
-          adaptiveTraits.confidence,
-      },
+  const {
+    recentTrainingLoad,
+    exerciseRotation,
+    recoveryIntelligence,
+    recoveryForecast,
+  } = trainingIntelligence;
+
+  const dashboardWithGenome = {
+    ...dashboard,
+    genome: dashboard.genome,
+  } as typeof dashboard & {
+    genome: NonNullable<
+      typeof dashboard.genome
+    >;
+  };
+
+  const decisionPipeline =
+    buildDecisionPipeline({
+      data: dashboardWithGenome,
+      preferredName,
+      readinessScore,
+      derivedAthleteState,
+      trainingIntelligence,
+      programme,
+      programmeSession:
+        programmeSession ?? null,
+      completedProgrammeSessions:
+        completedWorkoutCount,
+      blockWeek:
+        currentBlockWeek,
     });
 
-  const orchestration =
-    orchestrateApexDecision({
-      context: decisionContext,
-      core: apex,
-    });
+  const {
+    apex,
+    context: decisionContext,
+    orchestration,
+    coachingState,
+  } = decisionPipeline;
 
   const workoutRecommendation =
     generateWorkoutRecommendation({
@@ -412,22 +333,46 @@ export default async function DashboardPage() {
         .recoveryForecast,
   });
 
+  const dashboardState =
+    buildDashboardState({
+      data: dashboard,
+      view: {
+        preferredName,
+        primaryGoal,
+        apex,
+        coachingState,
+        workoutRecommendation,
+        workoutSession,
+        adaptivePlan,
+                    },
+    });
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
         <GreetingCard
-          preferredName={preferredName}
-          primaryGoal={primaryGoal}
+          preferredName={dashboardState.view.preferredName}
+          primaryGoal={dashboardState.view.primaryGoal}
+          missionHeadline={
+            dashboardState.view.coachingState.headline
+          }
+          nextAction={
+            dashboardState.view.coachingState.nextAction
+          }
+          confidence={
+            dashboardState.view.coachingState.confidence
+          }
         />
 
         <ApexCompanionCard
-          briefing={apex.dailyBriefing}
+          briefing={dashboardState.view.apex.dailyBriefing}
+          coachingState={dashboardState.view.coachingState}
         />
 
-        <ApexCoachCard insight={coachInsight} />
+        <ApexCoachCard insight={dashboardState.view.coachInsight} />
 
         <WorkoutRecommendationCard
-          recommendation={workoutRecommendation}
+          recommendation={dashboardState.view.workoutRecommendation}
         />
 
         {dashboard.activeWorkout ? (
@@ -436,30 +381,30 @@ export default async function DashboardPage() {
           />
         ) : (
           <WorkoutSessionCard
-            session={workoutSession}
+            session={dashboardState.view.workoutSession}
           />
         )}
 
         <AdaptivePlanCard
-          plan={adaptivePlan}
+          plan={dashboardState.view.adaptivePlan}
         />
 
         <PerformanceGenomeCard
-          metrics={genomeMetrics}
-          adaptiveTraits={adaptiveTraits}
+          metrics={dashboardState.view.genomeMetrics}
+          adaptiveTraits={dashboardState.view.adaptiveTraits}
         />
 
         <GenomeInsightsCard
-          insights={genomeInsights}
+          insights={dashboardState.view.genomeInsights}
         />
 
         <WeeklyReviewCard
-          review={weeklyReview}
+          review={dashboardState.view.weeklyReview}
         />
 
-        <ProgressionCard progression={progression} />
+        <ProgressionCard progression={dashboardState.view.progression} />
 
-        <StreakCard streak={streak} />
+        <StreakCard streak={dashboardState.view.streak} />
 
         <CheckInReadinessPanel
           initialCheckIn={dashboard.todayCheckIn}
