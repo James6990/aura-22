@@ -18,6 +18,7 @@ import WeeklyReviewCard from "@/components/dashboard/WeeklyReviewCard";
 import WorkoutRecommendationCard from "@/components/dashboard/WorkoutRecommendationCard";
 import WorkoutSessionCard from "@/components/dashboard/WorkoutSessionCard";
 import AdaptivePlanCard from "@/components/dashboard/AdaptivePlanCard";
+import ActiveWorkoutCard from "@/components/dashboard/ActiveWorkoutCard";
 import { generateWorkoutSession } from "@/lib/workout/generate-workout-session";
 import type {
   ExerciseDifficulty,
@@ -291,9 +292,15 @@ export default async function DashboardPage() {
           recommendation={workoutRecommendation}
         />
 
-        <WorkoutSessionCard
-          session={workoutSession}
-        />
+        {dashboard.activeWorkout ? (
+          <ActiveWorkoutCard
+            workout={dashboard.activeWorkout}
+          />
+        ) : (
+          <WorkoutSessionCard
+            session={workoutSession}
+          />
+        )}
 
         <AdaptivePlanCard
           plan={adaptivePlan}

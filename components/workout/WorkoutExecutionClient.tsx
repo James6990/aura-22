@@ -63,6 +63,9 @@ export default function WorkoutExecutionClient({
   const [activeIndex, setActiveIndex] =
     useState(firstIncompleteIndex);
 
+  const [sessionCompleted, setSessionCompleted] =
+    useState(alreadyCompleted);
+
   const [elapsedSeconds, setElapsedSeconds] =
     useState(0);
 
@@ -106,7 +109,7 @@ export default function WorkoutExecutionClient({
     setElapsedSeconds(calculateElapsed());
     setTimerReady(true);
 
-    if (alreadyCompleted) {
+    if (sessionCompleted) {
       return;
     }
 
@@ -117,7 +120,7 @@ export default function WorkoutExecutionClient({
     return () => {
       window.clearInterval(timer);
     };
-  }, [alreadyCompleted, startedAt]);
+  }, [sessionCompleted, startedAt]);
 
   const completedCount = exercises.filter(
     (exercise) =>
@@ -277,10 +280,13 @@ export default function WorkoutExecutionClient({
       <div className="mt-6">
         <FinishWorkoutPanel
           sessionId={sessionId}
-          alreadyCompleted={alreadyCompleted}
+          alreadyCompleted={sessionCompleted}
           canFinish={allExercisesCompleted}
           completedExercises={completedCount}
           totalExercises={exercises.length}
+          onCompleted={() =>
+            setSessionCompleted(true)
+          }
         />
       </div>
     </>

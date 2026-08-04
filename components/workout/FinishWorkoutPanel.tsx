@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2,
   Clock3,
@@ -21,6 +22,7 @@ type FinishWorkoutPanelProps = {
   canFinish: boolean;
   completedExercises: number;
   totalExercises: number;
+  onCompleted?: () => void;
 };
 
 export default function FinishWorkoutPanel({
@@ -29,13 +31,30 @@ export default function FinishWorkoutPanel({
   canFinish,
   completedExercises,
   totalExercises,
+  onCompleted,
 }: FinishWorkoutPanelProps) {
+  const router = useRouter();
   const [sessionRpe, setSessionRpe] = useState("");
   const [notes, setNotes] = useState("");
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState("");
   const [debrief, setDebrief] =
     useState<WorkoutDebrief | null>(null);
+
+  useEffect(() => {
+    if (!debrief) {
+      return;
+    }
+
+    const redirectTimer = window.setTimeout(() => {
+      router.replace("/dashboard");
+      router.refresh();
+    }, 2500);
+
+    return () => {
+      window.clearTimeout(redirectTimer);
+    };
+  }, [debrief, router]);
 
   async function handleFinish() {
     if (finishing || alreadyCompleted || debrief) {
@@ -68,6 +87,7 @@ export default function FinishWorkoutPanel({
       }
 
       setDebrief(result.debrief);
+      onCompleted?.();
     } catch (caughtError) {
       console.error(
         "Failed to finish workout:",
@@ -151,6 +171,10 @@ export default function FinishWorkoutPanel({
             value={debrief.reviewCount}
           />
         </div>
+
+        <p className="mt-5 text-center text-sm font-bold text-emerald-200">
+          Returning to your dashboard...
+        </p>
 
         <div className="mt-5 flex items-start gap-3 rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
           <Sparkles className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />

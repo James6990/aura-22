@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import {
-  ArrowLeft,
   Clock3,
   Dumbbell,
   Gauge,
@@ -9,6 +7,7 @@ import {
 
 import { getWorkoutSession } from "@/lib/workout/get-workout-session";
 import WorkoutExecutionClient from "@/components/workout/WorkoutExecutionClient";
+import BackToDashboardButton from "@/components/workout/BackToDashboardButton";
 
 type WorkoutPageProps = {
   params: Promise<{
@@ -36,13 +35,7 @@ export default async function WorkoutPage({
   return (
     <main className="min-h-screen bg-slate-950 px-5 py-8 text-slate-100">
       <div className="mx-auto max-w-4xl">
-        <Link
-          href="/dashboard"
-          className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-800 bg-slate-900 px-4 text-sm font-bold text-slate-300 transition hover:border-slate-700 hover:text-white"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to dashboard
-        </Link>
+        <BackToDashboardButton />
 
         <header className="mt-6 rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-slate-900 to-emerald-950/30 p-6">
           <div className="flex items-start gap-4">
