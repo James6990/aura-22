@@ -24,6 +24,7 @@ import type {
   ExerciseEquipment,
 } from "@/lib/workout/exercise-library";
 import type { EquipmentInventoryItem } from "@/lib/workout/equipment-capabilities";
+import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
 import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
 import { generateWeeklyReview } from "@/lib/reviews/generate-weekly-review";
 import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
@@ -36,6 +37,7 @@ import { getDashboardData } from "@/lib/dashboard/get-dashboard";
 import { generateApexCore } from "@/lib/apex-core";
 import { generateAdaptivePlan } from "@/lib/planning/generate-adaptive-plan";
 import { generateTrainingBlock } from "@/lib/planning/generate-training-block";
+import { generateProgrammeStructure } from "@/lib/planning/generate-programme-structure";
 
 const goalLabels: Record<string, string> = {
   muscle: "Build muscle",
@@ -112,48 +114,6 @@ export default async function DashboardPage() {
     ),
   });
 
-  const workoutRecommendation =
-    generateWorkoutRecommendation({
-      readinessScore,
-      consistency: adaptiveTraits.consistency,
-      recovery: adaptiveTraits.recovery,
-      trainingCapacity:
-        adaptiveTraits.trainingCapacity,
-      primaryGoal:
-        dashboard.genome.primaryGoal ?? "health",
-      experienceLevel:
-        dashboard.genome.experienceLevel ??
-        "beginner",
-      equipment: dashboard.genome.equipment,
-      decisionPriority:
-        apex.decision.priority,
-    });
-
-  const workoutSession = generateWorkoutSession({
-    recommendation: workoutRecommendation,
-    primaryGoal:
-      dashboard.genome.primaryGoal ?? "health",
-    experienceLevel: (
-      dashboard.genome.experienceLevel ??
-      "beginner"
-    ) as ExerciseDifficulty,
-    equipment:
-      dashboard.genome
-        .equipment as ExerciseEquipment[],
-    trainingEnvironment:
-      dashboard.genome.trainingEnvironment,
-    equipmentInventory:
-      dashboard.genome
-        .equipmentInventory as EquipmentInventoryItem[],
-
-    // These will later come from the user's saved
-    // accessibility and movement-constraint profile.
-    accessibilityNeeds: [],
-    movementConstraints: [],
-    progressionHistory:
-      dashboard.exerciseProgressionHistory,
-  });
-
   const recentSkippedSessions =
     dashboard.recentWorkouts.filter(
       (workout) =>
@@ -181,6 +141,104 @@ export default async function DashboardPage() {
     trainingBlock.weeks[
       trainingBlock.currentWeek - 1
     ];
+
+  const programme =
+    generateProgrammeStructure({
+      primaryGoal:
+        dashboard.genome.primaryGoal ??
+        "health",
+      experienceLevel:
+        dashboard.genome.experienceLevel ??
+        "beginner",
+      trainingDaysPerWeek:
+        currentBlockWeek.trainingDaysTarget,
+      trainingEnvironment:
+        dashboard.genome.trainingEnvironment,
+      equipmentInventory:
+        dashboard.genome.equipmentInventory,
+      accessibilityNeeds: [],
+      movementConstraints: [],
+      recentConsistency:
+        adaptiveTraits.consistency,
+      recentRecovery:
+        adaptiveTraits.recovery,
+    });
+
+  const completedWorkoutCount =
+    dashboard.recentWorkouts.filter(
+      (workout) =>
+        workout.status === "completed",
+    ).length;
+
+  const programmeSession =
+    programme.sessions[
+      completedWorkoutCount %
+        programme.sessions.length
+    ];
+
+  const trainingSetup =
+    normaliseTrainingSetup({
+      trainingEnvironment:
+        dashboard.genome.trainingEnvironment,
+      equipment:
+        dashboard.genome.equipment,
+      equipmentInventory:
+        dashboard.genome.equipmentInventory,
+    });
+
+  const workoutRecommendation =
+    generateWorkoutRecommendation({
+      readinessScore,
+      consistency:
+        adaptiveTraits.consistency,
+      recovery:
+        adaptiveTraits.recovery,
+      trainingCapacity:
+        adaptiveTraits.trainingCapacity,
+      primaryGoal:
+        dashboard.genome.primaryGoal ??
+        "health",
+      experienceLevel:
+        dashboard.genome.experienceLevel ??
+        "beginner",
+      equipment:
+        dashboard.genome.equipment,
+      decisionPriority:
+        apex.decision.priority,
+    });
+
+  const workoutSession =
+    generateWorkoutSession({
+      recommendation:
+        workoutRecommendation,
+      primaryGoal:
+        dashboard.genome.primaryGoal ??
+        "health",
+      experienceLevel: (
+        dashboard.genome.experienceLevel ??
+        "beginner"
+      ) as ExerciseDifficulty,
+      equipment:
+        trainingSetup
+          .equipment as ExerciseEquipment[],
+      trainingEnvironment:
+        trainingSetup.trainingEnvironment,
+      equipmentInventory:
+        trainingSetup
+          .equipmentInventory as EquipmentInventoryItem[],
+      programmeRole:
+        programmeSession?.role ??
+        "full-body",
+      blockPhase:
+        currentBlockWeek.phase,
+
+      // These will later come from the user's
+      // saved accessibility and movement profile.
+      accessibilityNeeds: [],
+      movementConstraints: [],
+      progressionHistory:
+        dashboard.exerciseProgressionHistory,
+    });
 
   const adaptivePlan = generateAdaptivePlan({
     primaryGoal:

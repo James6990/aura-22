@@ -14,6 +14,13 @@ import type {
   TrainingEnvironment,
 } from "@/lib/workout/equipment-capabilities";
 import { getTrainingGoalProfile } from "@/lib/workout/training-goal-profile";
+import {
+  generateSessionBlueprint,
+  type SessionBlueprintSection,
+  type SessionSectionType,
+} from "@/lib/workout/generate-session-blueprint";
+import type { ProgrammeSessionRole } from "@/lib/planning/generate-programme-structure";
+import type { TrainingBlockPhase } from "@/lib/planning/generate-training-block";
 
 export type WorkoutSessionExercise = {
   id: string;
@@ -36,11 +43,30 @@ export type WorkoutSessionExercise = {
   progressionExplanation: string | null;
 };
 
+export type WorkoutSessionSection = {
+  order: number;
+  type: SessionSectionType;
+  title: string;
+  purpose: string;
+  optional: boolean;
+  exercises: WorkoutSessionExercise[];
+};
+
 export type WorkoutSession = {
   title: string;
   intensity: WorkoutRecommendation["intensity"];
   estimatedDurationMinutes: number;
+
+  /*
+   * Retained for workout-start compatibility.
+   * Sections provide the richer presentation.
+   */
   exercises: WorkoutSessionExercise[];
+
+  blueprintTitle: string;
+  blueprintExplanation: string;
+  sections: WorkoutSessionSection[];
+
   requiresProfessionalReview: boolean;
   safetyMessage: string | null;
 };
@@ -52,6 +78,10 @@ export type GenerateWorkoutSessionInput = {
   equipment: ExerciseEquipment[];
   trainingEnvironment?: TrainingEnvironment;
   equipmentInventory?: EquipmentInventoryItem[];
+
+  programmeRole?: ProgrammeSessionRole;
+  blockPhase?: TrainingBlockPhase;
+
   accessibilityNeeds?: ExerciseAccessibility[];
   movementConstraints?: MovementConstraint[];
   progressionHistory?: Record<
@@ -359,6 +389,81 @@ function getSuggestedLoad(
   );
 }
 
+function buildWorkoutSections({
+  blueprintSections,
+  exercises,
+}: {
+  blueprintSections: SessionBlueprintSection[];
+  exercises: WorkoutSessionExercise[];
+}): WorkoutSessionSection[] {
+  const remaining = [...exercises];
+
+  return blueprintSections.map((section) => {
+    const matched: WorkoutSessionExercise[] = [];
+
+    for (
+      let index = remaining.length - 1;
+      index >= 0;
+      index -= 1
+    ) {
+      if (
+        matched.length >=
+        section.exerciseTarget
+      ) {
+        break;
+      }
+
+      const exercise = remaining[index];
+
+      if (
+        section.movementPatterns.includes(
+          exercise.movementPattern,
+        )
+      ) {
+        matched.unshift(exercise);
+        remaining.splice(index, 1);
+      }
+    }
+
+    /*
+     * The starter exercise library does not yet
+     * contain enough preparation and mobility
+     * exercises for every blueprint. Unassigned
+     * exercises therefore fall into primary or
+     * supporting work without being duplicated.
+     */
+    if (
+      remaining.length > 0 &&
+      (
+        section.type === "primary" ||
+        section.type === "supporting"
+      )
+    ) {
+      while (
+        matched.length <
+          section.exerciseTarget &&
+        remaining.length > 0
+      ) {
+        const nextExercise =
+          remaining.shift();
+
+        if (nextExercise) {
+          matched.push(nextExercise);
+        }
+      }
+    }
+
+    return {
+      order: section.order,
+      type: section.type,
+      title: section.title,
+      purpose: section.purpose,
+      optional: section.optional,
+      exercises: matched,
+    };
+  });
+}
+
 function getPrioritySafetyMessage(
   priority: CoachPriority | null,
 ) {
@@ -393,6 +498,8 @@ export function generateWorkoutSession({
   equipment,
   trainingEnvironment = "commercial-gym",
   equipmentInventory = [],
+  programmeRole = "full-body",
+  blockPhase = "foundation",
   accessibilityNeeds = [],
   movementConstraints = [],
   progressionHistory = {},
@@ -400,11 +507,36 @@ export function generateWorkoutSession({
   const priority =
     recommendation.decisionPriority;
 
-  const movementPatterns = getMovementPatterns({
+  const blueprint = generateSessionBlueprint({
     primaryGoal,
+    programmeRole,
+    blockPhase,
+    currentPriority:
+      priority ?? "train",
     intensity: recommendation.intensity,
-    priority,
   });
+
+  const blueprintMovementPatterns = [
+    ...new Set(
+      blueprint.sections.flatMap(
+        (section) =>
+          section.movementPatterns,
+      ),
+    ),
+  ];
+
+  const movementPatterns =
+    blueprintMovementPatterns.length > 0
+      ? blueprintMovementPatterns
+      : getMovementPatterns({
+          primaryGoal,
+          intensity:
+            recommendation.intensity,
+          priority,
+        });
+
+  /*
+  */
 
   const selection = selectExercises({
     movementPatterns,
@@ -499,12 +631,22 @@ export function generateWorkoutSession({
       "Apex could not construct a suitable session with the current equipment, accessibility needs and movement constraints.";
   }
 
+  const sections = buildWorkoutSections({
+    blueprintSections:
+      blueprint.sections,
+    exercises,
+  });
+
   return {
     title: recommendation.focus,
     intensity: recommendation.intensity,
     estimatedDurationMinutes:
       recommendation.durationMinutes,
     exercises,
+    blueprintTitle: blueprint.title,
+    blueprintExplanation:
+      blueprint.explanation,
+    sections,
     requiresProfessionalReview:
       selection.requiresProfessionalReview,
     safetyMessage,

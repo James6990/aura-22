@@ -2,7 +2,7 @@
 
 import { randomUUID } from "crypto";
 import { headers } from "next/headers";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -35,6 +35,7 @@ export type StartWorkoutSessionResult =
   | {
       success: true;
       sessionId: string;
+      resumed: boolean;
     }
   | {
       success: false;
@@ -130,68 +131,118 @@ export async function startWorkoutSession(
     };
   }
 
-  const workoutSessionId = randomUUID();
   const now = new Date();
 
   try {
-    await db.transaction(async (tx) => {
-      await tx.insert(workoutSessions).values({
-        id: workoutSessionId,
-        userId,
-        date: getTodayDate(),
-        title: input.title.trim(),
-        intensity: input.intensity.trim(),
-        plannedDurationMinutes:
-          input.plannedDurationMinutes,
-        status: "in-progress",
-        startedAt: now,
-        updatedAt: now,
-      });
+    const result = await db.transaction(
+      async (tx) => {
+        /*
+         * Serialise workout starts for this user.
+         * This prevents two tabs or rapid requests
+         * from creating duplicate active sessions.
+         */
+        await tx.execute(
+          sql`select pg_advisory_xact_lock(hashtext(${userId}))`,
+        );
 
-      await tx.insert(workoutExerciseResults).values(
-        input.exercises.map((exercise, index) => ({
-          id: randomUUID(),
-          sessionId: workoutSessionId,
+        const existingSession =
+          await tx.query.workoutSessions.findFirst({
+            where: and(
+              eq(workoutSessions.userId, userId),
+              eq(
+                workoutSessions.status,
+                "in-progress",
+              ),
+            ),
+            orderBy: [
+              desc(workoutSessions.updatedAt),
+            ],
+          });
+
+        if (existingSession) {
+          return {
+            sessionId: existingSession.id,
+            resumed: true,
+          };
+        }
+
+        const workoutSessionId = randomUUID();
+
+        await tx.insert(workoutSessions).values({
+          id: workoutSessionId,
           userId,
-          exerciseId: exercise.id,
-          exerciseName: exercise.name,
-          orderIndex: index,
-          plannedSets: exercise.sets,
-          targetReps: exercise.reps,
-          completionStatus: "not-started" as const,
-          updatedAt: now,
-        })),
-      );
-
-      await tx.insert(apexEvents).values({
-        id: randomUUID(),
-        userId,
-        type: "workout.session_started",
-        category: "workout",
-        source: "workout-session",
-        payload: {
-          sessionId: workoutSessionId,
+          date: getTodayDate(),
           title: input.title.trim(),
           intensity: input.intensity.trim(),
           plannedDurationMinutes:
             input.plannedDurationMinutes,
-          exerciseCount: input.exercises.length,
-        },
-        schemaVersion: 1,
-        occurredAt: now,
-      });
-    });
+          status: "in-progress",
+          startedAt: now,
+          updatedAt: now,
+        });
+
+        await tx
+          .insert(workoutExerciseResults)
+          .values(
+            input.exercises.map(
+              (exercise, index) => ({
+                id: randomUUID(),
+                sessionId: workoutSessionId,
+                userId,
+                exerciseId: exercise.id,
+                exerciseName: exercise.name,
+                orderIndex: index,
+                plannedSets: exercise.sets,
+                targetReps: exercise.reps,
+                completionStatus:
+                  "not-started" as const,
+                updatedAt: now,
+              }),
+            ),
+          );
+
+        await tx.insert(apexEvents).values({
+          id: randomUUID(),
+          userId,
+          type: "workout.session_started",
+          category: "workout",
+          source: "workout-session",
+          payload: {
+            sessionId: workoutSessionId,
+            title: input.title.trim(),
+            intensity:
+              input.intensity.trim(),
+            plannedDurationMinutes:
+              input.plannedDurationMinutes,
+            exerciseCount:
+              input.exercises.length,
+          },
+          schemaVersion: 1,
+          occurredAt: now,
+        });
+
+        return {
+          sessionId: workoutSessionId,
+          resumed: false,
+        };
+      },
+    );
 
     return {
       success: true,
-      sessionId: workoutSessionId,
+      sessionId: result.sessionId,
+      resumed: result.resumed,
     };
   } catch (error) {
-    console.error("Failed to start workout session:", error);
+    console.error(
+      "Failed to start or resume workout session:",
+      error,
+    );
 
     return {
       success: false,
-      error: "Apex could not start this workout session.",
+      error:
+        "Apex could not start or resume this workout session.",
     };
   }
 }

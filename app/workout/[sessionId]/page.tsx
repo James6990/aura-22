@@ -8,8 +8,7 @@ import {
 } from "lucide-react";
 
 import { getWorkoutSession } from "@/lib/workout/get-workout-session";
-import ExerciseLogger from "@/components/workout/ExerciseLogger";
-import FinishWorkoutPanel from "@/components/workout/FinishWorkoutPanel";
+import WorkoutExecutionClient from "@/components/workout/WorkoutExecutionClient";
 
 type WorkoutPageProps = {
   params: Promise<{
@@ -89,24 +88,17 @@ export default async function WorkoutPage({
           </div>
         </header>
 
-        <section className="mt-6 space-y-4">
-          {data.exercises.map((exercise) => (
-            <ExerciseLogger
-              key={exercise.id}
-              sessionId={data.session.id}
-              exercise={exercise}
-            />
-          ))}
-        </section>
-
-        <div className="mt-6">
-          <FinishWorkoutPanel
-            sessionId={data.session.id}
-            alreadyCompleted={
-              data.session.status === "completed"
-            }
-          />
-        </div>
+        <WorkoutExecutionClient
+          sessionId={data.session.id}
+          exercises={data.exercises}
+          startedAt={
+            data.session.startedAt?.toISOString() ??
+            null
+          }
+          alreadyCompleted={
+            data.session.status === "completed"
+          }
+        />
       </div>
     </main>
   );

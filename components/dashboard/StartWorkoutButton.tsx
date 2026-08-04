@@ -27,9 +27,12 @@ export default function StartWorkoutButton({
   const router = useRouter();
 
   const [starting, setStarting] = useState(false);
-  const [sessionId, setSessionId] = useState<string | null>(
-    null,
-  );
+  const [sessionId, setSessionId] =
+    useState<string | null>(null);
+
+  const [resuming, setResuming] =
+    useState(false);
+
   const [error, setError] = useState("");
 
   async function handleStart() {
@@ -51,6 +54,7 @@ export default function StartWorkoutButton({
         return;
       }
 
+      setResuming(result.resumed);
       setSessionId(result.sessionId);
       router.push(`/workout/${result.sessionId}`);
     } catch (caughtError) {
@@ -71,11 +75,15 @@ export default function StartWorkoutButton({
         className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4"
       >
         <p className="font-black text-emerald-200">
-          Workout started
+          {resuming
+            ? "Workout resumed"
+            : "Workout started"}
         </p>
 
         <p className="mt-1 text-sm text-emerald-100/70">
-          Your planned session and exercises are now saved.
+          {resuming
+            ? "Apex found your unfinished workout and reopened it."
+            : "Your planned session and exercises are now saved."}
         </p>
       </div>
     );

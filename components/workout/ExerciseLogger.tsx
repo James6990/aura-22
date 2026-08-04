@@ -12,6 +12,12 @@ import { saveExerciseResult } from "@/app/actions/workout-session";
 
 type ExerciseLoggerProps = {
   sessionId: string;
+  exerciseNumber?: number;
+  totalExercises?: number;
+  active?: boolean;
+  onSaved?: (
+    completionStatus: string,
+  ) => void;
   exercise: {
     id: string;
     exerciseName: string;
@@ -31,6 +37,10 @@ type ExerciseLoggerProps = {
 export default function ExerciseLogger({
   sessionId,
   exercise,
+  exerciseNumber,
+  totalExercises,
+  active = false,
+  onSaved,
 }: ExerciseLoggerProps) {
   const router = useRouter();
 
@@ -89,12 +99,37 @@ export default function ExerciseLogger({
     setSaving(true);
     setSaveError("");
 
+    const hasEnteredReps = reps.some(
+      (value) => value.trim() !== "",
+    );
+
+    if (!hasEnteredReps) {
+      setSaveError(
+        "Enter the repetitions completed for at least one set before saving.",
+      );
+      setSaving(false);
+      return;
+    }
+
     const parsedReps = reps.map((value) => {
+      if (value.trim() === "") {
+        return 0;
+      }
+
       const parsed = Number(value);
-      return Number.isInteger(parsed) && parsed >= 0
+
+      return Number.isInteger(parsed) && parsed > 0
         ? parsed
         : 0;
     });
+
+    if (!parsedReps.some((value) => value > 0)) {
+      setSaveError(
+        "At least one completed set must contain a repetition value greater than zero.",
+      );
+      setSaving(false);
+      return;
+    }
 
     try {
       const result = await saveExerciseResult({
@@ -126,6 +161,9 @@ export default function ExerciseLogger({
       }
 
       setSavedStatus(result.completionStatus);
+      onSaved?.(
+        result.completionStatus,
+      );
       router.refresh();
     } catch (error) {
       console.error("Failed to log exercise:", error);
@@ -144,9 +182,23 @@ export default function ExerciseLogger({
     discomfortNumber >= 4;
 
   return (
-    <article className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
+    <article
+      className={`rounded-2xl border bg-slate-900/70 p-5 ${
+        active
+          ? "border-emerald-400/60 ring-1 ring-emerald-400/20"
+          : "border-slate-800"
+      }`}
+    >
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
         <div>
+          {exerciseNumber !== undefined &&
+            totalExercises !== undefined && (
+              <p className="mb-2 text-xs font-bold uppercase tracking-widest text-emerald-400">
+                Exercise {exerciseNumber} of{" "}
+                {totalExercises}
+              </p>
+            )}
+
           <h2 className="text-xl font-black text-white">
             {exercise.exerciseName}
           </h2>

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { performanceGenome } from "@/lib/db/schema";
+import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
 
 export type PerformanceGenomeInput = {
   preferredName: string;
@@ -153,6 +154,15 @@ export async function savePerformanceGenome(
     };
   }
 
+  const trainingSetup =
+    normaliseTrainingSetup({
+      trainingEnvironment:
+        input.trainingEnvironment,
+      equipment: input.equipment,
+      equipmentInventory:
+        input.equipmentInventory,
+    });
+
   try {
     await db
       .insert(performanceGenome)
@@ -165,11 +175,12 @@ export async function savePerformanceGenome(
         unitSystem: input.unitSystem,
         primaryGoal: input.primaryGoal,
         experienceLevel: input.experienceLevel,
-        equipment: input.equipment,
+        equipment:
+          trainingSetup.equipment,
         trainingEnvironment:
-          input.trainingEnvironment,
+          trainingSetup.trainingEnvironment,
         equipmentInventory:
-          input.equipmentInventory,
+          trainingSetup.equipmentInventory,
         dietaryPreference: input.dietaryPreference,
         allergiesAndAvoidances:
           input.allergiesAndAvoidances.trim(),
@@ -192,11 +203,12 @@ export async function savePerformanceGenome(
           unitSystem: input.unitSystem,
           primaryGoal: input.primaryGoal,
           experienceLevel: input.experienceLevel,
-          equipment: input.equipment,
+          equipment:
+            trainingSetup.equipment,
           trainingEnvironment:
-            input.trainingEnvironment,
+            trainingSetup.trainingEnvironment,
           equipmentInventory:
-            input.equipmentInventory,
+            trainingSetup.equipmentInventory,
           dietaryPreference: input.dietaryPreference,
           allergiesAndAvoidances:
             input.allergiesAndAvoidances.trim(),

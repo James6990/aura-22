@@ -18,11 +18,17 @@ import {
 type FinishWorkoutPanelProps = {
   sessionId: string;
   alreadyCompleted: boolean;
+  canFinish: boolean;
+  completedExercises: number;
+  totalExercises: number;
 };
 
 export default function FinishWorkoutPanel({
   sessionId,
   alreadyCompleted,
+  canFinish,
+  completedExercises,
+  totalExercises,
 }: FinishWorkoutPanelProps) {
   const [sessionRpe, setSessionRpe] = useState("");
   const [notes, setNotes] = useState("");
@@ -33,6 +39,13 @@ export default function FinishWorkoutPanel({
 
   async function handleFinish() {
     if (finishing || alreadyCompleted || debrief) {
+      return;
+    }
+
+    if (!canFinish) {
+      setError(
+        `Complete all exercises before finishing. ${completedExercises} of ${totalExercises} are complete.`,
+      );
       return;
     }
 
