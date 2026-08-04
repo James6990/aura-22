@@ -16,3 +16,6 @@ export * from "./build-learning-integration-state";
 export * from "./build-coaching-confidence-state";
 export * from "./build-apex-reasoning-state";
 export * from "./build-apex-reasoning-trace";
+export * from "./create-decision-memory";
+export * from "./update-decision-memory";
+export * from "./create-decision-memory-service";
