@@ -5,3 +5,9 @@ export * from "./build-apex-decision-context";
 export * from "./orchestrate-apex-decision";
 
 export * from "./build-apex-coaching-state";
+export * from "./create-decision-record";
+export * from "./create-decision-outcome";
+export * from "./create-learning-ledger-entry";
+export * from "./create-knowledge-relationship";
+export * from "./validate-learning-ledger-entry";
+export * from "./detect-learning-contradictions";

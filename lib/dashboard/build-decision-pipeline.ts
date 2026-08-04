@@ -25,6 +25,12 @@ import type {
   TrainingIntelligenceState,
 } from "@/lib/dashboard/build-training-intelligence";
 import type {
+  PersonalisationState,
+} from "@/lib/dashboard/build-personalisation-state";
+import type {
+  MemoryReasoningProfile,
+} from "@/lib/memory/analyse-memory-patterns";
+import type {
   ProgrammeSession,
   ProgrammeStructure,
 } from "@/lib/planning/generate-programme-structure";
@@ -45,6 +51,8 @@ export type BuildDecisionPipelineInput = {
   readinessScore: number;
   derivedAthleteState: DerivedAthleteState;
   trainingIntelligence: TrainingIntelligenceState;
+  personalisation: PersonalisationState;
+  memoryReasoning: MemoryReasoningProfile;
 
   programme: ProgrammeStructure;
   programmeSession: ProgrammeSession | null;
@@ -58,6 +66,8 @@ export function buildDecisionPipeline({
   readinessScore,
   derivedAthleteState,
   trainingIntelligence,
+  personalisation,
+  memoryReasoning,
   programme,
   programmeSession,
   completedProgrammeSessions,
@@ -138,6 +148,8 @@ export function buildDecisionPipeline({
         recoveryForecast:
           trainingIntelligence
             .recoveryForecast,
+        personalisation,
+        memoryReasoning,
       },
       evidence: {
         rulesetVersion:

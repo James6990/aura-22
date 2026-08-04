@@ -1,22 +1,6 @@
 import { redirect } from "next/navigation";
 
-import GreetingCard from "@/components/dashboard/GreetingCard";
-import ApexCompanionCard from "@/components/dashboard/ApexCompanionCard";
-import { generateCompanionBrief } from "@/lib/companion/generate-companion-brief";
-import { generateDailyBriefing } from "@/lib/companion/generate-daily-briefing";
-import ApexCoachCard from "@/components/dashboard/ApexCoachCard";
-import ActivityTimeline from "@/components/dashboard/ActivityTimeline";
-import ApexMemoriesCard from "@/components/dashboard/ApexMemoriesCard";
-import SyncMemoriesButton from "@/components/dashboard/SyncMemoriesButton";
-import ProgressionCard from "@/components/dashboard/ProgressionCard";
-import StreakCard from "@/components/dashboard/StreakCard";
-import PerformanceGenomeCard from "@/components/dashboard/PerformanceGenomeCard";
-import GenomeInsightsCard from "@/components/dashboard/GenomeInsightsCard";
-import WeeklyReviewCard from "@/components/dashboard/WeeklyReviewCard";
-import WorkoutRecommendationCard from "@/components/dashboard/WorkoutRecommendationCard";
-import WorkoutSessionCard from "@/components/dashboard/WorkoutSessionCard";
-import AdaptivePlanCard from "@/components/dashboard/AdaptivePlanCard";
-import ActiveWorkoutCard from "@/components/dashboard/ActiveWorkoutCard";
+import DashboardContent from "@/components/dashboard/DashboardContent";
 import { generateWorkoutSession } from "@/lib/workout/generate-workout-session";
 import type {
   ExerciseAccessibility,
@@ -29,12 +13,12 @@ import type {
 } from "@/lib/workout/equipment-capabilities";
 import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
 import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
-import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
-import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
 import {
   buildDashboardState,
   buildDecisionPipeline,
   buildDerivedAthleteState,
+  buildMemoryReasoningState,
+  buildPersonalisationState,
   buildTrainingIntelligence,
   getDashboardData,
 } from "@/lib/dashboard";
@@ -161,6 +145,17 @@ export default async function DashboardPage() {
         dashboard.genome.equipmentInventory,
     });
 
+  const personalisation =
+    buildPersonalisationState(
+      dashboard,
+    );
+
+  const memoryReasoning =
+    buildMemoryReasoningState({
+      data: dashboard,
+      personalisation,
+    });
+
   const trainingIntelligence =
     buildTrainingIntelligence({
       data: dashboard,
@@ -194,6 +189,8 @@ export default async function DashboardPage() {
       readinessScore,
       derivedAthleteState,
       trainingIntelligence,
+      personalisation,
+      memoryReasoning,
       programme,
       programmeSession:
         programmeSession ?? null,
@@ -348,146 +345,9 @@ export default async function DashboardPage() {
     });
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto max-w-7xl space-y-6 p-5 sm:p-8">
-        <GreetingCard
-          preferredName={dashboardState.view.preferredName}
-          primaryGoal={dashboardState.view.primaryGoal}
-          missionHeadline={
-            dashboardState.view.coachingState.headline
-          }
-          nextAction={
-            dashboardState.view.coachingState.nextAction
-          }
-          confidence={
-            dashboardState.view.coachingState.confidence
-          }
-        />
-
-        <ApexCompanionCard
-          briefing={dashboardState.view.apex.dailyBriefing}
-          coachingState={dashboardState.view.coachingState}
-        />
-
-        <ApexCoachCard insight={dashboardState.view.coachInsight} />
-
-        <WorkoutRecommendationCard
-          recommendation={dashboardState.view.workoutRecommendation}
-        />
-
-        {dashboard.activeWorkout ? (
-          <ActiveWorkoutCard
-            workout={dashboard.activeWorkout}
-          />
-        ) : (
-          <WorkoutSessionCard
-            session={dashboardState.view.workoutSession}
-          />
-        )}
-
-        <AdaptivePlanCard
-          plan={dashboardState.view.adaptivePlan}
-        />
-
-        <PerformanceGenomeCard
-          metrics={dashboardState.view.genomeMetrics}
-          adaptiveTraits={dashboardState.view.adaptiveTraits}
-        />
-
-        <GenomeInsightsCard
-          insights={dashboardState.view.genomeInsights}
-        />
-
-        <WeeklyReviewCard
-          review={dashboardState.view.weeklyReview}
-        />
-
-        <ProgressionCard progression={dashboardState.view.progression} />
-
-        <StreakCard streak={dashboardState.view.streak} />
-
-        <CheckInReadinessPanel
-          initialCheckIn={dashboard.todayCheckIn}
-        />
-
-        <ReadinessHistory
-          entries={dashboard.readinessHistory}
-        />
-
-        <ApexMemoriesCard
-          memories={dashboard.apexMemories}
-        />
-
-        {dashboard.apexMemories.length === 0 && (
-          <SyncMemoriesButton />
-        )}
-
-        <ActivityTimeline
-          events={dashboard.recentEvents}
-        />
-
-        <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <DashboardStat
-            label="Genome version"
-            value={`v${dashboard.genome.genomeVersion}`}
-          />
-
-          <DashboardStat
-            label="Experience"
-            value={dashboard.genome.experienceLevel ?? "Not set"}
-          />
-
-          <DashboardStat
-            label="Current weight"
-            value={
-              dashboard.genome.weightKg
-                ? `${dashboard.genome.weightKg} kg`
-                : "Not set"
-            }
-          />
-
-          <DashboardStat
-            label="Coaching style"
-            value={dashboard.genome.coachStyle}
-          />
-        </section>
-
-        <section className="rounded-3xl border border-emerald-500/20 bg-emerald-500/5 p-6">
-          <p className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-            Apex Intelligence
-          </p>
-
-          <h2 className="mt-2 text-xl font-black text-white">
-            Your Performance Genome is connected
-          </h2>
-
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
-            Apex can now use your saved goal, experience, equipment,
-            nutrition and accessibility preferences to personalise future
-            training and recovery guidance.
-          </p>
-        </section>
-      </div>
-    </main>
-  );
-}
-
-function DashboardStat({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
-  return (
-    <article className="rounded-2xl border border-slate-800 bg-slate-900/70 p-5">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-        {label}
-      </p>
-
-      <p className="mt-2 font-black capitalize text-white">
-        {value}
-      </p>
-    </article>
+    <DashboardContent
+      state={dashboardState}
+      data={dashboardWithGenome}
+    />
   );
 }

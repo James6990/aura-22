@@ -20,6 +20,18 @@ import type {
 import type {
   CoachPriority,
 } from "@/lib/companion/generate-coach-decision";
+import type {
+  ExercisePersonalisationProfile,
+} from "@/lib/personalisation/analyse-exercise-preferences";
+import type {
+  RecoveryBehaviourProfile,
+} from "@/lib/personalisation/analyse-recovery-behaviour";
+import type {
+  TrainingBehaviourProfile,
+} from "@/lib/personalisation/analyse-training-behaviour";
+import type {
+  MemoryReasoningProfile,
+} from "@/lib/memory/analyse-memory-patterns";
 
 export type ApexDecisionContext = {
   identity: {
@@ -57,6 +69,18 @@ export type ApexDecisionContext = {
     exerciseRotation: ExerciseRotationAnalysis;
     recovery: RecoveryIntelligence;
     recoveryForecast: RecoveryForecast;
+
+    personalisation?: {
+      exercise:
+        ExercisePersonalisationProfile;
+      training:
+        TrainingBehaviourProfile;
+      recovery:
+        RecoveryBehaviourProfile;
+    };
+
+    memoryReasoning?:
+      MemoryReasoningProfile;
   };
 
   evidence: {

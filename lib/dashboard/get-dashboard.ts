@@ -97,7 +97,13 @@ export async function getDashboardData() {
         date: workoutSessions.date,
         status: workoutSessions.status,
         intensity: workoutSessions.intensity,
+        plannedDurationMinutes:
+          workoutSessions.plannedDurationMinutes,
+        actualDurationMinutes:
+          workoutSessions.actualDurationMinutes,
         sessionRpe: workoutSessions.sessionRpe,
+        startedAt: workoutSessions.startedAt,
+        completedAt: workoutSessions.completedAt,
       })
       .from(workoutSessions)
       .where(
