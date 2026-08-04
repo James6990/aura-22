@@ -11,7 +11,9 @@
     "typecheck": "tsc --noEmit",
     "apex:check": "npm run test:apex && npm run typecheck && npm run build",
     "apex:test": "npm run test:apex",
-    "apex:quick": "npm run test:apex && npm run typecheck"
+    "apex:quick": "npm run test:apex && npm run typecheck",
+    "docs:check": "node scripts/check-docs.mjs",
+    "apex:checkpoint-check": "npm run apex:quick && npm run docs:check && git diff --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

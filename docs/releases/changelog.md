@@ -1,0 +1,37 @@
+# Apex Changelog
+
+## Unreleased — Foundation Intelligence
+
+### Added
+
+- Evidence Weighting
+- Adaptive Confidence
+- Coaching Confidence
+- Personalisation profiles
+- Memory reasoning
+- Learning Ledger
+- Knowledge Relationships
+- Learning Validation
+- Contradiction Detection
+- Knowledge Resolution
+- Learning Integration
+- Apex Reasoning State
+- Apex Reasoning Trace
+- Decision Records
+- Decision Outcomes
+- Decision Reflection
+- Decision History
+- Decision Memory Contract
+- Decision Memory Manager
+- Decision Memory Service
+
+### Architecture
+
+- Event-driven direction adopted
+- Domain logic separated from persistence
+- Repository port introduced
+- Repository documentation added as a version-controlled source of truth
+
+### Next
+
+Decision Memory Event Publisher

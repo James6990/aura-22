@@ -1,0 +1,214 @@
+# Apex Master Roadmap
+
+This roadmap includes the full product vision. It must not be reduced to only the AI architecture.
+
+## Stage 1 — Product and Engineering Foundation
+
+- Repository and branching workflow
+- Authentication
+- Database foundation
+- Dashboard foundation
+- Core shared types
+- Testing and typecheck commands
+- Event timeline foundation
+- Performance Genome
+
+## Stage 2 — Core Fitness and Health Platform
+
+- Workout planning
+- Workout sessions
+- Exercise results
+- Progression tracking
+- Nutrition
+- Hydration
+- Recovery
+- Readiness
+- Dashboard views
+- Progress tracking
+- Equipment inventory
+- Training environment
+
+## Stage 3 — Workout Intelligence
+
+- Recent training-load analysis
+- Exercise rotation intelligence
+- Recovery status
+- Recovery forecasting
+- Progression analysis
+- Adaptive plan generation
+- Adaptive periodisation
+- Forecast-aware periodisation
+- Exercise selection
+- Injury-aware exercise filtering
+- Indirect movement-demand checks
+- Session rebuilding around unaffected capabilities
+
+## Stage 4 — Decision Intelligence and Explainability
+
+- Apex Core
+- Decision Context
+- Decision Orchestration
+- Coaching State
+- Evidence Registry
+- Evidence Weighting
+- Adaptive Confidence
+- Coaching Confidence
+- Reasoning State
+- Reasoning Trace
+- Decision Records
+- Decision History
+- Decision Outcomes
+- Decision Reflection
+
+## Stage 5 — Personalisation, Memory, and Learning
+
+- Exercise preference analysis
+- Training behaviour analysis
+- Recovery behaviour analysis
+- Memory pattern analysis
+- Learning Ledger
+- Knowledge Relationships
+- Learning Validation
+- Contradiction Detection
+- Knowledge Resolution
+- Learning Integration
+- Decision Memory
+- Decision Memory Manager
+- Decision Memory Service
+
+## Stage 6 — Event-Driven Intelligence
+
+Build in this agreed order:
+
+1. Decision Memory Event Publisher
+2. Event Contracts
+3. Event Validation
+4. Event Replay Engine
+5. PostgreSQL Repository
+6. Cloud Sync
+7. Offline Cache
+8. Event Analytics
+9. Memory Consolidation Engine
+10. Autonomous Learning Engine
+
+## Stage 7 — Recovery, Safety, and Return-to-Training
+
+### Recovery Pause
+
+A one-button mode for temporary illness, exhaustion, or life interruption.
+
+It should:
+
+- pause normal prompts;
+- pause workout recommendations;
+- protect progress;
+- protect streaks;
+- remove guilt and missed-session pressure;
+- silence or reduce notifications;
+- remain active until the user turns it off.
+
+### Return Mode
+
+When Recovery Pause or a temporary restriction ends, offer:
+
+- Ease me back in
+- Continue where I left off
+- Check how I’m feeling first
+
+Return Mode should:
+
+- reduce initial volume and intensity;
+- prevent automatic progression temporarily;
+- collect post-session feedback;
+- gradually restore the programme.
+
+### Journey Protection
+
+Responsible recovery remains part of the user’s journey.
+
+## Stage 8 — Injury, Accessibility, and Rehabilitation
+
+- Injury & Movement Constraints
+- Affected body area and side
+- Restricted movements
+- Safe movements
+- Clinician instructions
+- Review dates
+- Temporary, recurring, and permanent status
+- Adaptive substitutions
+- Disability-aware training
+- Rehabilitation movements and equipment
+- Vision, hearing, cognitive, and movement accessibility
+- Assisted and adaptive exercise modes
+
+## Stage 9 — Equipment and Exercise Intelligence
+
+- Worldwide equipment catalogue
+- Exercise catalogue
+- Cardio equipment
+- Strength equipment
+- Home equipment
+- Rehabilitation equipment
+- Yoga, mobility, and adaptive movements
+- Unknown equipment submission
+- User-submitted exercise review
+- Moderated catalogue expansion
+- Versioned catalogue updates
+- Future trusted external discovery process
+
+## Stage 10 — Gamification and Fair PvP
+
+- Healthy-behaviour XP
+- Adaptive scoring
+- Fairness across ability and experience
+- Leagues and seasons
+- PvP modes
+- Anti-cheat and evidence validation
+- Recovery-aware competition
+- No pay-to-win
+
+## Stage 11 — Bloodlines and Bloodline vs Bloodline
+
+- Long-term Bloodline communities
+- Family and community groups
+- Team roles and support
+- Bloodline progression
+- Bloodline vs Bloodline seasons
+- Contribution from training, nutrition, recovery, hydration, improvement, consistency, and encouragement
+- Fair adaptive contribution scoring
+
+## Stage 12 — Social, Community, and Journey Systems
+
+- Social feed
+- Squad messaging
+- Community support
+- Journey Map
+- Milestones
+- Shared challenges
+- Seasonal events
+- World or community events
+
+## Stage 13 — Devices, Wearables, and Environmental Intelligence
+
+- Wearables
+- Biometrics
+- Sleep intelligence
+- Device integrations
+- Environmental conditions
+- Travel Mode
+- Holiday Mode
+- Voice coaching
+- Future AR experiences
+
+## Stage 14 — Product Polish and Release Readiness
+
+- Calm recovery visuals
+- Welcome-back experience
+- Notification refinement
+- Animations
+- Design consistency
+- Performance
+- Security and privacy review
+- Accessibility audit
+- App-store readiness
+- Release operations
