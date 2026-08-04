@@ -7,7 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint",
-    "test:apex": "tsx lib/workout/analyse-recent-training-load.test.ts && tsx lib/workout/analyse-exercise-rotation.test.ts && tsx lib/workout/analyse-recovery-status.test.ts && tsx lib/workout/select-exercises-training-load.test.ts && tsx lib/workout/select-exercises-rotation.test.ts && tsx lib/workout/select-exercises-recovery.test.ts && tsx lib/workout/analyse-progression-trend.test.ts && tsx lib/planning/generate-adaptive-plan.test.ts && tsx lib/planning/generate-adaptive-periodisation.test.ts",
+    "test:apex": "tsx lib/workout/analyse-recent-training-load.test.ts && tsx lib/workout/analyse-exercise-rotation.test.ts && tsx lib/workout/analyse-recovery-status.test.ts && tsx lib/workout/select-exercises-training-load.test.ts && tsx lib/workout/select-exercises-rotation.test.ts && tsx lib/workout/select-exercises-recovery.test.ts && tsx lib/workout/analyse-progression-trend.test.ts && tsx lib/planning/generate-adaptive-plan.test.ts && tsx lib/planning/generate-adaptive-periodisation.test.ts && tsx lib/workout/analyse-recovery-forecast.test.ts",
     "typecheck": "tsc --noEmit",
     "apex:check": "npm run test:apex && npm run typecheck && npm run build"
   },
