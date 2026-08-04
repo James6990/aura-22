@@ -16,14 +16,14 @@ Reserved for isolated high-risk experiments when needed.
 
 ## Checkpoint process
 
-Build  
-→ Test  
-→ Typecheck  
-→ Update documentation  
-→ Run documentation checks  
-→ Run Git diff checks  
-→ Commit  
-→ Push  
+Build
+→ Test
+→ Typecheck
+→ Update documentation
+→ Run documentation checks
+→ Run Git diff checks
+→ Commit
+→ Push
 → Add a checkpoint tag when appropriate
 
 ## Commit principle

@@ -2,26 +2,26 @@
 
 ## Current reasoning flow
 
-Athlete data  
-→ Training intelligence  
-→ Recovery intelligence  
-→ Personalisation  
-→ Memory reasoning  
-→ Evidence weighting  
-→ Adaptive confidence  
-→ Learning ledger  
-→ Knowledge relationships  
-→ Learning validation  
-→ Contradiction detection  
-→ Knowledge resolution  
-→ Learning integration  
-→ Apex reasoning state  
-→ Decision orchestration  
-→ Coaching confidence  
-→ Reasoning trace  
-→ Decision memory  
-→ Outcome  
-→ Reflection  
+Athlete data
+→ Training intelligence
+→ Recovery intelligence
+→ Personalisation
+→ Memory reasoning
+→ Evidence weighting
+→ Adaptive confidence
+→ Learning ledger
+→ Knowledge relationships
+→ Learning validation
+→ Contradiction detection
+→ Knowledge resolution
+→ Learning integration
+→ Apex reasoning state
+→ Decision orchestration
+→ Coaching confidence
+→ Reasoning trace
+→ Decision memory
+→ Outcome
+→ Reflection
 → Learning updates
 
 ## Confidence layers

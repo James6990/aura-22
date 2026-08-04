@@ -2,11 +2,11 @@
 
 ## Lifecycle
 
-awaiting-response  
-→ awaiting-outcome  
-→ ready-for-reflection  
-→ reflected  
-→ learning-created  
+awaiting-response
+→ awaiting-outcome
+→ ready-for-reflection
+→ reflected
+→ learning-created
 → closed
 
 ## Components
