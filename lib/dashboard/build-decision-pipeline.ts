@@ -27,6 +27,9 @@ import type {
 import type {
   PersonalisationState,
 } from "@/lib/dashboard/build-personalisation-state";
+import {
+  buildAdaptiveConfidenceState,
+} from "@/lib/dashboard/build-adaptive-confidence-state";
 import type {
   MemoryReasoningProfile,
 } from "@/lib/memory/analyse-memory-patterns";
@@ -92,6 +95,13 @@ export function buildDecisionPipeline({
         })),
     });
 
+  const adaptiveConfidence =
+    buildAdaptiveConfidenceState({
+      data,
+      personalisation,
+      memoryReasoning,
+    });
+
   const context =
     buildApexDecisionContext({
       identity: {
@@ -150,6 +160,7 @@ export function buildDecisionPipeline({
             .recoveryForecast,
         personalisation,
         memoryReasoning,
+        adaptiveConfidence,
       },
       evidence: {
         rulesetVersion:

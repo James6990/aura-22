@@ -32,6 +32,12 @@ import type {
 import type {
   MemoryReasoningProfile,
 } from "@/lib/memory/analyse-memory-patterns";
+import type {
+  AdaptiveConfidence,
+} from "@/lib/apex-core/calculate-adaptive-confidence";
+import type {
+  LearningIntegrationState,
+} from "@/lib/apex-core/build-learning-integration-state";
 
 export type ApexDecisionContext = {
   identity: {
@@ -81,6 +87,12 @@ export type ApexDecisionContext = {
 
     memoryReasoning?:
       MemoryReasoningProfile;
+
+    adaptiveConfidence?:
+      AdaptiveConfidence;
+
+    integratedLearning?:
+      LearningIntegrationState;
   };
 
   evidence: {

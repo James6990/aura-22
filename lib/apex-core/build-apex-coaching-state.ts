@@ -1,6 +1,10 @@
 import type {
   ApexDecisionOrchestration,
 } from "@/lib/apex-core/orchestrate-apex-decision";
+import {
+  buildCoachingConfidenceState,
+  type CoachingConfidenceState,
+} from "@/lib/apex-core/build-coaching-confidence-state";
 
 export type CoachingEvidenceSummary = {
   rulesetVersion: string;
@@ -18,6 +22,8 @@ export type ApexCoachingState = {
   explanation: string;
   personalisedReasons: string[];
   evidenceSummary: CoachingEvidenceSummary;
+  confidenceState:
+    CoachingConfidenceState | null;
   generatedAt: Date;
 };
 
@@ -114,6 +120,15 @@ export function buildApexCoachingState(
     ],
   };
 
+  const confidenceState =
+    orchestration.context.intelligence
+      .adaptiveConfidence
+      ? buildCoachingConfidenceState(
+          orchestration.context.intelligence
+            .adaptiveConfidence,
+        )
+      : null;
+
   return {
     priority: orchestration.resolvedPriority,
     confidence: orchestration.confidence,
@@ -126,6 +141,7 @@ export function buildApexCoachingState(
       "Apex selected today's coaching focus.",
     personalisedReasons,
     evidenceSummary,
+    confidenceState,
     generatedAt:
       orchestration.generatedAt,
   };

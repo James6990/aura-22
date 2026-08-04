@@ -11,3 +11,8 @@ export * from "./create-learning-ledger-entry";
 export * from "./create-knowledge-relationship";
 export * from "./validate-learning-ledger-entry";
 export * from "./detect-learning-contradictions";
+export * from "./resolve-learning-contradiction";
+export * from "./build-learning-integration-state";
+export * from "./build-coaching-confidence-state";
+export * from "./build-apex-reasoning-state";
+export * from "./build-apex-reasoning-trace";

@@ -1,3 +1,4 @@
+export * from "./build-adaptive-confidence-state";
 export * from "./build-memory-reasoning-state";
 export * from "./build-personalisation-state";
 export * from "./build-decision-pipeline";
