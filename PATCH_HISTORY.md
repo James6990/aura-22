@@ -9,6 +9,8 @@ This file records every substantial Apex build patch and its verification status
 
 | 2026-08-04 | github-actions-apex-check-v1.sh | Automatic GitHub Apex verification | Applied, awaiting CI | Pending | Pending | Adds push, pull-request and manual Apex checks. |
 
+| 2026-08-04 | apex-build-plan-v1.sh | Living Apex build plan | Applied | Pending | Pending | Adds the project roadmap, milestone order and verification requirements. |
+
 ## Patch Rules
 
 - Apply patches only from the dedicated Apex/Build-Patches folder.
