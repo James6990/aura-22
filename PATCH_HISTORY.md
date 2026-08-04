@@ -7,6 +7,8 @@ This file records every substantial Apex build patch and its verification status
 | 2026-08-04 | apex-decision-context-v1.sh | Unified Apex Decision Context v1 | Passed | See Git history | checkpoint-decision-context-v1 | Added shared decision context and tests. |
 | 2026-08-04 | apex-decision-context-v2-foundation.sh | Decision Evidence and Reasoning Foundation | Passed | See Git history | checkpoint-decision-reasoning-v1 | Added evidence registry, decision traces, confidence and explanations. |
 
+| 2026-08-04 | github-actions-apex-check-v1.sh | Automatic GitHub Apex verification | Applied, awaiting CI | Pending | Pending | Adds push, pull-request and manual Apex checks. |
+
 ## Patch Rules
 
 - Apply patches only from the dedicated Apex/Build-Patches folder.
