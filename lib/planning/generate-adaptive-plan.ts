@@ -3,6 +3,16 @@ import type {
   TrainingBlockPhase,
   TrainingBlockWeek,
 } from "@/lib/planning/generate-training-block";
+import type {
+  ProgrammeSession,
+  ProgrammeSessionRole,
+} from "@/lib/planning/generate-programme-structure";
+import type {
+  RecoveryIntelligence,
+} from "@/lib/workout/analyse-recovery-status";
+import type {
+  MovementPattern,
+} from "@/lib/workout/exercise-library";
 
 export type PlanningDayType =
   | "train"
@@ -40,6 +50,10 @@ export type AdaptivePlanningInput = {
   availableTrainingDays?: number;
 
   blockWeek?: TrainingBlockWeek;
+
+  programmeSessions?: ProgrammeSession[];
+  completedProgrammeSessions?: number;
+  recoveryIntelligence?: RecoveryIntelligence;
 };
 
 export type AdaptivePlanDay = {
@@ -49,6 +63,7 @@ export type AdaptivePlanDay = {
   title: string;
   reason: string;
   optional: boolean;
+  programmeRole: ProgrammeSessionRole | null;
 };
 
 export type AdaptiveConfidence = {
@@ -242,6 +257,7 @@ function createRecoveryDay(
     title: "Recovery and comfortable movement",
     reason,
     optional: false,
+    programmeRole: "recovery",
   };
 }
 
@@ -249,14 +265,27 @@ function createTrainingDay(
   offset: number,
   primaryGoal: string,
   reason: string,
+  programmeSession?: ProgrammeSession,
 ): AdaptivePlanDay {
   return {
     dayOffset: offset,
     label: getDayLabel(offset),
-    type: "train",
-    title: getGoalTrainingTitle(primaryGoal),
-    reason,
-    optional: false,
+    type:
+      programmeSession?.role ===
+      "conditioning"
+        ? "conditioning"
+        : "train",
+    title:
+      programmeSession?.title ??
+      getGoalTrainingTitle(primaryGoal),
+    reason:
+      programmeSession
+        ? `${reason} ${programmeSession.purpose}`
+        : reason,
+    optional:
+      programmeSession?.optional ?? false,
+    programmeRole:
+      programmeSession?.role ?? null,
   };
 }
 
@@ -271,6 +300,7 @@ function createLightDay(
     title: "Light technique session",
     reason,
     optional: false,
+    programmeRole: null,
   };
 }
 
@@ -285,6 +315,7 @@ function createFlexibleDay(
     title: "Flexible activity day",
     reason,
     optional: true,
+    programmeRole: null,
   };
 }
 
@@ -339,10 +370,108 @@ function getBlockTrainingReason({
   }
 }
 
+const rolePatterns: Record<
+  ProgrammeSessionRole,
+  MovementPattern[]
+> = {
+  "full-body": [
+    "horizontal-push",
+    "horizontal-pull",
+    "squat",
+    "hinge",
+    "core",
+  ],
+  upper: [
+    "horizontal-push",
+    "horizontal-pull",
+    "vertical-push",
+    "vertical-pull",
+  ],
+  lower: [
+    "squat",
+    "hinge",
+    "single-leg",
+  ],
+  push: [
+    "horizontal-push",
+    "vertical-push",
+  ],
+  pull: [
+    "horizontal-pull",
+    "vertical-pull",
+  ],
+  legs: [
+    "squat",
+    "hinge",
+    "single-leg",
+  ],
+  strength: [
+    "horizontal-push",
+    "horizontal-pull",
+    "squat",
+    "hinge",
+  ],
+  conditioning: ["cardio", "core"],
+  performance: [
+    "squat",
+    "hinge",
+    "single-leg",
+    "core",
+    "cardio",
+  ],
+  mobility: ["mobility", "core"],
+  recovery: [
+    "mobility",
+    "cardio",
+    "core",
+  ],
+};
+
+function sessionConflictsWithRecovery({
+  session,
+  recoveryIntelligence,
+}: {
+  session: ProgrammeSession;
+  recoveryIntelligence:
+    | RecoveryIntelligence
+    | undefined;
+}) {
+  if (!recoveryIntelligence) {
+    return false;
+  }
+
+  if (
+    session.role === "mobility" ||
+    session.role === "recovery"
+  ) {
+    return false;
+  }
+
+  const relevantPatterns =
+    rolePatterns[session.role];
+
+  return relevantPatterns.some(
+    (pattern) =>
+      recoveryIntelligence.avoidPatterns
+        .includes(pattern),
+  );
+}
+
 export function generateAdaptivePlan(
   input: AdaptivePlanningInput,
 ): AdaptivePlan {
   const blockWeek = input.blockWeek;
+
+  const programmeSessions =
+    input.programmeSessions ?? [];
+
+  let programmeIndex =
+    programmeSessions.length > 0
+      ? (
+          input.completedProgrammeSessions ??
+          0
+        ) % programmeSessions.length
+      : 0;
 
   const requestedTrainingDays =
     blockWeek?.trainingDaysTarget ??
@@ -435,6 +564,34 @@ export function generateAdaptivePlan(
       );
 
     if (canPlaceTraining) {
+      const programmeSession =
+        programmeSessions.length > 0
+          ? programmeSessions[
+              programmeIndex %
+                programmeSessions.length
+            ]
+          : undefined;
+
+      const currentRecoveryConflict =
+        programmeSession &&
+        offset <= 1 &&
+        sessionConflictsWithRecovery({
+          session: programmeSession,
+          recoveryIntelligence:
+            input.recoveryIntelligence,
+        });
+
+      if (currentRecoveryConflict) {
+        days.push(
+          createRecoveryDay(
+            offset,
+            `${programmeSession.title} has been postponed because current recovery signals conflict with its main movement demands.`,
+          ),
+        );
+
+        continue;
+      }
+
       days.push(
         createTrainingDay(
           offset,
@@ -444,10 +601,16 @@ export function generateAdaptivePlan(
             progressionReadyCount:
               input.progressionReadyCount,
           }),
+          programmeSession,
         ),
       );
 
       demandingSessionsPlaced += 1;
+
+      if (programmeSession) {
+        programmeIndex += 1;
+      }
+
       continue;
     }
 

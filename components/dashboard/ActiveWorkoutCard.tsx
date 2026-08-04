@@ -51,56 +51,60 @@ export default function ActiveWorkoutCard({
 
   return (
     <section className="rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-slate-900 to-cyan-950/30 p-5 sm:p-6">
-      <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-300">
-            <Dumbbell className="h-7 w-7" />
-          </div>
-
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-cyan-300">
-              Workout in progress
-            </p>
-
-            <h2 className="mt-2 text-2xl font-black text-white">
-              {workout.title}
-            </h2>
-
-            <p className="mt-2 text-sm text-slate-400">
-              {workout.intensity} intensity
-            </p>
-          </div>
+      <div className="flex items-start gap-4">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-500/20 bg-cyan-500/10 text-cyan-300">
+          <Dumbbell className="h-7 w-7" />
         </div>
 
-        <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-950/70 px-4 py-3">
-          <Clock3 className="h-4 w-4 text-cyan-300" />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-cyan-300">
+            Workout in progress
+          </p>
 
-          <span className="font-black text-white">
-            {elapsedMinutes} min elapsed
-          </span>
+          <h2 className="mt-2 text-2xl font-black text-white">
+            {workout.title}
+          </h2>
+
+          <p className="mt-2 text-sm capitalize text-slate-400">
+            {workout.intensity} intensity
+          </p>
         </div>
       </div>
 
-      <div className="mt-6">
-        <div className="flex items-center justify-between gap-3 text-sm">
-          <span className="font-bold text-slate-300">
+      <div className="mt-5 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+          <div className="flex items-center gap-2 text-cyan-300">
+            <Clock3 className="h-4 w-4" />
+
+            <p className="text-xs font-bold uppercase tracking-wider">
+              Session time
+            </p>
+          </div>
+
+          <p className="mt-3 font-black text-white">
+            Started {elapsedMinutes} min ago
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-cyan-300">
             Exercise progress
-          </span>
+          </p>
 
-          <span className="font-black text-white">
-            {workout.completedExercises} /{" "}
-            {workout.totalExercises}
-          </span>
+          <p className="mt-3 font-black text-white">
+            {workout.completedExercises} of{" "}
+            {workout.totalExercises} complete
+          </p>
         </div>
+      </div>
 
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400"
-            style={{
-              width: `${progress}%`,
-            }}
-          />
-        </div>
+      <div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-800">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all"
+          style={{
+            width: `${progress}%`,
+          }}
+        />
       </div>
 
       <Link

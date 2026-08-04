@@ -37,6 +37,19 @@ export type SelectExercisesInput = {
     string,
     ExerciseProgressionHistory
   >;
+
+  preferredPatterns?: MovementPattern[];
+  deprioritisedPatterns?: MovementPattern[];
+
+  preferredMuscles?: string[];
+  fatiguedMuscles?: string[];
+  overworkedMuscles?: string[];
+  rotateAwayExerciseIds?: string[];
+
+  recoveryReadyPatterns?: MovementPattern[];
+  recoveryCautionPatterns?: MovementPattern[];
+  recoveryRecoveringPatterns?: MovementPattern[];
+  recoveryAvoidPatterns?: MovementPattern[];
 };
 
 export type SelectExercisesResult = {
@@ -328,12 +341,181 @@ function getProgressionScore(
   return score;
 }
 
+function getRecentTrainingScore({
+  movementPattern,
+  preferredPatterns,
+  deprioritisedPatterns,
+}: {
+  movementPattern: MovementPattern;
+  preferredPatterns: MovementPattern[];
+  deprioritisedPatterns: MovementPattern[];
+}) {
+  let score = 0;
+
+  const preferredIndex =
+    preferredPatterns.indexOf(
+      movementPattern,
+    );
+
+  if (preferredIndex >= 0) {
+    score += Math.max(
+      2,
+      8 - preferredIndex * 2,
+    );
+  }
+
+  if (
+    deprioritisedPatterns.includes(
+      movementPattern,
+    )
+  ) {
+    /*
+     * This remains a soft penalty.
+     * It must not override accessibility,
+     * equipment, programme structure or
+     * recovery-specific coaching priorities.
+     */
+    score -= 8;
+  }
+
+  return score;
+}
+
+function getExerciseRotationScore({
+  exercise,
+  preferredMuscles,
+  fatiguedMuscles,
+  overworkedMuscles,
+  rotateAwayExerciseIds,
+}: {
+  exercise: ExerciseDefinition;
+  preferredMuscles: string[];
+  fatiguedMuscles: string[];
+  overworkedMuscles: string[];
+  rotateAwayExerciseIds: string[];
+}) {
+  let score = 0;
+
+  const preferredPrimaryCount =
+    exercise.primaryMuscles.filter(
+      (muscle) =>
+        preferredMuscles.includes(muscle),
+    ).length;
+
+  const preferredSecondaryCount =
+    exercise.secondaryMuscles.filter(
+      (muscle) =>
+        preferredMuscles.includes(muscle),
+    ).length;
+
+  score += preferredPrimaryCount * 5;
+  score += preferredSecondaryCount * 2;
+
+  const fatiguedPrimaryCount =
+    exercise.primaryMuscles.filter(
+      (muscle) =>
+        fatiguedMuscles.includes(muscle),
+    ).length;
+
+  const fatiguedSecondaryCount =
+    exercise.secondaryMuscles.filter(
+      (muscle) =>
+        fatiguedMuscles.includes(muscle),
+    ).length;
+
+  score -= fatiguedPrimaryCount * 6;
+  score -= fatiguedSecondaryCount * 2;
+
+  const overworkedPrimaryCount =
+    exercise.primaryMuscles.filter(
+      (muscle) =>
+        overworkedMuscles.includes(muscle),
+    ).length;
+
+  const overworkedSecondaryCount =
+    exercise.secondaryMuscles.filter(
+      (muscle) =>
+        overworkedMuscles.includes(muscle),
+    ).length;
+
+  score -= overworkedPrimaryCount * 12;
+  score -= overworkedSecondaryCount * 4;
+
+  if (
+    rotateAwayExerciseIds.includes(
+      exercise.id,
+    )
+  ) {
+    score -= 10;
+  }
+
+  return score;
+}
+
+function getRecoveryScore({
+  movementPattern,
+  readyPatterns,
+  cautionPatterns,
+  recoveringPatterns,
+  avoidPatterns,
+}: {
+  movementPattern: MovementPattern;
+  readyPatterns: MovementPattern[];
+  cautionPatterns: MovementPattern[];
+  recoveringPatterns: MovementPattern[];
+  avoidPatterns: MovementPattern[];
+}) {
+  if (
+    avoidPatterns.includes(
+      movementPattern,
+    )
+  ) {
+    return -18;
+  }
+
+  if (
+    recoveringPatterns.includes(
+      movementPattern,
+    )
+  ) {
+    return -10;
+  }
+
+  if (
+    cautionPatterns.includes(
+      movementPattern,
+    )
+  ) {
+    return -4;
+  }
+
+  if (
+    readyPatterns.includes(
+      movementPattern,
+    )
+  ) {
+    return 6;
+  }
+
+  return 0;
+}
+
 function scoreExercise({
   exercise,
   primaryGoal,
   decisionPriority,
   patternOrder,
   progressionHistory,
+  preferredPatterns,
+  deprioritisedPatterns,
+  preferredMuscles,
+  fatiguedMuscles,
+  overworkedMuscles,
+  rotateAwayExerciseIds,
+  recoveryReadyPatterns,
+  recoveryCautionPatterns,
+  recoveryRecoveringPatterns,
+  recoveryAvoidPatterns,
 }: {
   exercise: ExerciseDefinition;
   primaryGoal: string;
@@ -343,6 +525,16 @@ function scoreExercise({
     string,
     ExerciseProgressionHistory
   >;
+  preferredPatterns: MovementPattern[];
+  deprioritisedPatterns: MovementPattern[];
+  preferredMuscles: string[];
+  fatiguedMuscles: string[];
+  overworkedMuscles: string[];
+  rotateAwayExerciseIds: string[];
+  recoveryReadyPatterns: MovementPattern[];
+  recoveryCautionPatterns: MovementPattern[];
+  recoveryRecoveringPatterns: MovementPattern[];
+  recoveryAvoidPatterns: MovementPattern[];
 }) {
   const goalScore = getGoalScore(
     exercise,
@@ -371,11 +563,45 @@ function scoreExercise({
       progressionHistory[exercise.id],
     );
 
+  const recentTrainingScore =
+    getRecentTrainingScore({
+      movementPattern:
+        exercise.movementPattern,
+      preferredPatterns,
+      deprioritisedPatterns,
+    });
+
+  const exerciseRotationScore =
+    getExerciseRotationScore({
+      exercise,
+      preferredMuscles,
+      fatiguedMuscles,
+      overworkedMuscles,
+      rotateAwayExerciseIds,
+    });
+
+  const recoveryScore =
+    getRecoveryScore({
+      movementPattern:
+        exercise.movementPattern,
+      readyPatterns:
+        recoveryReadyPatterns,
+      cautionPatterns:
+        recoveryCautionPatterns,
+      recoveringPatterns:
+        recoveryRecoveringPatterns,
+      avoidPatterns:
+        recoveryAvoidPatterns,
+    });
+
   return (
     goalScore * 10 +
     priorityScore * 10 +
     requestedPatternScore * 2 +
     progressionScore * 4 +
+    recentTrainingScore * 3 +
+    exerciseRotationScore * 3 +
+    recoveryScore * 4 +
     lowerFatigueTieBreaker
   );
 }
@@ -440,6 +666,16 @@ export function selectExercises({
   trainingEnvironment = "commercial-gym",
   equipmentInventory = [],
   progressionHistory = {},
+  preferredPatterns = [],
+  deprioritisedPatterns = [],
+  preferredMuscles = [],
+  fatiguedMuscles = [],
+  overworkedMuscles = [],
+  rotateAwayExerciseIds = [],
+  recoveryReadyPatterns = [],
+  recoveryCautionPatterns = [],
+  recoveryRecoveringPatterns = [],
+  recoveryAvoidPatterns = [],
 }: SelectExercisesInput): SelectExercisesResult {
   const userDifficulty = difficultyRank(
     experienceLevel,
@@ -503,6 +739,16 @@ export function selectExercises({
           decisionPriority,
           patternOrder,
           progressionHistory,
+          preferredPatterns,
+          deprioritisedPatterns,
+          preferredMuscles,
+          fatiguedMuscles,
+          overworkedMuscles,
+          rotateAwayExerciseIds,
+          recoveryReadyPatterns,
+          recoveryCautionPatterns,
+          recoveryRecoveringPatterns,
+          recoveryAvoidPatterns,
         }) -
         scoreExercise({
           exercise: a,
@@ -510,6 +756,16 @@ export function selectExercises({
           decisionPriority,
           patternOrder,
           progressionHistory,
+          preferredPatterns,
+          deprioritisedPatterns,
+          preferredMuscles,
+          fatiguedMuscles,
+          overworkedMuscles,
+          rotateAwayExerciseIds,
+          recoveryReadyPatterns,
+          recoveryCautionPatterns,
+          recoveryRecoveringPatterns,
+          recoveryAvoidPatterns,
         });
 
       if (scoreDifference !== 0) {

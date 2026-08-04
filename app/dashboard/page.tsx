@@ -26,6 +26,9 @@ import type {
 } from "@/lib/workout/exercise-library";
 import type { EquipmentInventoryItem } from "@/lib/workout/equipment-capabilities";
 import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
+import { analyseRecentTrainingLoad } from "@/lib/workout/analyse-recent-training-load";
+import { analyseExerciseRotation } from "@/lib/workout/analyse-exercise-rotation";
+import { analyseRecoveryStatus } from "@/lib/workout/analyse-recovery-status";
 import { generateWorkoutRecommendation } from "@/lib/workout/generate-workout-recommendation";
 import { generateWeeklyReview } from "@/lib/reviews/generate-weekly-review";
 import { generateGenomeInsights } from "@/lib/genome/generate-genome-insights";
@@ -187,6 +190,25 @@ export default async function DashboardPage() {
         dashboard.genome.equipmentInventory,
     });
 
+  const recentTrainingLoad =
+    analyseRecentTrainingLoad(
+      dashboard.recentTrainingPerformances,
+    );
+
+  const exerciseRotation =
+    analyseExerciseRotation(
+      dashboard.recentTrainingPerformances,
+    );
+
+  const recoveryIntelligence =
+    analyseRecoveryStatus({
+      readinessScore,
+      adaptiveRecoveryScore:
+        adaptiveTraits.recovery,
+      recentTrainingLoad,
+      exerciseRotation,
+    });
+
   const workoutRecommendation =
     generateWorkoutRecommendation({
       readinessScore,
@@ -239,6 +261,9 @@ export default async function DashboardPage() {
       movementConstraints: [],
       progressionHistory:
         dashboard.exerciseProgressionHistory,
+      recentTrainingLoad,
+      exerciseRotation,
+      recoveryIntelligence,
     });
 
   const adaptivePlan = generateAdaptivePlan({
@@ -272,6 +297,11 @@ export default async function DashboardPage() {
       currentBlockWeek.trainingDaysTarget,
     blockWeek:
       currentBlockWeek,
+    programmeSessions:
+      programme.sessions,
+    completedProgrammeSessions:
+      completedWorkoutCount,
+    recoveryIntelligence,
   });
 
   return (

@@ -21,6 +21,9 @@ import {
 } from "@/lib/workout/generate-session-blueprint";
 import type { ProgrammeSessionRole } from "@/lib/planning/generate-programme-structure";
 import type { TrainingBlockPhase } from "@/lib/planning/generate-training-block";
+import type { RecentTrainingLoad } from "@/lib/workout/analyse-recent-training-load";
+import type { ExerciseRotationAnalysis } from "@/lib/workout/analyse-exercise-rotation";
+import type { RecoveryIntelligence } from "@/lib/workout/analyse-recovery-status";
 
 export type WorkoutSessionExercise = {
   id: string;
@@ -69,6 +72,14 @@ export type WorkoutSession = {
 
   requiresProfessionalReview: boolean;
   safetyMessage: string | null;
+
+  recoveryStatus:
+    | "ready"
+    | "caution"
+    | "recovering"
+    | "avoid-today"
+    | null;
+  recoveryExplanation: string | null;
 };
 
 export type GenerateWorkoutSessionInput = {
@@ -88,6 +99,10 @@ export type GenerateWorkoutSessionInput = {
     string,
     ExerciseProgressionHistory
   >;
+
+  recentTrainingLoad?: RecentTrainingLoad;
+  exerciseRotation?: ExerciseRotationAnalysis;
+  recoveryIntelligence?: RecoveryIntelligence;
 };
 
 type SessionPrescription = {
@@ -503,6 +518,9 @@ export function generateWorkoutSession({
   accessibilityNeeds = [],
   movementConstraints = [],
   progressionHistory = {},
+  recentTrainingLoad,
+  exerciseRotation,
+  recoveryIntelligence,
 }: GenerateWorkoutSessionInput): WorkoutSession {
   const priority =
     recommendation.decisionPriority;
@@ -557,6 +575,36 @@ export function generateWorkoutSession({
     trainingEnvironment,
     equipmentInventory,
     progressionHistory,
+    preferredPatterns:
+      recentTrainingLoad?.preferredPatterns ??
+      [],
+    deprioritisedPatterns:
+      recentTrainingLoad
+        ?.deprioritisedPatterns ?? [],
+    preferredMuscles:
+      exerciseRotation?.preferredMuscles ??
+      [],
+    fatiguedMuscles:
+      exerciseRotation?.fatiguedMuscles ??
+      [],
+    overworkedMuscles:
+      exerciseRotation?.overworkedMuscles ??
+      [],
+    rotateAwayExerciseIds:
+      exerciseRotation
+        ?.rotateAwayExerciseIds ?? [],
+    recoveryReadyPatterns:
+      recoveryIntelligence
+        ?.preferredPatterns ?? [],
+    recoveryCautionPatterns:
+      recoveryIntelligence
+        ?.cautionPatterns ?? [],
+    recoveryRecoveringPatterns:
+      recoveryIntelligence
+        ?.recoveringPatterns ?? [],
+    recoveryAvoidPatterns:
+      recoveryIntelligence
+        ?.avoidPatterns ?? [],
   });
 
   const prescription = getPrescription({
@@ -650,5 +698,11 @@ export function generateWorkoutSession({
     requiresProfessionalReview:
       selection.requiresProfessionalReview,
     safetyMessage,
+    recoveryStatus:
+      recoveryIntelligence?.overallStatus ??
+      null,
+    recoveryExplanation:
+      recoveryIntelligence?.explanation ??
+      null,
   };
 }

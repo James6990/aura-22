@@ -16,6 +16,8 @@ import {
   calculateProgressionDecision,
   type ProgressionDecision,
 } from "@/lib/workout/calculate-progression-decision";
+import { analyseProgressionTrend } from "@/lib/workout/analyse-progression-trend";
+import { getExerciseProgressionTrends } from "@/lib/workout/get-exercise-progression-trends";
 
 export type StartWorkoutExerciseInput = {
   id: string;
@@ -573,11 +575,56 @@ export async function completeWorkoutSession(
       }, 0) * 100,
     ) / 100;
 
+    const previousProgressionTrends =
+      await getExerciseProgressionTrends({
+        userId,
+        exerciseIds: exercises.map(
+          (exercise) => exercise.exerciseId,
+        ),
+      });
+
     const progressionResults = exercises.map(
-      (exercise) => ({
-        exercise,
-        ...calculateProgressionDecision(exercise),
-      }),
+      (exercise) => {
+        const immediateDecision =
+          calculateProgressionDecision(exercise);
+
+        const trend = analyseProgressionTrend({
+          latestDecision: immediateDecision,
+          history: [
+            {
+              loadKg: exercise.loadKg,
+              plannedSets: exercise.plannedSets,
+              completedSets:
+                exercise.completedSets,
+              rpe: exercise.rpe,
+              discomfortLevel:
+                exercise.discomfortLevel,
+              techniqueConfidence:
+                exercise.techniqueConfidence,
+              completedAt: new Date(),
+            },
+            ...(
+              previousProgressionTrends[
+                exercise.exerciseId
+              ] ?? []
+            ),
+          ],
+        });
+
+        return {
+          exercise,
+          immediateDecision,
+          decision: trend.decision,
+          recommendedNextLoadKg:
+            trend.recommendedNextLoadKg,
+          progressionRoute: trend.route,
+          progressionConfidence:
+            trend.confidence,
+          progressionReason: trend.reason,
+          successfulSessions:
+            trend.successfulSessions,
+        };
+      },
     );
 
     const progressionReady = progressionResults.filter(
@@ -667,6 +714,28 @@ export async function completeWorkoutSession(
           progressionReady,
           maintainCount,
           reviewCount,
+          progressionResultsJson:
+            JSON.stringify(
+              progressionResults.map(
+                (result) => ({
+                  exerciseId:
+                    result.exercise.exerciseId,
+                  exerciseName:
+                    result.exercise.exerciseName,
+                  decision: result.decision,
+                  route:
+                    result.progressionRoute,
+                  confidence:
+                    result.progressionConfidence,
+                  recommendedNextLoadKg:
+                    result.recommendedNextLoadKg,
+                  successfulSessions:
+                    result.successfulSessions,
+                  reason:
+                    result.progressionReason,
+                }),
+              ),
+            ),
         },
         schemaVersion: 1,
         occurredAt: now,

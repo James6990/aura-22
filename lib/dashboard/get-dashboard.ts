@@ -12,6 +12,7 @@ import {
 import { getRecentEvents } from "@/lib/events/get-recent-events";
 import { getLatestWorkoutSummary } from "@/lib/workout/get-latest-workout-summary";
 import { getExerciseProgressionHistory } from "@/lib/workout/get-exercise-progression-history";
+import { getRecentTrainingPerformances } from "@/lib/workout/get-recent-training-performances";
 import { getApexMemories } from "@/lib/memory/get-apex-memories";
 
 function getTodayDate() {
@@ -35,6 +36,7 @@ export async function getDashboardData() {
     recentEvents,
     latestWorkout,
     exerciseProgressionHistory,
+    recentTrainingPerformances,
     apexMemories,
     recentWorkouts,
     activeWorkoutSession,
@@ -83,6 +85,10 @@ export async function getDashboardData() {
     getLatestWorkoutSummary(session.user.id),
 
     getExerciseProgressionHistory(session.user.id),
+
+    getRecentTrainingPerformances(
+      session.user.id,
+    ),
 
     getApexMemories(session.user.id, 10),
 
@@ -152,6 +158,7 @@ export async function getDashboardData() {
     recentEvents,
     latestWorkout,
     exerciseProgressionHistory,
+    recentTrainingPerformances,
     apexMemories,
     recentWorkouts,
     activeWorkout:
