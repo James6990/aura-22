@@ -21,10 +21,14 @@ import AdaptivePlanCard from "@/components/dashboard/AdaptivePlanCard";
 import ActiveWorkoutCard from "@/components/dashboard/ActiveWorkoutCard";
 import { generateWorkoutSession } from "@/lib/workout/generate-workout-session";
 import type {
+  ExerciseAccessibility,
   ExerciseDifficulty,
   ExerciseEquipment,
 } from "@/lib/workout/exercise-library";
-import type { EquipmentInventoryItem } from "@/lib/workout/equipment-capabilities";
+import type {
+  EquipmentInventoryItem,
+  TrainingEnvironment,
+} from "@/lib/workout/equipment-capabilities";
 import { normaliseTrainingSetup } from "@/lib/workout/normalise-training-setup";
 import { analyseRecentTrainingLoad } from "@/lib/workout/analyse-recent-training-load";
 import { analyseExerciseRotation } from "@/lib/workout/analyse-exercise-rotation";
@@ -39,7 +43,11 @@ import { generateCoachInsight } from "@/lib/coach/generate-coach-insight";
 import ReadinessHistory from "@/components/dashboard/ReadinessHistory";
 import CheckInReadinessPanel from "@/components/checkin/CheckInReadinessPanel";
 import { getDashboardData } from "@/lib/dashboard/get-dashboard";
-import { generateApexCore } from "@/lib/apex-core";
+import {
+  buildApexDecisionContext,
+  generateApexCore,
+  orchestrateApexDecision,
+} from "@/lib/apex-core";
 import { generateAdaptivePlan } from "@/lib/planning/generate-adaptive-plan";
 import { generateTrainingBlock } from "@/lib/planning/generate-training-block";
 import { generateProgrammeStructure } from "@/lib/planning/generate-programme-structure";
@@ -218,25 +226,94 @@ export default async function DashboardPage() {
         currentBlockWeek,
     });
 
+  const decisionContext =
+    buildApexDecisionContext({
+      identity: {
+        userId: dashboard.user.id,
+        preferredName,
+      },
+      profile: {
+        primaryGoal:
+          dashboard.genome.primaryGoal ??
+          "health",
+        experienceLevel:
+          dashboard.genome.experienceLevel ??
+          "beginner",
+        trainingEnvironment:
+          dashboard.genome.trainingEnvironment,
+        equipment:
+          dashboard.genome.equipment,
+        equipmentInventory:
+          dashboard.genome.equipmentInventory,
+        accessibilityNeeds: [],
+        movementConstraints: [],
+      },
+      today: {
+        readinessScore,
+        recoveryScore:
+          adaptiveTraits.recovery,
+        consistencyScore:
+          adaptiveTraits.consistency,
+        trainingCapacity:
+          adaptiveTraits.trainingCapacity,
+        coachPriority:
+          apex.decision.priority,
+      },
+      programme: {
+        structure: programme,
+        currentSession:
+          programmeSession ?? null,
+        completedProgrammeSessions:
+          completedWorkoutCount,
+        blockWeek:
+          currentBlockWeek,
+      },
+      intelligence: {
+        recentTrainingLoad,
+        exerciseRotation,
+        recovery:
+          recoveryIntelligence,
+        recoveryForecast,
+      },
+      evidence: {
+        rulesetVersion:
+          "apex-rules-v1",
+        confidence:
+          adaptiveTraits.confidence,
+      },
+    });
+
+  const orchestration =
+    orchestrateApexDecision({
+      context: decisionContext,
+      core: apex,
+    });
+
   const workoutRecommendation =
     generateWorkoutRecommendation({
-      readinessScore,
+      readinessScore:
+        orchestration.context.today
+          .readinessScore,
       consistency:
-        adaptiveTraits.consistency,
+        orchestration.context.today
+          .consistencyScore,
       recovery:
-        adaptiveTraits.recovery,
+        orchestration.context.today
+          .recoveryScore,
       trainingCapacity:
-        adaptiveTraits.trainingCapacity,
+        orchestration.context.today
+          .trainingCapacity,
       primaryGoal:
-        dashboard.genome.primaryGoal ??
-        "health",
+        orchestration.context.profile
+          .primaryGoal,
       experienceLevel:
-        dashboard.genome.experienceLevel ??
-        "beginner",
+        orchestration.context.profile
+          .experienceLevel,
       equipment:
-        dashboard.genome.equipment,
+        orchestration.context.profile
+          .equipment,
       decisionPriority:
-        apex.decision.priority,
+        orchestration.resolvedPriority,
     });
 
   const workoutSession =
@@ -244,50 +321,63 @@ export default async function DashboardPage() {
       recommendation:
         workoutRecommendation,
       primaryGoal:
-        dashboard.genome.primaryGoal ??
-        "health",
-      experienceLevel: (
-        dashboard.genome.experienceLevel ??
-        "beginner"
-      ) as ExerciseDifficulty,
+        orchestration.context.profile
+          .primaryGoal,
+      experienceLevel:
+        orchestration.context.profile
+          .experienceLevel as ExerciseDifficulty,
       equipment:
         trainingSetup
           .equipment as ExerciseEquipment[],
       trainingEnvironment:
-        trainingSetup.trainingEnvironment,
+        orchestration.context.profile
+          .trainingEnvironment as TrainingEnvironment,
       equipmentInventory:
-        trainingSetup
+        orchestration.context.profile
           .equipmentInventory as EquipmentInventoryItem[],
       programmeRole:
-        programmeSession?.role ??
+        orchestration.context.programme
+          .currentSession?.role ??
         "full-body",
       blockPhase:
-        currentBlockWeek.phase,
+        orchestration.context.programme
+          .blockWeek.phase,
 
-      // These will later come from the user's
-      // saved accessibility and movement profile.
-      accessibilityNeeds: [],
+      accessibilityNeeds:
+        orchestration.context.profile
+          .accessibilityNeeds as ExerciseAccessibility[],
       movementConstraints: [],
       progressionHistory:
         dashboard.exerciseProgressionHistory,
-      recentTrainingLoad,
-      exerciseRotation,
-      recoveryIntelligence,
+      recentTrainingLoad:
+        orchestration.context.intelligence
+          .recentTrainingLoad,
+      exerciseRotation:
+        orchestration.context.intelligence
+          .exerciseRotation,
+      recoveryIntelligence:
+        orchestration.context.intelligence
+          .recovery,
     });
 
   const adaptivePlan = generateAdaptivePlan({
     primaryGoal:
-      dashboard.genome.primaryGoal ?? "health",
+      orchestration.context.profile
+        .primaryGoal,
     experienceLevel:
-      dashboard.genome.experienceLevel ??
-      "beginner",
+      orchestration.context.profile
+        .experienceLevel,
     currentPriority:
-      apex.decision.priority,
-    readinessScore,
+      orchestration.resolvedPriority,
+    readinessScore:
+      orchestration.context.today
+        .readinessScore,
     recoveryScore:
-      adaptiveTraits.recovery,
+      orchestration.context.today
+        .recoveryScore,
     consistencyScore:
-      adaptiveTraits.consistency,
+      orchestration.context.today
+        .consistencyScore,
     latestWorkoutCompletedAt:
       dashboard.latestWorkout?.completedAt ??
       null,
@@ -303,15 +393,23 @@ export default async function DashboardPage() {
     recentWorkouts:
       dashboard.recentWorkouts,
     availableTrainingDays:
-      currentBlockWeek.trainingDaysTarget,
+      orchestration.context.programme
+        .blockWeek.trainingDaysTarget,
     blockWeek:
-      currentBlockWeek,
+      orchestration.context.programme
+        .blockWeek,
     programmeSessions:
-      programme.sessions,
+      orchestration.context.programme
+        .structure.sessions,
     completedProgrammeSessions:
-      completedWorkoutCount,
-    recoveryIntelligence,
-    recoveryForecast,
+      orchestration.context.programme
+        .completedProgrammeSessions,
+    recoveryIntelligence:
+      orchestration.context.intelligence
+        .recovery,
+    recoveryForecast:
+      orchestration.context.intelligence
+        .recoveryForecast,
   });
 
   return (

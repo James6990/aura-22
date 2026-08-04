@@ -79,7 +79,7 @@ Phase 2 — Explainable Coaching Intelligence
 
 ### Decision Trace Integration v1
 
-**Status:** Next
+**Status:** In progress — integration patch applied
 
 **Goal:** Connect structured reasoning to one live coaching path without changing the visible dashboard.
 

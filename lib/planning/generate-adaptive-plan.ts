@@ -17,6 +17,17 @@ import type {
 import type {
   MovementPattern,
 } from "@/lib/workout/exercise-library";
+import {
+  createDecisionTrace,
+  type DecisionTrace,
+  type DecisionReason,
+} from "@/lib/apex-core/create-decision-trace";
+import {
+  calculateDecisionConfidence,
+} from "@/lib/apex-core/calculate-decision-confidence";
+import {
+  evidenceRegistryVersion,
+} from "@/lib/evidence/evidence-registry";
 
 export type PlanningDayType =
   | "train"
@@ -61,7 +72,7 @@ export type AdaptivePlanningInput = {
   recoveryForecast?: RecoveryForecast;
 };
 
-export type AdaptivePlanDay = {
+type AdaptivePlanDayBase = {
   dayOffset: number;
   label: string;
   type: PlanningDayType;
@@ -70,6 +81,11 @@ export type AdaptivePlanDay = {
   optional: boolean;
   programmeRole: ProgrammeSessionRole | null;
 };
+
+export type AdaptivePlanDay =
+  AdaptivePlanDayBase & {
+    decisionTrace: DecisionTrace;
+  };
 
 export type AdaptiveConfidence = {
   score: number;
@@ -254,7 +270,7 @@ function getGoalTrainingTitle(
 function createRecoveryDay(
   offset: number,
   reason: string,
-): AdaptivePlanDay {
+): AdaptivePlanDayBase {
   return {
     dayOffset: offset,
     label: getDayLabel(offset),
@@ -271,7 +287,7 @@ function createTrainingDay(
   primaryGoal: string,
   reason: string,
   programmeSession?: ProgrammeSession,
-): AdaptivePlanDay {
+): AdaptivePlanDayBase {
   return {
     dayOffset: offset,
     label: getDayLabel(offset),
@@ -297,7 +313,7 @@ function createTrainingDay(
 function createLightDay(
   offset: number,
   reason: string,
-): AdaptivePlanDay {
+): AdaptivePlanDayBase {
   return {
     dayOffset: offset,
     label: getDayLabel(offset),
@@ -312,7 +328,7 @@ function createLightDay(
 function createFlexibleDay(
   offset: number,
   reason: string,
-): AdaptivePlanDay {
+): AdaptivePlanDayBase {
   return {
     dayOffset: offset,
     label: getDayLabel(offset),
@@ -560,7 +576,7 @@ export function generateAdaptivePlan(
   const blockFoundation =
     blockWeek?.phase === "foundation";
 
-  const days: AdaptivePlanDay[] = [];
+  const days: AdaptivePlanDayBase[] = [];
 
   let demandingSessionsPlaced = 0;
 
@@ -742,10 +758,142 @@ export function generateAdaptivePlan(
       ? "Missed sessions have been redistributed rather than stacked together. Apex is protecting recovery while preserving the week’s most valuable training opportunities."
       : "This rhythm separates demanding sessions with recovery or flexible days so progress can continue without unnecessary fatigue.";
 
+  const tracedDays = days.map((day) => {
+    const forecastDay =
+      input.recoveryForecast?.days.find(
+        (candidate) =>
+          candidate.dayOffset ===
+          day.dayOffset,
+      );
+
+    const evidenceRuleId =
+      day.type === "recovery" ||
+      day.type === "light"
+        ? "recovery-respect-current-signals"
+        : "progression-require-repeatable-performance";
+
+    const reasons: DecisionReason[] = [
+      {
+        code: `adaptive-plan-${day.type}`,
+        label: "Adaptive planning decision",
+        detail: day.reason,
+        influence:
+          day.type === "recovery"
+            ? "strong-negative"
+            : day.type === "light"
+              ? "negative"
+              : day.type === "flexible"
+                ? "neutral"
+                : "positive",
+        evidenceRuleId,
+        evidenceStrength:
+          day.type === "recovery"
+            ? "strong"
+            : "moderate",
+      },
+    ];
+
+    if (day.programmeRole) {
+      reasons.push({
+        code: "programme-role",
+        label: "Programme continuity",
+        detail:
+          `The ${day.programmeRole} programme role was considered for this day.`,
+        influence: "positive",
+        evidenceRuleId: null,
+        evidenceStrength:
+          "personal-trend",
+      });
+    }
+
+    if (forecastDay) {
+      reasons.push({
+        code: "recovery-forecast",
+        label: "Recovery forecast",
+        detail:
+          `${forecastDay.explanation} Forecast confidence is ${forecastDay.confidence}%.`,
+        influence:
+          forecastDay.status === "ready"
+            ? "positive"
+            : forecastDay.status === "caution"
+              ? "neutral"
+              : "strong-negative",
+        evidenceRuleId:
+          "recovery-respect-current-signals",
+        evidenceStrength: "strong",
+      });
+    }
+
+    const dataCompleteness =
+      Math.min(
+        100,
+        45 +
+          input.recentWorkouts.length * 8 +
+          (input.recoveryIntelligence ? 15 : 0) +
+          (forecastDay ? 10 : 0),
+      );
+
+    const signalAgreement =
+      Math.max(
+        0,
+        100 -
+          Math.abs(
+            input.readinessScore -
+              input.recoveryScore,
+          ),
+      );
+
+    const historyDepth =
+      Math.min(
+        100,
+        input.recentWorkouts.length * 12,
+      );
+
+    const safetyOverrideActive =
+      day.type === "recovery" &&
+      (
+        day.dayOffset === 0 ||
+        forecastDay?.status ===
+          "recovering" ||
+        forecastDay?.status ===
+          "avoid-today"
+      );
+
+    const traceConfidence =
+      calculateDecisionConfidence({
+        dataCompleteness,
+        signalAgreement,
+        historyDepth,
+        forecastCertainty:
+          forecastDay?.confidence ?? 100,
+        safetyOverrideActive,
+      });
+
+    return {
+      ...day,
+      decisionTrace:
+        createDecisionTrace({
+          decisionId:
+            `adaptive-plan-day-${day.dayOffset}`,
+          decisionType:
+            "adaptive-plan-day",
+          outcome:
+            `${day.type}:${day.title}`,
+          confidence: traceConfidence,
+          reasons,
+          overriddenBy:
+            safetyOverrideActive
+              ? "recovery-safety"
+              : null,
+          evidenceRegistryVersion,
+        }),
+    };
+  });
+
   return {
     headline,
     summary,
-    days,
+    days: tracedDays,
     confidence,
     missedSessionsRedistributed,
   };

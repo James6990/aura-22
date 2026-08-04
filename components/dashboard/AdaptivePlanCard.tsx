@@ -40,6 +40,20 @@ function DayIcon({
   return <CalendarDays className="h-4 w-4" />;
 }
 
+function getDecisionConfidenceLabel(
+  confidence: number,
+) {
+  if (confidence >= 85) {
+    return "High confidence";
+  }
+
+  if (confidence >= 65) {
+    return "Moderate confidence";
+  }
+
+  return "Still learning";
+}
+
 function getDayStyle(
   type: AdaptivePlanDay["type"],
 ) {
@@ -136,6 +150,60 @@ export default function AdaptivePlanCard({
             <p className="mt-2 text-xs leading-5 text-slate-400">
               {day.reason}
             </p>
+
+            <details className="mt-4 rounded-xl border border-white/10 bg-slate-950/40 p-3">
+              <summary className="cursor-pointer text-xs font-black text-slate-200">
+                Why Apex chose this
+              </summary>
+
+              <div className="mt-3 space-y-3">
+                <p className="text-xs leading-5 text-slate-300">
+                  {
+                    day.decisionTrace.reasons[0]
+                      ?.detail ??
+                    "Apex used your current training and recovery information."
+                  }
+                </p>
+
+                {day.decisionTrace.reasons.length > 1 && (
+                  <div className="space-y-2 border-t border-white/10 pt-3">
+                    {day.decisionTrace.reasons
+                      .slice(1, 3)
+                      .map((reason) => (
+                        <div
+                          key={`${reason.code}-${reason.label}`}
+                        >
+                          <p className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                            {reason.label}
+                          </p>
+
+                          <p className="mt-1 text-xs leading-5 text-slate-400">
+                            {reason.detail}
+                          </p>
+                        </div>
+                      ))}
+                  </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2 border-t border-white/10 pt-3">
+                  <span className="rounded-full border border-violet-400/20 bg-violet-500/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-violet-300">
+                    {getDecisionConfidenceLabel(
+                      day.decisionTrace.confidence,
+                    )}
+                  </span>
+
+                  <span className="text-[11px] font-bold text-slate-400">
+                    {day.decisionTrace.confidence}%
+                  </span>
+                </div>
+
+                {day.decisionTrace.overriddenBy && (
+                  <p className="rounded-lg border border-cyan-400/20 bg-cyan-500/10 p-2 text-[11px] font-bold leading-5 text-cyan-200">
+                    Recovery and safety signals took priority over the original training plan.
+                  </p>
+                )}
+              </div>
+            </details>
           </article>
         ))}
       </div>

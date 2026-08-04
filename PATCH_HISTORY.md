@@ -11,6 +11,8 @@ This file records every substantial Apex build patch and its verification status
 
 | 2026-08-04 | apex-build-plan-v1.sh | Living Apex build plan | Applied | Pending | Pending | Adds the project roadmap, milestone order and verification requirements. |
 
+| 2026-08-04 | decision-trace-integration-v1.sh | Adaptive Planning Decision Trace Integration v1 | Applied | Pending | checkpoint-decision-trace-integration-v1 | Adds traces, confidence, evidence links and safety overrides to every adaptive-plan day. |
+
 ## Patch Rules
 
 - Apply patches only from the dedicated Apex/Build-Patches folder.
