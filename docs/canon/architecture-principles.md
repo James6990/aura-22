@@ -27,3 +27,46 @@ The event system should eventually support:
 - learning;
 - debugging;
 - user-facing history.
+
+## Foundations, features, and intelligence
+
+Architectural work follows:
+
+1. **Foundations**
+   - contracts;
+   - ownership;
+   - validation;
+   - persistence;
+   - events;
+   - migrations;
+   - deterministic domain rules.
+
+2. **Features**
+   - services;
+   - actions;
+   - user workflows;
+   - accessibility;
+   - error handling;
+   - offline and interruption behaviour.
+
+3. **Intelligence**
+   - evidence extraction;
+   - interpretation;
+   - confidence;
+   - memory;
+   - learning;
+   - explanations;
+   - prediction.
+
+The intelligence layer must not infer facts that the foundation did not
+record reliably.
+
+## Contextual workout evidence
+
+Workout active time and paused time must remain separate.
+
+Pause length, skipped exercises, substitutions, and early completion may be
+used as evidence only with appropriate context and confidence.
+
+Accessibility, discomfort, equipment availability, interruption, and
+recovery context must remain distinguishable wherever practical.

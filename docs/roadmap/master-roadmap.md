@@ -2,6 +2,47 @@
 
 This roadmap includes the full product vision. It must not be reduced to only the AI architecture.
 
+## Permanent product pillars
+
+The complete Apex product is organised through these enduring pillars:
+
+1. Core Platform
+2. Workout Engine
+3. Recovery Engine
+4. Nutrition Engine
+5. Performance Genome
+6. Apex Intelligence
+7. Gamification and Fair PvP
+8. Social, Community, and Bloodlines
+9. Analytics and Explainability
+10. Cloud, Sync, and Offline Reliability
+11. Accessibility and Rehabilitation
+12. Devices, Wearables, and Environmental Intelligence
+13. Production Readiness
+14. Innovation and Research
+
+Pillars describe product responsibility. The numbered stages below describe
+implementation order and dependency maturity.
+
+A feature may belong to several pillars, but it must be implemented only
+when its current roadmap stage and dependencies permit it.
+
+## Development sequence
+
+Apex uses the permanent sequence:
+
+> Foundations → Features → Intelligence
+
+This means:
+
+- contracts, ownership, persistence, and events come first;
+- reliable user workflows come second;
+- learning, prediction, and adaptation come third;
+- polish follows correct, safe, and accessible behaviour.
+
+Interesting ideas are captured immediately but never used to bypass the
+active milestone.
+
 ## Stage 1 — Product and Engineering Foundation
 
 - Repository and branching workflow
@@ -90,6 +131,30 @@ Build in this agreed order:
 8. Event Analytics
 9. Memory Consolidation Engine
 10. Autonomous Learning Engine
+
+### Focused workout lifecycle stabilisation
+
+After the Cloud Sync Repository checkpoint, development temporarily returns
+to the Workout Engine because the existing session timer starts too early
+and cannot represent pauses, skipped exercises, or early completion
+accurately.
+
+The focused checkpoint includes:
+
+1. persisted workout lifecycle and timing;
+2. pause and resume with optional context;
+3. explicit exercise completion and skipping;
+4. automatic ready-to-complete transition;
+5. normal and early completion;
+6. lifecycle events and timeline evidence;
+7. dashboard and execution-interface integration;
+8. fair AI evidence interpretation;
+9. accessibility and stabilisation review.
+
+This is an architectural correction, not a new replacement roadmap.
+
+After it is stable, development returns directly to Cloud Sync Service and
+continues the Stage 6 order above.
 
 ## Stage 7 — Recovery, Safety, and Return-to-Training
 
@@ -212,3 +277,30 @@ Responsible recovery remains part of the user’s journey.
 - Accessibility audit
 - App-store readiness
 - Release operations
+
+## Innovation maturity rule
+
+Advanced capabilities include:
+
+- Training DNA;
+- Digital Twin simulation;
+- predictive coaching;
+- adaptive coaching communication;
+- confidence timelines;
+- long-term performance forecasting;
+- gym crowd and equipment-availability intelligence;
+- voice and wearable-assisted coaching.
+
+These remain Innovation and Research work until Apex has sufficient:
+
+- reliable longitudinal evidence;
+- privacy and consent controls;
+- explainability;
+- confidence calibration;
+- contradiction handling;
+- rollback and correction;
+- accessibility safeguards;
+- clinical and safety boundaries.
+
+They must not be presented as established personal truth when evidence is
+limited.

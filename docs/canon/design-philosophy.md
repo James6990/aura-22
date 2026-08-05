@@ -159,3 +159,39 @@ Before approving a feature, ask:
 > Does this help the user live a healthier, more confident, sustainable, and enjoyable life?
 
 If the answer is unclear, the feature needs more thought.
+
+## Adaptation is not failure
+
+A workout does not become unsuccessful merely because the user:
+
+- pauses;
+- takes longer;
+- adapts a movement;
+- skips an unavailable or unsuitable exercise;
+- substitutes equipment;
+- reduces the session;
+- finishes early;
+- chooses recovery.
+
+Apex should record what happened accurately, ask for context only when it
+provides genuine value, and avoid turning every interruption into a demand
+for explanation.
+
+The user remains in control.
+
+## Intelligent engagement
+
+Gamification, leagues, quests, bosses, seasons, Bloodlines, and social
+systems should make healthy behaviour enjoyable.
+
+They must not override:
+
+- safety;
+- recovery;
+- accessibility;
+- clinician instructions;
+- user autonomy;
+- fair participation.
+
+Engagement systems should reward meaningful effort, improvement,
+consistency, responsible recovery, and positive community contribution.

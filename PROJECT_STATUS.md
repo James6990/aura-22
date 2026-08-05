@@ -55,9 +55,14 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 ## Current build target
 
-Cloud Sync Service
+Workout Lifecycle Stabilisation
+
+Cloud Sync Service remains the architectural milestone immediately after
+this focused stabilisation work.
 
 ## Agreed next development order
+
+The Event-Driven Intelligence sequence remains:
 
 1. Decision Memory Event Publisher
 2. Event Contracts
@@ -69,6 +74,17 @@ Cloud Sync Service
 8. Event Analytics
 9. Memory Consolidation Engine
 10. Autonomous Learning Engine
+
+Cloud Sync is temporarily interrupted only for these focused checkpoints:
+
+1. Workout Lifecycle Foundation
+2. Workout Execution Interface
+3. Workout AI Evidence Integration
+4. Workout Stabilisation and Accessibility Review
+
+After those checkpoints, return directly to Cloud Sync Service.
+
+Do not insert unrelated product stages before that return.
 
 ## Permanent product direction
 
@@ -103,3 +119,42 @@ Read this file first, then review:
 - `docs/build-log/current.md`
 
 Do not replace the agreed roadmap with a shortened AI-only roadmap.
+
+## Permanent product pillars
+
+Every significant Apex feature belongs to one or more of these pillars:
+
+1. Core Platform
+2. Workout Engine
+3. Recovery Engine
+4. Nutrition Engine
+5. Performance Genome
+6. Apex Intelligence
+7. Gamification and Fair PvP
+8. Social, Community, and Bloodlines
+9. Analytics and Explainability
+10. Cloud, Sync, and Offline Reliability
+11. Accessibility and Rehabilitation
+12. Devices, Wearables, and Environmental Intelligence
+13. Production Readiness
+14. Innovation and Research
+
+The pillars organise the complete product vision. They do not replace the
+staged roadmap or justify jumping ahead of the active milestone.
+
+## Permanent staged-development rule
+
+Apex development follows:
+
+> Foundations → Features → Intelligence
+
+For each capability:
+
+1. establish reliable contracts and persistence;
+2. build the user-facing workflow;
+3. integrate evidence and intelligence;
+4. test safety, accessibility, and edge cases;
+5. polish only after behaviour is correct.
+
+Never build a later-stage intelligence feature before its required data,
+contracts, and workflow are reliable.

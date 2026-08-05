@@ -3,12 +3,45 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  Ban,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Save,
   ShieldAlert,
 } from "lucide-react";
 
 import { saveExerciseResult } from "@/app/actions/workout-session";
+import {
+  skipWorkoutExercise,
+} from "@/app/actions/workout-lifecycle";
+import {
+  workoutSkipReasons,
+  type WorkoutExerciseResolutionStatus,
+  type WorkoutSkipReason,
+} from "@/lib/workout/workout-session-lifecycle";
+
+type ExerciseLoggerDisplayStatus =
+  | WorkoutExerciseResolutionStatus
+  | "unsaved";
+
+const workoutSkipReasonLabels:
+  Record<WorkoutSkipReason, string> = {
+    "equipment-unavailable":
+      "Equipment unavailable",
+    discomfort:
+      "Discomfort or pain concern",
+    "time-limit":
+      "Time limit",
+    accessibility:
+      "Accessibility or movement need",
+    substituted:
+      "Used a substitute exercise",
+    "personal-choice":
+      "Personal choice",
+    other:
+      "Other reason",
+  };
 
 type ExerciseLoggerProps = {
   sessionId: string;
@@ -16,8 +49,9 @@ type ExerciseLoggerProps = {
   totalExercises?: number;
   active?: boolean;
   onSaved?: (
-    completionStatus: string,
-  ) => void;
+    completionStatus:
+      WorkoutExerciseResolutionStatus,
+  ) => void | Promise<void>;
   exercise: {
     id: string;
     exerciseName: string;
@@ -29,7 +63,8 @@ type ExerciseLoggerProps = {
     rpe: number | null;
     discomfortLevel: number | null;
     techniqueConfidence: number | null;
-    completionStatus: string;
+    completionStatus:
+      WorkoutExerciseResolutionStatus;
     notes: string;
   };
 };
@@ -78,9 +113,22 @@ export default function ExerciseLogger({
   const [notes, setNotes] = useState(exercise.notes);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
-  const [savedStatus, setSavedStatus] = useState(
-    exercise.completionStatus,
-  );
+  const [savedStatus, setSavedStatus] =
+    useState<ExerciseLoggerDisplayStatus>(
+      exercise.completionStatus,
+    );
+
+  const [skipExpanded, setSkipExpanded] =
+    useState(false);
+
+  const [skipReason, setSkipReason] =
+    useState<WorkoutSkipReason | "">("");
+
+  const [skipNote, setSkipNote] =
+    useState("");
+
+  const [skipping, setSkipping] =
+    useState(false);
 
   function updateSetReps(index: number, value: string) {
     setReps((current) =>
@@ -161,9 +209,10 @@ export default function ExerciseLogger({
       }
 
       setSavedStatus(result.completionStatus);
-      onSaved?.(
+      await onSaved?.(
         result.completionStatus,
       );
+
       router.refresh();
     } catch (error) {
       console.error("Failed to log exercise:", error);
@@ -173,6 +222,70 @@ export default function ExerciseLogger({
       );
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleSkip() {
+    if (
+      skipping ||
+      saving ||
+      savedStatus === "completed" ||
+      savedStatus === "skipped"
+    ) {
+      return;
+    }
+
+    if (!skipReason) {
+      setSaveError(
+        "Choose a reason before skipping this exercise.",
+      );
+      return;
+    }
+
+    setSkipping(true);
+    setSaveError("");
+
+    try {
+      const result =
+        await skipWorkoutExercise({
+          sessionId,
+          exerciseResultId:
+            exercise.id,
+          reason:
+            skipReason,
+          note:
+            skipNote,
+        });
+
+      if (!result.success) {
+        setSaveError(
+          result.error,
+        );
+        return;
+      }
+
+      setSavedStatus(
+        result.completionStatus,
+      );
+
+      setSkipExpanded(false);
+
+      await onSaved?.(
+        result.completionStatus,
+      );
+
+      router.refresh();
+    } catch (error) {
+      console.error(
+        "Failed to skip exercise:",
+        error,
+      );
+
+      setSaveError(
+        "Apex could not skip this exercise. Please try again.",
+      );
+    } finally {
+      setSkipping(false);
     }
   }
 
@@ -366,7 +479,11 @@ export default function ExerciseLogger({
       <button
         type="button"
         onClick={handleSave}
-        disabled={saving}
+        disabled={
+          saving ||
+          skipping ||
+          savedStatus === "skipped"
+        }
         className="mt-5 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 font-black text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
       >
         {savedStatus === "completed" ? (
@@ -377,10 +494,173 @@ export default function ExerciseLogger({
 
         {saving
           ? "Saving exercise..."
-          : savedStatus === "completed"
-            ? "Update completed exercise"
-            : "Save exercise"}
+          : savedStatus === "skipped"
+            ? "Exercise skipped"
+            : savedStatus === "completed"
+              ? "Update completed exercise"
+              : "Save exercise"}
       </button>
+
+      <div className="mt-3">
+        <button
+          type="button"
+          onClick={() => {
+            setSkipExpanded(
+              (current) => !current,
+            );
+
+            setSaveError("");
+          }}
+          disabled={
+            saving ||
+            skipping ||
+            savedStatus === "completed" ||
+            savedStatus === "skipped"
+          }
+          aria-expanded={skipExpanded}
+          className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-950 px-5 font-black text-slate-300 transition hover:border-amber-500/40 hover:text-amber-200 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Ban className="h-5 w-5" />
+
+          {savedStatus === "skipped"
+            ? "Exercise skipped"
+            : "Skip this exercise"}
+
+          {savedStatus !== "skipped" &&
+            (skipExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            ))}
+        </button>
+      </div>
+
+      {skipExpanded &&
+        savedStatus !== "completed" &&
+        savedStatus !== "skipped" && (
+          <section className="mt-4 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="font-black text-amber-100">
+              Skip exercise
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-400">
+              Skipping is not treated as failure. The reason helps Apex
+              understand equipment, safety, accessibility and session
+              context without making assumptions.
+            </p>
+
+            <div className="mt-4">
+              <label
+                htmlFor={`${exercise.id}-skip-reason`}
+                className="text-sm font-bold text-slate-200"
+              >
+                Reason
+              </label>
+
+              <select
+                id={`${exercise.id}-skip-reason`}
+                value={skipReason}
+                onChange={(event) => {
+                  setSkipReason(
+                    event.target.value as
+                      WorkoutSkipReason | "",
+                  );
+
+                  setSaveError("");
+                }}
+                className="mt-2 min-h-12 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 text-base text-white"
+              >
+                <option value="">
+                  Choose a reason
+                </option>
+
+                {workoutSkipReasons.map(
+                  (reason) => (
+                    <option
+                      key={reason}
+                      value={reason}
+                    >
+                      {
+                        workoutSkipReasonLabels[
+                          reason
+                        ]
+                      }
+                    </option>
+                  ),
+                )}
+              </select>
+            </div>
+
+            <div className="mt-4">
+              <label
+                htmlFor={`${exercise.id}-skip-note`}
+                className="text-sm font-bold text-slate-200"
+              >
+                Optional note
+              </label>
+
+              <textarea
+                id={`${exercise.id}-skip-note`}
+                value={skipNote}
+                maxLength={500}
+                rows={3}
+                onChange={(event) =>
+                  setSkipNote(
+                    event.target.value,
+                  )
+                }
+                className="mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-base text-white"
+                placeholder="Example: cable station unavailable, used dumbbells instead"
+              />
+            </div>
+
+            {skipReason === "discomfort" && (
+              <div
+                role="note"
+                className="mt-4 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4"
+              >
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-300" />
+
+                <p className="text-sm leading-6 text-amber-100">
+                  Choosing not to continue a movement because of
+                  discomfort is a responsible training decision.
+                  Consider an appropriate alternative or professional
+                  guidance when symptoms are concerning.
+                </p>
+              </div>
+            )}
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setSkipExpanded(false);
+                  setSaveError("");
+                }}
+                disabled={skipping}
+                className="min-h-12 rounded-xl border border-slate-700 bg-slate-950 px-5 font-black text-slate-300 disabled:opacity-50"
+              >
+                Keep exercise
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={
+                  skipping ||
+                  !skipReason
+                }
+                className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-amber-400 px-5 font-black text-slate-950 transition hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Ban className="h-5 w-5" />
+
+                {skipping
+                  ? "Skipping exercise..."
+                  : "Confirm skip"}
+              </button>
+            </div>
+          </section>
+        )}
     </article>
   );
 }

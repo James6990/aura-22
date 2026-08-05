@@ -84,12 +84,22 @@ export default async function WorkoutPage({
         <WorkoutExecutionClient
           sessionId={data.session.id}
           exercises={data.exercises}
-          startedAt={
-            data.session.startedAt?.toISOString() ??
+          initialStatus={data.session.status}
+          initialActiveStartedAt={
+            data.session.activeStartedAt?.toISOString() ??
             null
           }
-          alreadyCompleted={
-            data.session.status === "completed"
+          initialAccumulatedActiveSeconds={
+            data.session.accumulatedActiveSeconds
+          }
+          initialTotalPausedSeconds={
+            data.session.totalPausedSeconds
+          }
+          initialPauseCount={
+            data.session.pauseCount
+          }
+          initialLongestPauseSeconds={
+            data.session.longestPauseSeconds
           }
         />
       </div>

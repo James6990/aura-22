@@ -387,6 +387,11 @@ const reflection =
       decisionOne.confidence,
   });
 
+const reflectionUpdatedAt =
+  new Date(
+    "2026-08-05T10:00:00Z",
+  );
+
 const reflected =
   await service.recordReflection({
     memoryId:
@@ -394,6 +399,8 @@ const reflected =
     userId:
       memoryOne.userId,
     reflection,
+    updatedAt:
+      reflectionUpdatedAt,
   });
 
 if (
@@ -438,6 +445,11 @@ const learning =
     ],
   });
 
+const learningUpdatedAt =
+  new Date(
+    "2026-08-05T11:00:00Z",
+  );
+
 const withLearning =
   await service.recordLearning({
     memoryId:
@@ -447,6 +459,8 @@ const withLearning =
     learningEntries: [
       learning,
     ],
+    updatedAt:
+      learningUpdatedAt,
   });
 
 if (

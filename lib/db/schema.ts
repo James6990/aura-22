@@ -292,15 +292,60 @@ export const workoutSessions = pgTable("apex_workout_sessions", {
   ),
 
   status: text("status", {
-    enum: ["planned", "in-progress", "completed", "skipped"],
+    enum: [
+      "ready",
+      "in-progress",
+      "paused",
+      "ready-to-complete",
+      "completed",
+      "skipped",
+    ],
   })
     .notNull()
-    .default("planned"),
+    .default("ready"),
 
   sessionRpe: integer("sessionRpe"),
   notes: text("notes").notNull().default(""),
 
   startedAt: timestamp("startedAt"),
+
+  activeStartedAt: timestamp(
+    "activeStartedAt",
+  ),
+
+  pausedAt: timestamp("pausedAt"),
+
+  accumulatedActiveSeconds: integer(
+    "accumulatedActiveSeconds",
+  )
+    .notNull()
+    .default(0),
+
+  totalPausedSeconds: integer(
+    "totalPausedSeconds",
+  )
+    .notNull()
+    .default(0),
+
+  pauseCount: integer("pauseCount")
+    .notNull()
+    .default(0),
+
+  longestPauseSeconds: integer(
+    "longestPauseSeconds",
+  )
+    .notNull()
+    .default(0),
+
+  completionMode: text(
+    "completionMode",
+    {
+      enum: ["normal", "early"],
+    },
+  ),
+
+  finishReason: text("finishReason"),
+
   completedAt: timestamp("completedAt"),
 
   createdAt: timestamp("createdAt")
@@ -380,6 +425,22 @@ export const workoutExerciseResults = pgTable(
 
     notes: text("notes").notNull().default(""),
 
+    skipReason: text("skipReason", {
+      enum: [
+        "equipment-unavailable",
+        "discomfort",
+        "time-limit",
+        "accessibility",
+        "substituted",
+        "personal-choice",
+        "other",
+      ],
+    }),
+
+    skipNote: text("skipNote"),
+
+    resolvedAt: timestamp("resolvedAt"),
+
     createdAt: timestamp("createdAt")
       .notNull()
       .defaultNow(),
@@ -392,6 +453,76 @@ export const workoutExerciseResults = pgTable(
 
 
 
+
+
+// Durable history for each workout pause.
+// Aggregate timing remains on the session for fast reads.
+export const workoutSessionPauses = pgTable(
+  "apex_workout_session_pauses",
+  {
+    id: text("id").primaryKey(),
+
+    sessionId: text("sessionId")
+      .notNull()
+      .references(
+        () => workoutSessions.id,
+        {
+          onDelete: "cascade",
+        },
+      ),
+
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    reason: text("reason", {
+      enum: [
+        "rest",
+        "interruption",
+        "equipment-wait",
+        "discomfort-check",
+        "accessibility",
+        "other",
+      ],
+    }),
+
+    note: text("note"),
+
+    startedAt: timestamp("startedAt")
+      .notNull(),
+
+    endedAt: timestamp("endedAt"),
+
+    durationSeconds: integer(
+      "durationSeconds",
+    ),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index(
+      "apex_workout_pauses_session_started_idx",
+    ).on(
+      table.sessionId,
+      table.startedAt,
+    ),
+
+    index(
+      "apex_workout_pauses_user_started_idx",
+    ).on(
+      table.userId,
+      table.startedAt,
+    ),
+  ],
+);
 
 // --- APEX CLOUD SYNC -------------------------------------------------------
 

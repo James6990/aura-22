@@ -18,7 +18,11 @@ Cloud Sync Repository
 
 ## Current build target
 
-Cloud Sync Service
+Workout Lifecycle Stabilisation
+
+This is a focused interruption to stabilise workout timing, pause,
+exercise-resolution, completion, event, and AI-evidence contracts before
+Cloud Sync Service continues.
 
 ## Latest known test state
 
@@ -49,4 +53,8 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Cloud synchronisation for validated Decision Memory events and snapshots.
+Complete the focused workout lifecycle foundation, execution interface,
+and AI-evidence integration checkpoints.
+
+Then return directly to Cloud Sync Service for validated Decision Memory
+events and snapshots.

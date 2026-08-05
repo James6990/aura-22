@@ -62,3 +62,39 @@ Success also includes:
 - building confidence and independence.
 
 Apex should seek engagement as a result of genuine value, trust, belonging, progress, and enjoyment—not manipulation.
+
+## Product pillars
+
+Apex's long-term vision is preserved through these connected pillars:
+
+- Core Platform;
+- Workout Engine;
+- Recovery Engine;
+- Nutrition Engine;
+- Performance Genome;
+- Apex Intelligence;
+- Gamification and Fair PvP;
+- Social, Community, and Bloodlines;
+- Analytics and Explainability;
+- Cloud, Sync, and Offline Reliability;
+- Accessibility and Rehabilitation;
+- Devices, Wearables, and Environmental Intelligence;
+- Production Readiness;
+- Innovation and Research.
+
+No single pillar defines Apex by itself.
+
+The product becomes valuable because these systems work together safely,
+fairly, accessibly, and explainably.
+
+## Staged ambition
+
+Apex should remain ambitious without becoming undisciplined.
+
+The project captures valuable future ideas immediately, then implements them
+only when their foundations, evidence, safety boundaries, and dependencies
+are ready.
+
+Permanent sequence:
+
+> Foundations → Features → Intelligence

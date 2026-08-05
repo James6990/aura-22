@@ -39,8 +39,10 @@ export type PlanningDayType =
 export type RecentPlannedWorkout = {
   date: string;
   status:
-    | "planned"
+    | "ready"
     | "in-progress"
+    | "paused"
+    | "ready-to-complete"
     | "completed"
     | "skipped";
   intensity: string;

@@ -311,3 +311,194 @@ Potential success measures may include:
 - appropriate recovery;
 - user understanding;
 - long-term retention without pressure.
+
+# Advanced Personal Intelligence
+
+## Training DNA
+
+**Status:** Future Enhancement
+
+**Target stage:** Personalisation, Memory, and Learning / Innovation
+
+Build a confidence-aware longitudinal model of how the individual tends to
+respond to:
+
+- training time;
+- exercise selection;
+- repetition ranges;
+- rest patterns;
+- recovery intervals;
+- sleep;
+- readiness;
+- nutrition;
+- equipment;
+- schedule and environment.
+
+Training DNA must describe observed patterns, not permanently label the user.
+
+It requires strong longitudinal evidence, contradiction handling, confidence
+decay, user correction, and explainable conclusions.
+
+## Apex Digital Twin
+
+**Status:** Research Required
+
+**Target stage:** Innovation and Research
+
+Explore a constrained personal-response simulation that compares possible
+training, recovery, or nutrition strategies before Apex recommends one.
+
+The Digital Twin must:
+
+- communicate uncertainty;
+- distinguish simulation from prediction;
+- avoid medical claims;
+- preserve auditability;
+- allow user correction;
+- prevent weak evidence from becoming authoritative.
+
+## Predictive coaching
+
+**Status:** Research Required
+
+**Target stage:** Advanced Coaching / Innovation
+
+Explore explainable forecasts for:
+
+- plateau risk;
+- recovery readiness;
+- progression opportunity;
+- likely session difficulty;
+- schedule disruption;
+- adherence friction.
+
+Forecasts must include confidence, important evidence, and limitations.
+
+## Cross-domain memory graph
+
+**Status:** Future Enhancement
+
+**Target stage:** Memory Consolidation / Autonomous Learning
+
+Connect relevant relationships across:
+
+- workouts;
+- recovery;
+- nutrition;
+- sleep;
+- readiness;
+- discomfort;
+- accessibility;
+- equipment;
+- goals;
+- coaching decisions;
+- outcomes.
+
+Relationships must remain versioned, challengeable, and explainable.
+
+## Adaptive coach communication
+
+**Status:** Future Enhancement
+
+**Target stage:** Advanced Coaching
+
+Extend communication-style personalisation while preserving:
+
+- safety information;
+- clear uncertainty;
+- user control;
+- emotional boundaries;
+- accessibility;
+- non-manipulative engagement.
+
+## Gym demand and equipment intelligence
+
+**Status:** Research Required
+
+**Target stage:** Equipment Intelligence / Devices and Environment
+
+Explore whether reliable, privacy-respecting evidence can help Apex:
+
+- predict equipment availability;
+- propose equivalent alternatives;
+- shorten busy-session delays;
+- adapt plans to a user's normal environment.
+
+Apex must not pretend to know real-time gym conditions without reliable data.
+
+# Workout Execution Intelligence
+
+## Contextual pause analysis
+
+**Status:** Build Now
+
+**Target stage:** Workout Lifecycle Stabilisation / Later AI Integration
+
+Record:
+
+- active duration;
+- paused duration;
+- pause count;
+- longest pause;
+- optional pause reasons;
+- optional pause notes.
+
+Rules:
+
+- paused time does not count as active training;
+- a pause is never automatically negative;
+- accessibility-related pauses are not poor adherence;
+- equipment waits inform substitution logic;
+- discomfort pauses strengthen safety caution;
+- interpretation requires surrounding evidence.
+
+## Exercise resolution analysis
+
+**Status:** Build Now
+
+**Target stage:** Workout Lifecycle Stabilisation / Later AI Integration
+
+Distinguish:
+
+- completed;
+- partial;
+- skipped;
+- unresolved;
+- substituted.
+
+Repeated skips must not become a preference or permanent adaptation until
+sufficient evidence supports that conclusion.
+
+## Workout execution timeline
+
+**Status:** Future Enhancement
+
+**Target stage:** Event Analytics
+
+Build an explainable timeline from lifecycle events, including:
+
+- preparation;
+- start;
+- pause;
+- resume;
+- exercise logging;
+- exercise skipping;
+- substitutions;
+- ready-to-complete;
+- normal completion;
+- early completion.
+
+The timeline may support debugging, user history, analytics, and later
+learning without exposing unnecessary private detail.
+
+## Adaptive rest intelligence
+
+**Status:** Future Enhancement
+
+**Target stage:** Workout Intelligence Polish / Devices
+
+Adapt rest suggestions using exercise type, training goal, recent effort,
+recovery, discomfort, and the user's observed response.
+
+It must remain optional and must not pressure users to resume before they
+feel ready.

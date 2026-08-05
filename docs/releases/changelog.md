@@ -61,3 +61,18 @@
 ### Next
 
 Cloud Sync Service
+
+## Workout Lifecycle Stabilisation — In Progress
+
+- Added a pure workout-session lifecycle contract.
+- Added ready, active, paused, ready-to-complete, completed, and skipped
+  states.
+- Added accurate active-time and pause-duration calculations.
+- Added exercise-resolution summaries.
+- Added workout timing, pause-history, skip-context, and completion-context
+  database fields.
+- Generated migration `0009_flawless_mathemanic.sql`.
+- Recorded the temporary interruption before Cloud Sync Service.
+- Added permanent product pillars and the staged-development rule.
+- Captured Training DNA, Digital Twin, predictive coaching, memory graph,
+  workout timeline, and adaptive-rest concepts for later stages.

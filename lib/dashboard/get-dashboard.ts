@@ -1,5 +1,10 @@
 import { headers } from "next/headers";
-import { and, desc, eq } from "drizzle-orm";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+} from "drizzle-orm";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
@@ -121,9 +126,14 @@ export async function getDashboardData() {
           workoutSessions.userId,
           session.user.id,
         ),
-        eq(
+        inArray(
           workoutSessions.status,
-          "in-progress",
+          [
+            "ready",
+            "in-progress",
+            "paused",
+            "ready-to-complete",
+          ],
         ),
       ),
       orderBy: [
@@ -175,17 +185,42 @@ export async function getDashboardData() {
               activeWorkoutSession.title,
             intensity:
               activeWorkoutSession.intensity,
-            startedAt:
-              activeWorkoutSession.startedAt,
+
+            status:
+              activeWorkoutSession.status,
+
+            activeStartedAt:
+              activeWorkoutSession.activeStartedAt,
+
+            accumulatedActiveSeconds:
+              activeWorkoutSession
+                .accumulatedActiveSeconds,
+
+            totalPausedSeconds:
+              activeWorkoutSession
+                .totalPausedSeconds,
+
+            pauseCount:
+              activeWorkoutSession.pauseCount,
+
             plannedDurationMinutes:
               activeWorkoutSession
                 .plannedDurationMinutes,
+
             completedExercises:
               activeWorkoutExercises.filter(
                 (exercise) =>
                   exercise.completionStatus ===
                   "completed",
               ).length,
+
+            skippedExercises:
+              activeWorkoutExercises.filter(
+                (exercise) =>
+                  exercise.completionStatus ===
+                  "skipped",
+              ).length,
+
             totalExercises:
               activeWorkoutExercises.length,
           }

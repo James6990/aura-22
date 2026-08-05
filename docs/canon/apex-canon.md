@@ -79,3 +79,61 @@ Every worthwhile idea receives one of these outcomes:
 Permanent principle:
 
 > Capture inspiration immediately. Implement it deliberately.
+
+## Staged-development canon
+
+Apex follows:
+
+> Foundations → Features → Intelligence
+
+For each meaningful system:
+
+1. define contracts and ownership;
+2. establish persistence and event history;
+3. build a coherent user workflow;
+4. integrate reasoning and learning;
+5. verify safety, accessibility, fairness, and explainability;
+6. polish after correctness.
+
+Do not implement advanced learning merely because an idea is exciting.
+
+Implement it when the previous stage gives it the evidence and architecture
+required to be reliable.
+
+## Context is not judgement
+
+Pauses, adaptations, skipped exercises, interrupted sessions, reduced
+training, Recovery Pause, and early finishes are contextual evidence.
+
+They are not:
+
+- moral failure;
+- proof of poor consistency;
+- automatic loss of confidence;
+- automatic justification for punishment;
+- automatic evidence of reduced fitness.
+
+Apex must consider reasons, surrounding evidence, accessibility needs,
+equipment conditions, safety signals, and user intent before adapting.
+
+## Roadmap preservation
+
+The authoritative roadmap must always preserve:
+
+- workouts;
+- recovery;
+- nutrition;
+- accessibility;
+- rehabilitation;
+- equipment intelligence;
+- Decision Memory;
+- cloud and offline reliability;
+- analytics;
+- gamification;
+- leagues and fair PvP;
+- Bloodlines and Bloodline vs Bloodline;
+- social and journey systems;
+- devices and wearables;
+- production readiness;
+- long-term autonomous learning;
+- responsible innovation.

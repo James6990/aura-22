@@ -38,9 +38,7 @@ function printSection(
 
 function readProjectFile(path) {
   if (!existsSync(path)) {
-    return (
-      `Missing file: ${path}`
-    );
+    return `Missing file: ${path}`;
   }
 
   return readFileSync(
@@ -86,33 +84,54 @@ printSection(
   ]) || "Working tree clean.",
 );
 
-printSection(
-  "VERSION",
-  readProjectFile(
+const sections = [
+  [
+    "VERSION",
     "VERSION.md",
-  ),
-);
-
-printSection(
-  "PROJECT STATUS",
-  readProjectFile(
+  ],
+  [
+    "PROJECT STATUS",
     "PROJECT_STATUS.md",
-  ),
-);
-
-printSection(
-  "CURRENT BUILD LOG",
-  readProjectFile(
+  ],
+  [
+    "CURRENT BUILD LOG",
     "docs/build-log/current.md",
-  ),
-);
-
-printSection(
-  "STARTUP PROTOCOL",
-  readProjectFile(
+  ],
+  [
+    "MASTER ROADMAP",
+    "docs/roadmap/master-roadmap.md",
+  ],
+  [
+    "FEATURE STAGE MAP",
+    "docs/roadmap/feature-stage-map.md",
+  ],
+  [
+    "MASTER VISION",
+    "docs/canon/master-vision.md",
+  ],
+  [
+    "APEX CANON",
+    "docs/canon/apex-canon.md",
+  ],
+  [
+    "FUTURE ENHANCEMENTS",
+    "docs/build-log/future-enhancements.md",
+  ],
+  [
+    "STARTUP PROTOCOL",
     "docs/development/apex-startup-protocol.md",
-  ),
-);
+  ],
+];
+
+for (const [
+  title,
+  path,
+] of sections) {
+  printSection(
+    title,
+    readProjectFile(path),
+  );
+}
 
 console.log();
 console.log(
@@ -120,5 +139,11 @@ console.log(
 );
 
 console.log(
-  "Read the report above, inspect the relevant architecture and contracts, then continue only with the documented current milestone.",
+  [
+    "Read the report above.",
+    "Preserve the complete pillars and staged roadmap.",
+    "Inspect contracts relevant to the active milestone.",
+    "Continue only with the documented current checkpoint.",
+    "Use Foundations → Features → Intelligence.",
+  ].join(" "),
 );

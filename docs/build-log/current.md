@@ -60,15 +60,23 @@ Passing:
 
 ## Current task
 
-Cloud Sync Service
+Workout Lifecycle Stabilisation
+
+This is a deliberate, temporary interruption before Cloud Sync Service.
+The workout lifecycle must become stable before its new events and evidence
+are synchronised or used by learning systems.
 
 ## Next tasks
 
-1. Cloud Sync
-2. Offline Cache
-3. Event Analytics
-4. Memory Consolidation Engine
-5. Autonomous Learning Engine
+1. Complete Workout Lifecycle Foundation
+2. Build Workout Execution Interface
+3. Integrate Workout AI Evidence
+4. Run Workout Stabilisation and Accessibility Review
+5. Return directly to Cloud Sync Service
+6. Offline Cache
+7. Event Analytics
+8. Memory Consolidation Engine
+9. Autonomous Learning Engine
 
 ## Known issues
 
@@ -77,3 +85,39 @@ None currently recorded.
 ## Important instruction
 
 Do not shorten the product roadmap into AI-only stages. Preserve PvP, Bloodlines, accessibility, Recovery Pause, injury adaptation, equipment intelligence, social systems, devices, and release stages.
+
+## Active workout lifecycle checkpoint
+
+Implemented foundation work currently awaiting the full checkpoint:
+
+- ready, in-progress, paused, ready-to-complete, completed, and skipped
+  session states;
+- pure workout lifecycle timing functions;
+- active duration excluding paused time;
+- pause-duration aggregation;
+- explicit completed and skipped exercise resolution;
+- database fields for timing and completion context;
+- durable pause-history table;
+- exercise skip and resolution metadata;
+- generated migration `0009_flawless_mathemanic.sql`;
+- dedicated lifecycle tests;
+- updated planning and behaviour status contracts.
+
+Planned before the checkpoint is complete:
+
+- server start, pause, resume, skip, ready-to-complete, normal completion,
+  and early-finish actions;
+- persisted lifecycle events;
+- workout execution controls;
+- dashboard state presentation;
+- AI timing and resolution evidence;
+- fair, contextual interpretation safeguards;
+- full verification and documentation checkpoint.
+
+## Architecture continuity
+
+Cloud Sync Contracts and the Cloud Sync Repository remain completed.
+
+Cloud Sync Service is not cancelled or moved to a distant product stage.
+Work returns to it immediately after the focused workout lifecycle
+checkpoints are stable.
