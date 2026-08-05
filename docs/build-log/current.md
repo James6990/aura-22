@@ -2,7 +2,7 @@
 
 ## Session date
 
-2026-08-04
+2026-08-05
 
 ## Branch
 
@@ -28,6 +28,10 @@ Decision Memory and Event-Driven Intelligence Foundations
 - Runtime Decision Memory Event Validation
 - Validating event-sink boundary
 - Validation before PostgreSQL event persistence
+- Decision Memory Event Replay Engine
+- Deterministic chronological replay
+- Lifecycle sequence validation
+- Duplicate and mixed-identity detection
 
 ## Current test state
 
@@ -39,19 +43,16 @@ Passing:
 
 ## Current task
 
-Event Replay Engine
+PostgreSQL Repository
 
 ## Next tasks
 
-1. Event Contracts
-2. Event Validation
-3. Event Replay Engine
-4. PostgreSQL Repository
-5. Cloud Sync
-6. Offline Cache
-7. Event Analytics
-8. Memory Consolidation Engine
-9. Autonomous Learning Engine
+1. PostgreSQL Repository
+2. Cloud Sync
+3. Offline Cache
+4. Event Analytics
+5. Memory Consolidation Engine
+6. Autonomous Learning Engine
 
 ## Known issues
 

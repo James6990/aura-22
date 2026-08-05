@@ -74,3 +74,20 @@ Validation enforces:
 The existing PostgreSQL event-writer adapter now validates every Decision Memory event before writing to `apex_events`.
 
 A reusable validating sink decorator is also available for replay, sync, analytics, and future subscribers.
+
+## Event replay
+
+Decision Memory event histories can now be replayed deterministically.
+
+The replay engine:
+
+- validates each event before applying it;
+- sorts by occurrence time and event ID;
+- rejects duplicate event IDs;
+- rejects mixed users, memories, decisions, and correlations;
+- preserves immutable decision identity;
+- enforces valid lifecycle transitions;
+- rejects events after closure;
+- reports open and complete histories separately.
+
+The current events contain summary payloads rather than complete nested Decision Memory snapshots. Replay therefore reconstructs the reliable event-derived lifecycle state without inventing missing decision, outcome, reflection, or learning objects.

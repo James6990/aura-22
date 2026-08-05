@@ -31,6 +31,9 @@
 - Runtime Decision Memory Event Validation
 - Validating event-sink boundary
 - Validation before PostgreSQL event persistence
+- Decision Memory Event Replay Engine
+- Deterministic lifecycle reconstruction
+- Replay identity and ordering safeguards
 
 ### Architecture
 
@@ -41,4 +44,4 @@
 
 ### Next
 
-Event Replay Engine
+PostgreSQL Repository
