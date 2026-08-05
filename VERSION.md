@@ -14,11 +14,11 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Cloud Sync Contracts
+Cloud Sync Repository
 
 ## Current build target
 
-Cloud Sync Repository
+Cloud Sync Service
 
 ## Latest known test state
 

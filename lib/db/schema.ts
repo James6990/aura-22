@@ -8,11 +8,16 @@ import {
   jsonb,
   unique,
   index,
+  primaryKey,
 } from "drizzle-orm/pg-core"
 import type { Exercise } from "@/lib/aura-data"
 import type {
   SerializedDecisionMemorySnapshot,
 } from "@/lib/db/repositories/decision-memory-snapshot"
+import type {
+  ApexSyncEnvelope,
+  ApexSyncRejection,
+} from "@/lib/sync/contracts"
 
 // --- Better Auth required tables -------------------------------------------
 // Column names are camelCase to match Better Auth's defaults. Do not rename.
@@ -386,6 +391,162 @@ export const workoutExerciseResults = pgTable(
 );
 
 
+
+
+// --- APEX CLOUD SYNC -------------------------------------------------------
+
+// One durable synchronization checkpoint per user and device.
+export const apexSyncCheckpoints = pgTable(
+  "apex_sync_checkpoints",
+  {
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    deviceId: text("deviceId")
+      .notNull(),
+
+    cursor: text("cursor"),
+
+    lastUploadedSequence: integer(
+      "lastUploadedSequence",
+    )
+      .notNull()
+      .default(0),
+
+    lastDownloadedAt: timestamp(
+      "lastDownloadedAt",
+    ),
+
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+
+    schemaVersion: integer(
+      "schemaVersion",
+    )
+      .notNull()
+      .default(1),
+  },
+  (table) => [
+    primaryKey({
+      name:
+        "apex_sync_checkpoints_user_device_pk",
+      columns: [
+        table.userId,
+        table.deviceId,
+      ],
+    }),
+  ],
+);
+
+// Persistent outbound envelopes for offline and retry-safe synchronization.
+export const apexSyncEnvelopes = pgTable(
+  "apex_sync_envelopes",
+  {
+    id: text("id").primaryKey(),
+
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    deviceId: text("deviceId")
+      .notNull(),
+
+    entityType: text("entityType", {
+      enum: [
+        "decision-memory-event",
+        "decision-memory-snapshot",
+      ],
+    }).notNull(),
+
+    entityId: text("entityId")
+      .notNull(),
+
+    operation: text("operation", {
+      enum: [
+        "append",
+        "upsert",
+      ],
+    }).notNull(),
+
+    sequence: integer("sequence")
+      .notNull(),
+
+    envelope: jsonb("envelope")
+      .$type<ApexSyncEnvelope>()
+      .notNull(),
+
+    schemaVersion: integer(
+      "schemaVersion",
+    )
+      .notNull()
+      .default(1),
+
+    occurredAt: timestamp("occurredAt")
+      .notNull(),
+
+    envelopeCreatedAt: timestamp(
+      "envelopeCreatedAt",
+    )
+      .notNull(),
+
+    status: text("status", {
+      enum: [
+        "pending",
+        "accepted",
+        "rejected",
+      ],
+    })
+      .notNull()
+      .default("pending"),
+
+    rejection: jsonb("rejection")
+      .$type<ApexSyncRejection | null>(),
+
+    acknowledgedAt: timestamp(
+      "acknowledgedAt",
+    ),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique(
+      "apex_sync_envelopes_user_device_sequence_unique",
+    ).on(
+      table.userId,
+      table.deviceId,
+      table.sequence,
+    ),
+
+    index(
+      "apex_sync_envelopes_pending_idx",
+    ).on(
+      table.userId,
+      table.deviceId,
+      table.status,
+      table.sequence,
+    ),
+
+    index(
+      "apex_sync_envelopes_entity_idx",
+    ).on(
+      table.userId,
+      table.entityType,
+      table.entityId,
+    ),
+  ],
+);
 
 // --- APEX DECISION MEMORY PERSISTENCE --------------------------------------
 

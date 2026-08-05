@@ -51,10 +51,11 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 - Event Replay Engine
 - PostgreSQL Decision Memory Repository
 - Cloud Sync Contracts
+- Cloud Sync Repository
 
 ## Current build target
 
-Cloud Sync Repository
+Cloud Sync Service
 
 ## Agreed next development order
 

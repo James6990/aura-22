@@ -38,6 +38,10 @@ Decision Memory and Event-Driven Intelligence Foundations
 - Cloud Sync Contracts
 - Serializable Decision Memory event envelopes
 - Sync checkpoints, batches, acknowledgements, and rejection contracts
+- Cloud Sync Repository
+- Persistent per-device checkpoints
+- Ordered outbound envelope queue
+- Idempotent enqueue and acknowledgement persistence
 
 - Apex Design Philosophy
 - Apex Founding Principles
@@ -56,7 +60,7 @@ Passing:
 
 ## Current task
 
-Cloud Sync Repository
+Cloud Sync Service
 
 ## Next tasks
 

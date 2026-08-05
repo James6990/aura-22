@@ -45,3 +45,16 @@ The table stores searchable lifecycle fields alongside a versioned JSONB snapsho
 Dates are serialized as ISO strings and explicitly restored by the domain mapper.
 
 The immutable lifecycle event history remains in `apex_events`. Snapshot storage supports complete, fast domain reads while event history supports validation, replay, audit, sync, and future analytics.
+
+## Cloud Sync persistence
+
+Apex stores Cloud Sync state in:
+
+- `apex_sync_checkpoints`;
+- `apex_sync_envelopes`.
+
+Checkpoints are uniquely scoped by user and device.
+
+Outbound envelopes use a unique user, device, and sequence constraint so device ordering cannot be duplicated.
+
+Envelope status remains searchable as pending, accepted, or rejected. Structured rejection details remain attached to the affected envelope.

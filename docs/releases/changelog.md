@@ -40,6 +40,9 @@
 - Cloud Sync Contracts
 - Serializable Decision Memory event envelopes
 - Sync checkpoint and acknowledgement contracts
+- Cloud Sync Repository
+- Persistent device checkpoints and outbound envelope queue
+- Transactional sync acknowledgement persistence
 
 - Apex Design Philosophy
 - Apex Founding Principles
@@ -57,4 +60,4 @@
 
 ### Next
 
-Cloud Sync Repository
+Cloud Sync Service

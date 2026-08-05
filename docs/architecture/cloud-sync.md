@@ -42,3 +42,32 @@ Cloud Sync Repository:
 - retrieve pending uploads;
 - acknowledge accepted envelopes;
 - retain structured rejection information.
+
+## Cloud Sync repository
+
+The repository persists:
+
+- one checkpoint per user and device;
+- append or upsert envelopes;
+- monotonic device sequences;
+- pending upload state;
+- accepted acknowledgements;
+- structured rejections;
+- acknowledgement timestamps.
+
+Identical envelope retries are idempotent. Reusing an envelope identifier for different data is rejected.
+
+Checkpoint sequence progress cannot move backwards.
+
+The PostgreSQL adapter applies acknowledgement state and the next checkpoint within one transaction.
+
+## Next build
+
+Cloud Sync Service:
+
+- construct deterministic upload batches;
+- call a transport port;
+- apply acknowledgements;
+- download remote batches;
+- validate remote ownership and ordering;
+- prepare conflict-resolution integration.

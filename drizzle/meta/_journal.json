@@ -57,6 +57,13 @@
       "when": 1785944151571,
       "tag": "0007_overconfident_thunderbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1785945759009,
+      "tag": "0008_colorful_mentallo",
+      "breakpoints": true
     }
   ]
 }
