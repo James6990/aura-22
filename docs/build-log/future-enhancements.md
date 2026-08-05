@@ -31,15 +31,15 @@ Each idea must later be assessed for:
 
 ### Enhancement name
 
-**Status:** Future Enhancement  
-**Target stage:**  
-**Problem:**  
-**Proposed value:**  
-**Safety considerations:**  
-**Accessibility considerations:**  
-**Architecture considerations:**  
-**Dependencies:**  
-**Decision notes:**  
+**Status:** Future Enhancement
+**Target stage:**
+**Problem:**
+**Proposed value:**
+**Safety considerations:**
+**Accessibility considerations:**
+**Architecture considerations:**
+**Dependencies:**
+**Decision notes:**
 
 ---
 
@@ -47,7 +47,7 @@ Each idea must later be assessed for:
 
 ## Adaptive coaching communication style
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Advanced Coaching
 
 Allow Apex to learn whether a user prefers:
@@ -62,7 +62,7 @@ The system must not manipulate emotions or reduce important safety information.
 
 ## Confidence timelines
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Event Analytics / Advanced Coaching
 
 Show how Apex's confidence in progression, recovery, behaviour, and memory changes over time.
@@ -71,7 +71,7 @@ Users should be able to understand why confidence rose or fell.
 
 ## Coaching decision comparison
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Event Analytics
 
 Allow internal analysis of:
@@ -87,7 +87,7 @@ Allow internal analysis of:
 
 ## Pattern-based recovery prevention
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Recovery Intelligence Polish
 
 Identify repeatable relationships such as:
@@ -101,14 +101,14 @@ Recommendations must distinguish correlation from established cause.
 
 ## Recovery confidence history
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Event Analytics
 
 Show users how recovery recommendations became more personalised as evidence accumulated.
 
 ## Context-sensitive Recovery Pause
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Recovery, Safety, and Return-to-Training
 
 Recovery Pause may eventually offer optional context such as:
@@ -126,7 +126,7 @@ The mode must remain simple and usable without requiring a reason.
 
 ## Journey stories
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Social, Community, and Journey Systems
 
 Turn meaningful milestones into chapters that reflect:
@@ -143,7 +143,7 @@ Stories should celebrate the user's real journey rather than inventing achieveme
 
 ## Personal journey map
 
-**Status:** Planned  
+**Status:** Planned
 **Target stage:** Social, Community, and Journey Systems
 
 Create a visual long-term path containing meaningful milestones, decisions, recovery periods, achievements, and community memories.
@@ -152,7 +152,7 @@ Create a visual long-term path containing meaningful milestones, decisions, reco
 
 ## Mentor Bloodlines
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Bloodlines
 
 Recognise experienced or supportive members for:
@@ -167,7 +167,7 @@ Mentorship reputation must not depend only on athletic performance.
 
 ## Positive contribution reputation
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Bloodlines / Social
 
 Reward helpful, respectful, and encouraging community behaviour.
@@ -176,7 +176,7 @@ The design needs moderation, abuse prevention, and safeguards against popularity
 
 ## Global cooperative events
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Seasonal Community Systems
 
 Allow Bloodlines to contribute toward shared goals in addition to competing.
@@ -194,21 +194,21 @@ Possible contribution categories:
 
 ## Adaptive competitive divisions
 
-**Status:** Planned  
+**Status:** Planned
 **Target stage:** Fair PvP
 
 Match or score users through relevant capability and behaviour signals rather than raw output alone.
 
 ## Recovery contribution scoring
 
-**Status:** Planned  
+**Status:** Planned
 **Target stage:** Fair PvP
 
 Responsible recovery should contribute positively when appropriate, preventing competition from rewarding unsafe overtraining.
 
 ## Transparent scoring explanations
 
-**Status:** Planned  
+**Status:** Planned
 **Target stage:** Fair PvP
 
 Users should understand why points were awarded, reduced, limited, or rejected.
@@ -217,14 +217,14 @@ Users should understand why points were awarded, reduced, limited, or rejected.
 
 ## Accessibility preference learning
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Accessibility and Rehabilitation
 
 Allow Apex to remember interaction formats and movement adaptations that improve usability, with clear user control.
 
 ## Assisted exercise pathways
 
-**Status:** Planned  
+**Status:** Planned
 **Target stage:** Accessibility and Rehabilitation
 
 Support movements involving:
@@ -239,7 +239,7 @@ Support movements involving:
 
 ## Accessibility-aware competition evidence
 
-**Status:** Research Required  
+**Status:** Research Required
 **Target stage:** Fair PvP / Accessibility
 
 Design anti-cheat and evidence systems that do not incorrectly penalise adaptive movement, assisted movement, alternative equipment, or disability-specific execution.
@@ -248,7 +248,7 @@ Design anti-cheat and evidence systems that do not incorrectly penalise adaptive
 
 ## Confidence-aware wearable integration
 
-**Status:** Future Enhancement  
+**Status:** Future Enhancement
 **Target stage:** Devices and Wearables
 
 Treat device signals according to:
@@ -262,7 +262,7 @@ Treat device signals according to:
 
 ## Travel and environment intelligence
 
-**Status:** Planned  
+**Status:** Planned
 **Target stage:** Devices, Wearables, and Environmental Intelligence
 
 Adapt recommendations to:
@@ -280,7 +280,7 @@ Adapt recommendations to:
 
 ## Long-term autonomous learning safeguards
 
-**Status:** Research Required  
+**Status:** Research Required
 **Target stage:** Autonomous Learning Engine
 
 Before autonomous learning can affect live coaching, define:
@@ -297,7 +297,7 @@ Before autonomous learning can affect live coaching, define:
 
 ## Ethical engagement measurement
 
-**Status:** Research Required  
+**Status:** Research Required
 **Target stage:** Product Analytics
 
 Measure whether Apex improves sustainable health behaviour without optimising for compulsive use.
