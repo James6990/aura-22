@@ -87,3 +87,42 @@ Cloud Sync Service
 - Added future Life Timeline, seasonal-pattern, reflection, conversation, and
   lifestyle-planning concepts.
 - Preserved Cloud Sync Service as the active implementation milestone.
+
+## Offline Cache Foundation
+
+### Added
+
+- Versioned Offline Cache entry contracts.
+- Local and remote cache-entry origin.
+- Staged, applied, conflicted, and invalid lifecycle states.
+- Structured conflict codes and related-envelope references.
+- Runtime cache schema, sync schema, identity, and ownership validation.
+- Deterministic ordering by sequence, occurrence time, and envelope id.
+- Platform-neutral Offline Cache storage and repository boundaries.
+- Idempotent cache persistence.
+- Safe applied, conflicted, and invalid lifecycle transitions.
+- Validation of storage-adapter responses.
+- Dedicated Offline Cache contract and repository tests.
+- `apex:offline-cache:quick` and `apex:offline-cache` verification commands.
+
+### Architecture
+
+- Reuses the existing `ApexSyncEnvelope` contract.
+- Does not introduce a second Cloud Sync outbox.
+- Does not introduce a competing checkpoint model.
+- Keeps persistence independent from IndexedDB, SQLite, or another platform
+  adapter.
+- Makes conflicts visible rather than silently overwriting evidence.
+
+### Verification
+
+- Offline Cache contract tests passing.
+- Offline Cache repository tests passing.
+- Full Apex module suite passing.
+- TypeScript typecheck passing.
+- Documentation check passing.
+- Git diff check passing.
+
+### Next
+
+Offline Cache Synchronization Integration.

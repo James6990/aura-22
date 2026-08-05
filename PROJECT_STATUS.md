@@ -63,10 +63,26 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 ## Current build target
 
-Workout Lifecycle Stabilisation
+Offline Cache Synchronization Integration
 
-Cloud Sync Service remains the architectural milestone immediately after
-this focused stabilisation work.
+The first Offline Cache foundation checkpoint is complete.
+
+Completed capabilities include:
+
+- versioned Offline Cache entry contracts;
+- local and remote entry origin;
+- staged, applied, conflicted, and invalid lifecycle states;
+- runtime ownership and schema validation;
+- deterministic cache ordering;
+- idempotent repository saves;
+- platform-neutral storage boundaries;
+- explicit conflict details;
+- validated lifecycle transitions;
+- protection against invalid storage-adapter responses;
+- dedicated Offline Cache verification commands.
+
+The next checkpoint connects the cache foundation to the existing Cloud Sync
+services without introducing a second outbox or checkpoint model.
 
 ## Agreed next development order
 
@@ -83,16 +99,19 @@ The Event-Driven Intelligence sequence remains:
 9. Memory Consolidation Engine
 10. Autonomous Learning Engine
 
-Cloud Sync is temporarily interrupted only for these focused checkpoints:
+The focused Workout Lifecycle Stabilisation interruption is complete.
 
-1. Workout Lifecycle Foundation
-2. Workout Execution Interface
-3. Workout AI Evidence Integration
-4. Workout Stabilisation and Accessibility Review
+Cloud Sync Service resumed afterward and is now complete.
 
-After those checkpoints, return directly to Cloud Sync Service.
+The Event-Driven Intelligence sequence continues with:
 
-Do not insert unrelated product stages before that return.
+1. Offline Cache Synchronization Integration
+2. Event Analytics
+3. Memory Consolidation Engine
+4. Autonomous Learning Engine
+
+Do not insert unrelated product stages before Offline Cache unless a safety
+issue, architectural blocker, or explicit priority change requires it.
 
 ## Permanent product direction
 
@@ -180,4 +199,4 @@ long-term personal growth.
 
 This vision does not change the active build order.
 
-The current build target remains Cloud Sync Service.
+The current build target is Offline Cache Synchronization Integration.

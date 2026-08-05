@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.7.0-dev`
+`Apex Foundation 0.7.1-dev`
 
 ## Current branch
 
@@ -14,15 +14,19 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Cloud Sync Service
+Offline Cache Foundation
 
 ## Current build target
 
-Offline Cache
+Offline Cache Synchronization Integration
 
-Cloud Sync contracts, repository, upload orchestration, acknowledgement
-validation, cursor-safe downloads, application boundaries, and checkpoint
-advancement are complete.
+Versioned Offline Cache contracts, runtime validation, deterministic ordering,
+conflict visibility, lifecycle transitions, idempotent persistence, and the
+platform-neutral repository boundary are complete.
+
+The next checkpoint connects this cache foundation to the existing Cloud Sync
+services without creating a second outbox, competing checkpoint model, or
+alternative source of truth.
 
 ## Latest known test state
 
@@ -53,8 +57,14 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Build the Offline Cache foundation on top of the completed Cloud Sync Service.
+Build Offline Cache synchronization integration on top of the completed cache
+foundation and Cloud Sync Service.
 
-The cache must preserve reliable local operation, deterministic replay,
-ownership boundaries, conflict visibility, and safe synchronization without
-silently inventing or overwriting evidence.
+The integration must:
+
+- stage valid local sync envelopes safely;
+- apply remote envelopes deterministically;
+- preserve per-user and per-device ownership;
+- expose conflicts rather than silently overwriting evidence;
+- reuse the existing Cloud Sync outbox and checkpoint lifecycle;
+- remain independent of any specific IndexedDB or SQLite adapter.

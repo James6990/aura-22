@@ -60,23 +60,39 @@ Passing:
 
 ## Current task
 
-Workout Lifecycle Stabilisation
+Offline Cache Synchronization Integration
 
-This is a deliberate, temporary interruption before Cloud Sync Service.
-The workout lifecycle must become stable before its new events and evidence
-are synchronised or used by learning systems.
+The first Offline Cache foundation checkpoint is complete and verified.
+
+Completed foundation work:
+
+- versioned cache-entry contracts;
+- local and remote origin tracking;
+- staged, applied, conflicted, and invalid lifecycle states;
+- runtime schema and ownership validation;
+- deterministic ordering;
+- idempotent persistence;
+- platform-neutral storage port;
+- explicit conflict details;
+- validated lifecycle transitions;
+- storage-adapter response safeguards;
+- dedicated contract and repository tests;
+- `apex:offline-cache:quick` and `apex:offline-cache` commands.
+
+The next focused checkpoint connects this foundation to the existing Cloud
+Sync upload and download services without duplicating their outbox or
+checkpoint lifecycle.
 
 ## Next tasks
 
-1. Complete Workout Lifecycle Foundation
-2. Build Workout Execution Interface
-3. Integrate Workout AI Evidence
-4. Run Workout Stabilisation and Accessibility Review
-5. Return directly to Cloud Sync Service
-6. Offline Cache
-7. Event Analytics
-8. Memory Consolidation Engine
-9. Autonomous Learning Engine
+1. Local-envelope staging into the Offline Cache
+2. Deterministic remote-envelope cache application
+3. Cache-to-Cloud-Sync repository integration
+4. Conflict mapping and safe retry boundaries
+5. Platform adapter planning for IndexedDB and SQLite
+6. Event Analytics
+7. Memory Consolidation Engine
+8. Autonomous Learning Engine
 
 ## Known issues
 
@@ -86,41 +102,24 @@ None currently recorded.
 
 Do not shorten the product roadmap into AI-only stages. Preserve PvP, Bloodlines, accessibility, Recovery Pause, injury adaptation, equipment intelligence, social systems, devices, and release stages.
 
-## Active workout lifecycle checkpoint
+## Completed workout lifecycle checkpoint
 
-Implemented foundation work currently awaiting the full checkpoint:
+Workout Lifecycle Stabilisation was completed, verified, committed, and
+pushed in:
 
-- ready, in-progress, paused, ready-to-complete, completed, and skipped
-  session states;
-- pure workout lifecycle timing functions;
-- active duration excluding paused time;
-- pause-duration aggregation;
-- explicit completed and skipped exercise resolution;
-- database fields for timing and completion context;
-- durable pause-history table;
-- exercise skip and resolution metadata;
-- generated migration `0009_flawless_mathemanic.sql`;
-- dedicated lifecycle tests;
-- updated planning and behaviour status contracts.
+`08e884d — Stabilise workout lifecycle and execution`
 
-Planned before the checkpoint is complete:
-
-- server start, pause, resume, skip, ready-to-complete, normal completion,
-  and early-finish actions;
-- persisted lifecycle events;
-- workout execution controls;
-- dashboard state presentation;
-- AI timing and resolution evidence;
-- fair, contextual interpretation safeguards;
-- full verification and documentation checkpoint.
+It remains a stable prerequisite for synchronized workout evidence.
 
 ## Architecture continuity
 
-Cloud Sync Contracts and the Cloud Sync Repository remain completed.
+Cloud Sync Contracts, Cloud Sync Repository, and Cloud Sync Service are
+complete.
 
-Cloud Sync Service is not cancelled or moved to a distant product stage.
-Work returns to it immediately after the focused workout lifecycle
-checkpoints are stable.
+The active Stage 6 milestone is Offline Cache Synchronization Integration.
+
+Offline Cache must extend the existing sync architecture rather than create a
+second queue, competing checkpoint model, or alternative source of truth.
 
 ## Product-identity clarification
 
@@ -137,7 +136,7 @@ active milestone:
 3. Companion Intelligence
 4. Long-Term Life Intelligence
 
-The current engineering task remains Cloud Sync Service.
+The current engineering task is Offline Cache Synchronization Integration.
 
 These ideas are documented now and implemented only when their foundations,
 evidence, safety controls, privacy boundaries, and roadmap dependencies are
