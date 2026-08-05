@@ -32,6 +32,9 @@ Decision Memory and Event-Driven Intelligence Foundations
 - Deterministic chronological replay
 - Lifecycle sequence validation
 - Duplicate and mixed-identity detection
+- PostgreSQL Decision Memory Repository
+- Versioned Decision Memory snapshot mapper
+- User-scoped open-memory persistence queries
 
 - Apex Design Philosophy
 - Apex Founding Principles
@@ -50,16 +53,15 @@ Passing:
 
 ## Current task
 
-PostgreSQL Repository
+Cloud Sync
 
 ## Next tasks
 
-1. PostgreSQL Repository
-2. Cloud Sync
-3. Offline Cache
-4. Event Analytics
-5. Memory Consolidation Engine
-6. Autonomous Learning Engine
+1. Cloud Sync
+2. Offline Cache
+3. Event Analytics
+4. Memory Consolidation Engine
+5. Autonomous Learning Engine
 
 ## Known issues
 

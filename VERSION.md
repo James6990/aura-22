@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.6.0-dev`
+`Apex Foundation 0.7.0-dev`
 
 ## Current branch
 
@@ -14,11 +14,11 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Decision Memory Event Replay Engine
+PostgreSQL Decision Memory Repository
 
 ## Current build target
 
-PostgreSQL Repository
+Cloud Sync
 
 ## Latest known test state
 
@@ -49,4 +49,4 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Persistent Decision Memory and event storage through a PostgreSQL repository.
+Cloud synchronisation for validated Decision Memory events and snapshots.

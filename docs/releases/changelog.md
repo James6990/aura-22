@@ -34,6 +34,9 @@
 - Decision Memory Event Replay Engine
 - Deterministic lifecycle reconstruction
 - Replay identity and ordering safeguards
+- PostgreSQL Decision Memory Repository
+- Versioned Decision Memory snapshot serialization
+- User-scoped lifecycle persistence
 
 - Apex Design Philosophy
 - Apex Founding Principles
@@ -51,4 +54,4 @@
 
 ### Next
 
-PostgreSQL Repository
+Cloud Sync

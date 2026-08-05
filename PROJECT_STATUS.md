@@ -49,10 +49,11 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 - Versioned Event Contracts
 - Runtime Event Validation
 - Event Replay Engine
+- PostgreSQL Decision Memory Repository
 
 ## Current build target
 
-PostgreSQL Repository
+Cloud Sync
 
 ## Agreed next development order
 

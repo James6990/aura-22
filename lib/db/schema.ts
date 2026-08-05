@@ -7,8 +7,12 @@ import {
   numeric,
   jsonb,
   unique,
+  index,
 } from "drizzle-orm/pg-core"
 import type { Exercise } from "@/lib/aura-data"
+import type {
+  SerializedDecisionMemorySnapshot,
+} from "@/lib/db/repositories/decision-memory-snapshot"
 
 // --- Better Auth required tables -------------------------------------------
 // Column names are camelCase to match Better Auth's defaults. Do not rename.
@@ -381,6 +385,84 @@ export const workoutExerciseResults = pgTable(
   },
 );
 
+
+
+// --- APEX DECISION MEMORY PERSISTENCE --------------------------------------
+
+// Complete, versioned Decision Memory snapshots for fast and reliable reads.
+// The immutable lifecycle history remains in `apex_events`.
+export const apexDecisionMemories = pgTable(
+  "apex_decision_memories",
+  {
+    id: text("id").primaryKey(),
+
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    decisionId: text("decisionId")
+      .notNull(),
+
+    status: text("status", {
+      enum: [
+        "awaiting-response",
+        "awaiting-outcome",
+        "ready-for-reflection",
+        "reflected",
+        "learning-created",
+        "closed",
+      ],
+    }).notNull(),
+
+    snapshot: jsonb("snapshot")
+      .$type<SerializedDecisionMemorySnapshot>()
+      .notNull(),
+
+    schemaVersion: integer("schemaVersion")
+      .notNull()
+      .default(1),
+
+    openedAt: timestamp("openedAt")
+      .notNull(),
+
+    lastUpdatedAt: timestamp("lastUpdatedAt")
+      .notNull(),
+
+    closedAt: timestamp("closedAt"),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique(
+      "apex_decision_memories_user_decision_unique",
+    ).on(
+      table.userId,
+      table.decisionId,
+    ),
+
+    index(
+      "apex_decision_memories_user_status_idx",
+    ).on(
+      table.userId,
+      table.status,
+    ),
+
+    index(
+      "apex_decision_memories_user_updated_idx",
+    ).on(
+      table.userId,
+      table.lastUpdatedAt,
+    ),
+  ],
+);
 
 // --- APEX MEMORY ENGINE -----------------------------------------------------
 

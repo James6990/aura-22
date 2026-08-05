@@ -27,3 +27,21 @@ Use a repository implementing the Decision Memory repository port.
 The likely first persistent model should retain searchable lifecycle fields while storing versioned nested snapshots safely.
 
 Persistence must follow event contracts and validation rather than bypassing the event layer.
+
+## Decision Memory persistence
+
+Apex now persists complete Decision Memory snapshots in `apex_decision_memories`.
+
+The table stores searchable lifecycle fields alongside a versioned JSONB snapshot containing:
+
+- decision record;
+- reasoning trace;
+- outcome;
+- reflection;
+- learning entries;
+- lifecycle timestamps;
+- schema version.
+
+Dates are serialized as ISO strings and explicitly restored by the domain mapper.
+
+The immutable lifecycle event history remains in `apex_events`. Snapshot storage supports complete, fast domain reads while event history supports validation, replay, audit, sync, and future analytics.
