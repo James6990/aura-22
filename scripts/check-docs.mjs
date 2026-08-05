@@ -5,6 +5,12 @@ import {
 
 const requiredFiles = [
   "PROJECT_STATUS.md",
+  "VERSION.md",
+  "docs/canon/design-philosophy.md",
+  "docs/canon/founding-principles.md",
+  "docs/canon/apex-values.md",
+  "docs/build-log/future-enhancements.md",
+  "docs/development/apex-startup-protocol.md",
   "docs/canon/apex-canon.md",
   "docs/canon/master-vision.md",
   "docs/canon/non-negotiables.md",

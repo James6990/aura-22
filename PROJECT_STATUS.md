@@ -67,6 +67,16 @@ PostgreSQL Repository
 9. Memory Consolidation Engine
 10. Autonomous Learning Engine
 
+## Permanent product direction
+
+- Improve health, lifestyle, confidence, fitness, and long-term wellbeing.
+- Make the journey enjoyable without manipulative engagement.
+- Treat recovery as progress.
+- Build accessibility from the beginning.
+- Make competition fair, supportive, and explainable.
+- Capture future ideas without derailing the current milestone.
+- Improve existing systems deliberately when evidence supports it.
+
 ## Important future product systems
 
 - Recovery Pause

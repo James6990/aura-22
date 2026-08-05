@@ -35,6 +35,13 @@
 - Deterministic lifecycle reconstruction
 - Replay identity and ordering safeguards
 
+- Apex Design Philosophy
+- Apex Founding Principles
+- Apex Values
+- Future Enhancements idea vault
+- Apex Startup Protocol
+- Foundation version reference
+
 ### Architecture
 
 - Event-driven direction adopted

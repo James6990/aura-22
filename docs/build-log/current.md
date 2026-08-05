@@ -33,6 +33,13 @@ Decision Memory and Event-Driven Intelligence Foundations
 - Lifecycle sequence validation
 - Duplicate and mixed-identity detection
 
+- Apex Design Philosophy
+- Apex Founding Principles
+- Apex Values
+- Future Enhancements idea vault
+- Apex Startup Protocol
+- Version reference
+
 ## Current test state
 
 Passing:

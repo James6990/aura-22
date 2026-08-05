@@ -36,3 +36,46 @@ A feature should be rejected, delayed, simplified, or relocated if it creates un
 - Major features should integrate with memory, evidence, learning, reasoning, and events.
 - Architecture should remain modular, testable, versioned, and maintainable.
 - Stable changes are tested before checkpointing and pushing.
+
+## Continuous improvement
+
+Apex is a living platform.
+
+As evidence, technology, and user needs evolve, the project may:
+
+- improve existing systems;
+- revisit earlier stages;
+- replace weak abstractions;
+- expand safety protections;
+- improve accessibility;
+- refine user experience;
+- update event contracts through versioned migration.
+
+Continuous improvement must remain deliberate.
+
+Before changing an established system:
+
+1. identify the problem;
+2. explain the proposed improvement;
+3. assess benefits and risks;
+4. consider compatibility and migration;
+5. test the change;
+6. update documentation;
+7. preserve auditability.
+
+Avoid unnecessary rewrites and trend-driven changes.
+
+## Idea-handling rule
+
+Every worthwhile idea receives one of these outcomes:
+
+- **Build Now**
+- **Future Enhancement**
+- **Research Required**
+- **Implemented**
+- **Rejected**, with the reason
+- **Superseded**, with the replacement
+
+Permanent principle:
+
+> Capture inspiration immediately. Implement it deliberately.

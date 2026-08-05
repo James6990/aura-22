@@ -91,3 +91,11 @@ The replay engine:
 - reports open and complete histories separately.
 
 The current events contain summary payloads rather than complete nested Decision Memory snapshots. Replay therefore reconstructs the reliable event-derived lifecycle state without inventing missing decision, outcome, reflection, or learning objects.
+
+## Product philosophy events
+
+Future events may record meaningful user-journey changes, but event collection must remain proportionate, purposeful, privacy-aware, and understandable.
+
+Apex must not turn compassionate coaching, recovery, community interaction, or accessibility needs into manipulative engagement metrics.
+
+Event analytics should measure whether the platform improves sustainable wellbeing, not merely how often users open the application.

@@ -35,3 +35,30 @@ Apex becomes a personalised performance operating system that can support:
 - community support;
 - fair healthy competition;
 - long-term decision memory and autonomous learning.
+
+## Definition of success
+
+Apex succeeds when it helps people build healthier, more confident, sustainable, and enjoyable lives.
+
+Success is not measured only through:
+
+- workouts completed;
+- weight lifted;
+- calories recorded;
+- time spent in the application;
+- streak length;
+- subscription revenue.
+
+Success also includes:
+
+- choosing appropriate recovery;
+- returning safely after interruption;
+- understanding a recommendation;
+- feeling supported rather than judged;
+- developing sustainable habits;
+- participating meaningfully with a disability or constraint;
+- helping another person;
+- enjoying the health journey;
+- building confidence and independence.
+
+Apex should seek engagement as a result of genuine value, trust, belonging, progress, and enjoyment—not manipulation.
