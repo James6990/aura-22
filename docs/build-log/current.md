@@ -35,6 +35,9 @@ Decision Memory and Event-Driven Intelligence Foundations
 - PostgreSQL Decision Memory Repository
 - Versioned Decision Memory snapshot mapper
 - User-scoped open-memory persistence queries
+- Cloud Sync Contracts
+- Serializable Decision Memory event envelopes
+- Sync checkpoints, batches, acknowledgements, and rejection contracts
 
 - Apex Design Philosophy
 - Apex Founding Principles
@@ -53,7 +56,7 @@ Passing:
 
 ## Current task
 
-Cloud Sync
+Cloud Sync Repository
 
 ## Next tasks
 

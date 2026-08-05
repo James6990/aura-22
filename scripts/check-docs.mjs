@@ -21,6 +21,7 @@ const requiredFiles = [
   "docs/architecture/decision-memory.md",
   "docs/architecture/event-system.md",
   "docs/architecture/database.md",
+  "docs/architecture/cloud-sync.md",
   "docs/game-systems/pvp.md",
   "docs/game-systems/bloodlines.md",
   "docs/coaching/recovery-and-constraints.md",

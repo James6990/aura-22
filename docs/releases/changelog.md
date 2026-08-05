@@ -37,6 +37,9 @@
 - PostgreSQL Decision Memory Repository
 - Versioned Decision Memory snapshot serialization
 - User-scoped lifecycle persistence
+- Cloud Sync Contracts
+- Serializable Decision Memory event envelopes
+- Sync checkpoint and acknowledgement contracts
 
 - Apex Design Philosophy
 - Apex Founding Principles
@@ -54,4 +57,4 @@
 
 ### Next
 
-Cloud Sync
+Cloud Sync Repository

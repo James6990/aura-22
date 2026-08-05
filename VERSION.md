@@ -14,11 +14,11 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-PostgreSQL Decision Memory Repository
+Cloud Sync Contracts
 
 ## Current build target
 
-Cloud Sync
+Cloud Sync Repository
 
 ## Latest known test state
 
