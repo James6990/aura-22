@@ -12,6 +12,7 @@ const requiredFiles = [
   "docs/build-log/future-enhancements.md",
   "docs/development/apex-startup-protocol.md",
   "docs/canon/apex-canon.md",
+  "docs/canon/apex-philosophy.md",
   "docs/canon/master-vision.md",
   "docs/canon/non-negotiables.md",
   "docs/canon/architecture-principles.md",

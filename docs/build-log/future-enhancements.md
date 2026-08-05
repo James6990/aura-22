@@ -502,3 +502,108 @@ recovery, discomfort, and the user's observed response.
 
 It must remain optional and must not pressure users to resume before they
 feel ready.
+
+# Lifestyle Companion Intelligence
+
+## Natural lifestyle conversation
+
+**Status:** Future Enhancement
+
+**Target stage:** Companion Intelligence / Innovation
+
+Enable thoughtful multi-turn conversations about:
+
+- lifestyle;
+- training;
+- recovery;
+- nutrition;
+- habits;
+- confidence;
+- motivation;
+- goals;
+- setbacks;
+- routines;
+- personal growth.
+
+Conversation memory must be consent-based, correctable, private, and honest
+about uncertainty. Apex must not pretend to be human or encourage emotional
+dependency.
+
+## Life Timeline
+
+**Status:** Research Required
+
+**Target stage:** Event Analytics / Memory Consolidation / Innovation
+
+Create an explainable long-term timeline connecting meaningful:
+
+- lifestyle changes;
+- training periods;
+- recovery phases;
+- decisions;
+- outcomes;
+- habits;
+- setbacks;
+- achievements;
+- community memories.
+
+The timeline should help users recognise real patterns without inventing
+causes or creating permanent labels.
+
+## Seasonal pattern preparation
+
+**Status:** Research Required
+
+**Target stage:** Long-Term Life Intelligence
+
+Explore whether Apex can identify recurring seasonal relationships involving
+sleep, workload, routines, recovery, mood, activity, or adherence.
+
+Apex may offer preparation when evidence is sufficient, but must distinguish
+correlation from cause and avoid presenting weak patterns as facts.
+
+## Lifestyle routine intelligence
+
+**Status:** Future Enhancement
+
+**Target stage:** Lifestyle Intelligence
+
+Help users build sustainable routines around:
+
+- sleep;
+- meals;
+- hydration;
+- movement;
+- recovery;
+- work;
+- family;
+- travel;
+- hobbies;
+- accessibility needs.
+
+Recommendations must remain flexible and avoid rigid or guilt-based
+optimisation.
+
+## Personal reflection and growth
+
+**Status:** Future Enhancement
+
+**Target stage:** Companion Intelligence
+
+Support structured reflection on goals, difficulties, decisions, confidence,
+lessons, and meaningful progress.
+
+Apex should help the user think clearly rather than dictate conclusions.
+
+## Proactive life planning
+
+**Status:** Research Required
+
+**Target stage:** Long-Term Life Intelligence
+
+Explore proactive, non-intrusive preparation for predictable challenges such
+as travel, busy work periods, seasonal disruption, equipment limitations, or
+returning after interruption.
+
+All proactive behaviour requires clear user controls and notification
+boundaries.

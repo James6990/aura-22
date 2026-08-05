@@ -23,3 +23,9 @@
 | Digital Twin | Innovation and Research | Requires validated models, uncertainty, and simulation safeguards |
 | Predictive Coaching | 5, 6, and Innovation | Must remain confidence-aware and explainable |
 | Production Readiness | 14 | Security, accessibility, performance, testing, and release operations |
+
+| Adaptive Coach Intelligence | 5, 6 and Innovation | Explainable coaching decisions built on reliable evidence, events, memory and learning |
+| Lifestyle Intelligence | 7, 13 and Innovation | Habits, sleep, nutrition, stress context, routines and sustainable daily planning |
+| Companion Intelligence | 5, 12, 13 and Innovation | Natural conversation, remembered context, reflection, goals and supportive communication |
+| Long-Term Life Intelligence | Event Analytics, Memory Consolidation and Innovation | Multi-month and multi-year pattern recognition with strong consent and uncertainty safeguards |
+| Life Timeline | Event Analytics and Innovation | Explainable long-term personal history and recurring-pattern insight |

@@ -114,6 +114,10 @@ const sections = [
     "docs/canon/apex-canon.md",
   ],
   [
+    "APEX PHILOSOPHY",
+    "docs/canon/apex-philosophy.md",
+  ],
+  [
     "FUTURE ENHANCEMENTS",
     "docs/build-log/future-enhancements.md",
   ],

@@ -76,3 +76,14 @@ Cloud Sync Service
 - Added permanent product pillars and the staged-development rule.
 - Captured Training DNA, Digital Twin, predictive coaching, memory graph,
   workout timeline, and adaptive-rest concepts for later stages.
+
+### Companion vision documentation
+
+- Added the Apex Philosophy North Star.
+- Defined Apex as an intelligent lifestyle companion.
+- Added future Adaptive Coach, Lifestyle, Companion, and Long-Term Life
+  Intelligence arcs.
+- Added durable efficient-milestone and Hard Save workflow rules.
+- Added future Life Timeline, seasonal-pattern, reflection, conversation, and
+  lifestyle-planning concepts.
+- Preserved Cloud Sync Service as the active implementation milestone.

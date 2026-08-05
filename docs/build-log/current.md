@@ -121,3 +121,24 @@ Cloud Sync Contracts and the Cloud Sync Repository remain completed.
 Cloud Sync Service is not cancelled or moved to a distant product stage.
 Work returns to it immediately after the focused workout lifecycle
 checkpoints are stable.
+
+## Product-identity clarification
+
+The Apex North Star has been expanded and documented.
+
+Apex is intended to become an intelligent lifestyle companion, not only a
+fitness coach.
+
+The following future intelligence arc has been captured without changing the
+active milestone:
+
+1. Adaptive Coach Intelligence
+2. Lifestyle Intelligence
+3. Companion Intelligence
+4. Long-Term Life Intelligence
+
+The current engineering task remains Cloud Sync Service.
+
+These ideas are documented now and implemented only when their foundations,
+evidence, safety controls, privacy boundaries, and roadmap dependencies are
+ready.

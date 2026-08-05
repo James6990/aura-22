@@ -304,3 +304,69 @@ These remain Innovation and Research work until Apex has sufficient:
 
 They must not be presented as established personal truth when evidence is
 limited.
+
+## Future companion-intelligence arc
+
+The following intelligence arc preserves Apex's long-term evolution without
+replacing or reordering the numbered implementation stages.
+
+### Adaptive Coach Intelligence
+
+Built after the required event, sync, analytics, memory-consolidation, and
+learning foundations are sufficiently reliable.
+
+Includes:
+
+- post-workout analysis;
+- fatigue and recovery interpretation;
+- progress, maintain, deload, and substitution decisions;
+- programme adaptation;
+- natural-language explanations;
+- Decision Memory and outcome integration.
+
+### Lifestyle Intelligence
+
+Extends personalisation across:
+
+- habits and routines;
+- sleep;
+- nutrition and hydration;
+- recovery and stress context;
+- schedule and time constraints;
+- sustainable daily planning.
+
+### Companion Intelligence
+
+Develops:
+
+- natural multi-turn conversation;
+- remembered discussions and preferences;
+- reflection;
+- goal planning;
+- supportive communication;
+- recognition of genuine progress;
+- non-judgemental setback support.
+
+### Long-Term Life Intelligence
+
+Explores:
+
+- patterns across months and years;
+- seasonal relationships;
+- recurring lifestyle challenges;
+- preparation before predictable disruption;
+- long-term balance across health, work, family, community, and interests.
+
+These capabilities are cross-stage product outcomes, not permission to skip
+the active roadmap sequence.
+
+They require strong:
+
+- longitudinal evidence;
+- privacy and consent;
+- user correction;
+- uncertainty communication;
+- contradiction handling;
+- accessibility;
+- safety boundaries;
+- auditability.

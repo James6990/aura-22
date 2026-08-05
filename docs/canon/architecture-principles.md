@@ -70,3 +70,47 @@ used as evidence only with appropriate context and confidence.
 
 Accessibility, discomfort, equipment availability, interruption, and
 recovery context must remain distinguishable wherever practical.
+
+## Lifestyle companion architecture
+
+Apex architecture must support the gradual evolution from fitness
+intelligence into safe, evidence-aware lifestyle companionship.
+
+Systems should be designed so that future intelligence can connect relevant
+domains without collapsing them into an unstructured model.
+
+Important domains include:
+
+- workouts;
+- recovery;
+- nutrition;
+- hydration;
+- sleep;
+- habits;
+- accessibility;
+- rehabilitation;
+- devices;
+- environment;
+- community;
+- goals;
+- conversations;
+- decisions and outcomes.
+
+Cross-domain intelligence must remain:
+
+- modular;
+- versioned;
+- event-driven where appropriate;
+- explainable;
+- confidence-aware;
+- consent-controlled;
+- correctable;
+- auditable;
+- capable of forgetting or retiring invalid learning.
+
+Apex must not introduce advanced companion behaviour before the required
+contracts, evidence, safety boundaries, and user controls exist.
+
+Permanent order:
+
+> Foundations → Features → Intelligence

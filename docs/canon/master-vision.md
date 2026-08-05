@@ -98,3 +98,24 @@ are ready.
 Permanent sequence:
 
 > Foundations → Features → Intelligence
+
+## Intelligent lifestyle companion
+
+Apex is more than a coach.
+
+It is intended to become an intelligent lifestyle companion that supports
+the whole person across fitness, nutrition, recovery, sleep, habits,
+accessibility, rehabilitation, confidence, routines, community, and
+long-term personal growth.
+
+The permanent North Star is:
+
+> Apex should help the user live better.
+
+Coaching remains a major capability, but it exists within the wider purpose
+of improving the user's health, wellbeing, resilience, independence, and
+quality of life.
+
+The complete companion philosophy is defined in:
+
+`docs/canon/apex-philosophy.md`

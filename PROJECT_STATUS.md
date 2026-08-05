@@ -52,6 +52,14 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 - PostgreSQL Decision Memory Repository
 - Cloud Sync Contracts
 - Cloud Sync Repository
+- Cloud Sync Service
+- Deterministic upload-batch preparation
+- Upload transport abstraction
+- Strict upload acknowledgement validation
+- Cursor-safe download orchestration
+- Per-device download ownership
+- Download application sink boundary
+- Checkpoint advancement only after successful application
 
 ## Current build target
 
@@ -158,3 +166,18 @@ For each capability:
 
 Never build a later-stage intelligence feature before its required data,
 contracts, and workflow are reliable.
+
+## Companion North Star
+
+Apex's enduring product identity has been clarified:
+
+> Apex is an intelligent lifestyle companion that helps the user live better.
+
+Adaptive Coach Intelligence remains an important future integration
+capability, but Apex's complete purpose includes lifestyle, wellbeing,
+habits, recovery, accessibility, confidence, community, conversation, and
+long-term personal growth.
+
+This vision does not change the active build order.
+
+The current build target remains Cloud Sync Service.

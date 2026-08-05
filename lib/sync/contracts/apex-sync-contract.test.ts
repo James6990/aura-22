@@ -74,6 +74,7 @@ const download:
     typeof envelope
   > = {
     userId: "user-1",
+    deviceId: "device-1",
     previousCursor: null,
     nextCursor: "cursor-1",
     envelopes: [

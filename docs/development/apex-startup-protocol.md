@@ -171,3 +171,71 @@ When that command is unavailable, read the authoritative continuity files:
     echo
     echo "=== STARTUP PROTOCOL ==="
     sed -n '1,720p' docs/development/apex-startup-protocol.md
+
+## North Star document
+
+Before making significant product or intelligence decisions, also read:
+
+`docs/canon/apex-philosophy.md`
+
+It defines Apex as an intelligent lifestyle companion whose permanent North
+Star is:
+
+> Apex should help the user live better.
+
+Coaching is a major Apex capability, but it must remain part of the broader
+mission to support health, wellbeing, confidence, resilience, accessibility,
+independence, sustainable habits, and long-term personal growth.
+
+## Efficient milestone workflow
+
+Use a complete focused-milestone workflow rather than scattered
+micro-changes:
+
+1. inspect the relevant contracts and architecture;
+2. build one coherent capability;
+3. run targeted verification during development;
+4. run the full checkpoint once the capability is complete;
+5. update continuity documentation together;
+6. review the final diff;
+7. commit and push;
+8. confirm the remote checkpoint.
+
+Development speed must not be gained by reducing safety, test quality,
+explainability, maintainability, or architectural discipline.
+
+## Hard Save protocol
+
+Perform a Hard Save after every major milestone and at the end of a
+development day when meaningful uncommitted work exists.
+
+A Hard Save includes:
+
+1. targeted milestone verification;
+2. full Apex verification;
+3. production build when relevant;
+4. documentation updates and checks;
+5. Git diff validation;
+6. a temporary local safety backup when the working tree is complex;
+7. a meaningful Git commit;
+8. a push to `apex-foundation-1.0`;
+9. confirmation that the remote branch contains the checkpoint;
+10. confirmation of the remaining local working-tree state.
+
+The repository and its documentation are Apex's durable memory.
+
+## Proactive improvement rule
+
+Useful improvements should be proposed early.
+
+For each improvement:
+
+- explain the problem and user value;
+- identify benefits, risks, cost, and compatibility;
+- decide whether it belongs now, later, in research, or should be rejected;
+- capture it immediately if it does not belong in the active milestone;
+- implement it deliberately at the correct stage.
+
+Permanent rule:
+
+> Propose improvements early. Adopt them deliberately. Never derail the active milestone.

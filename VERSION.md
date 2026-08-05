@@ -14,15 +14,15 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Cloud Sync Repository
+Cloud Sync Service
 
 ## Current build target
 
-Workout Lifecycle Stabilisation
+Offline Cache
 
-This is a focused interruption to stabilise workout timing, pause,
-exercise-resolution, completion, event, and AI-evidence contracts before
-Cloud Sync Service continues.
+Cloud Sync contracts, repository, upload orchestration, acknowledgement
+validation, cursor-safe downloads, application boundaries, and checkpoint
+advancement are complete.
 
 ## Latest known test state
 
@@ -53,8 +53,8 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Complete the focused workout lifecycle foundation, execution interface,
-and AI-evidence integration checkpoints.
+Build the Offline Cache foundation on top of the completed Cloud Sync Service.
 
-Then return directly to Cloud Sync Service for validated Decision Memory
-events and snapshots.
+The cache must preserve reliable local operation, deterministic replay,
+ownership boundaries, conflict visibility, and safe synchronization without
+silently inventing or overwriting evidence.

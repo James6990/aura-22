@@ -86,6 +86,7 @@ export type ApexSyncDownloadBatch<
     ApexSyncEnvelope,
 > = {
   userId: string;
+  deviceId: string;
 
   previousCursor:
     ApexSyncCursor;
