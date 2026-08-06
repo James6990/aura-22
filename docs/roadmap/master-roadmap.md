@@ -370,3 +370,26 @@ They require strong:
 - accessibility;
 - safety boundaries;
 - auditability.
+
+## Advanced AI foundation dependency gate
+
+The long-term AI dependency order is defined in:
+
+`docs/architecture/ai-evolution-roadmap.md`
+
+After Event Analytics History and Comparison, Trend Interpretation, and Memory
+Consolidation, the planned advanced foundations are:
+
+1. Goal Hierarchy Engine
+2. Trust Engine
+3. Personal World Model
+4. Curiosity Engine
+5. Identity and Coaching Relationship Model
+6. Life Graph
+7. Safety-gated Autonomous Learning Engine
+
+These additions do not replace or reorder the complete product roadmap.
+
+Recovery, accessibility, nutrition, workouts, Bloodlines, PvP, devices,
+community systems, and production readiness remain permanent product stages.
+

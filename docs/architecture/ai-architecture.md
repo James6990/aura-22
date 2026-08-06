@@ -55,3 +55,31 @@ How confident Apex is in the current recommendation.
 - Challenged learning cannot influence decisions.
 - Retired learning cannot influence decisions.
 - Contradictions must be detected before competing learning is used.
+
+## Planned advanced intelligence layers
+
+After Event Analytics History and Comparison, Trend Interpretation, and Memory
+Consolidation, Apex will expand through:
+
+1. Goal Hierarchy Engine
+2. Trust Engine
+3. Personal World Model
+4. Curiosity Engine
+5. Identity and Coaching Relationship Model
+6. Life Graph
+7. Safety-gated Autonomous Learning Engine
+
+Detailed responsibilities, dependencies, and safeguards are defined in:
+
+`docs/architecture/ai-evolution-roadmap.md`
+
+### Separation of responsibilities
+
+- Goal Hierarchy determines which user-owned objective should guide a decision.
+- Confidence describes certainty.
+- Trust determines whether the evidence justifies relying on that certainty.
+- Curiosity decides whether requesting more evidence is worthwhile.
+- The Identity Model adapts communication, never facts or safety standards.
+- The Life Graph connects evidence while preserving provenance and uncertainty.
+- Autonomous Learning may use only validated, trusted, and reversible learning.
+

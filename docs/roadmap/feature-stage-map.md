@@ -29,3 +29,11 @@
 | Companion Intelligence | 5, 12, 13 and Innovation | Natural conversation, remembered context, reflection, goals and supportive communication |
 | Long-Term Life Intelligence | Event Analytics, Memory Consolidation and Innovation | Multi-month and multi-year pattern recognition with strong consent and uncertainty safeguards |
 | Life Timeline | Event Analytics and Innovation | Explainable long-term personal history and recurring-pattern insight |
+
+| Goal Hierarchy Engine | 5, 6 and Advanced Coaching | Aligns immediate actions with long-term user-owned goals; safety outranks streaks and competition |
+| Trust Engine | 4, 6 and Advanced Coaching | Decides whether evidence and reasoning justify relying on a conclusion |
+| Personal World Model | 5, 13 and Lifestyle Intelligence | Consent-based model of schedules, routines, constraints and recurring context |
+| Curiosity Engine | 6 and Companion Intelligence | Selects the most valuable missing evidence while minimising interruption |
+| Identity and Coaching Relationship Model | 5, 12, 13 and Companion Intelligence | Adapts communication style without changing truth or safety |
+| Life Graph | Memory Consolidation, Knowledge Relationships and Innovation | Connects goals, context, decisions and outcomes with provenance |
+| Safety-gated Autonomous Learning Engine | 6 and Innovation | Requires trust, contradiction handling, rollback, auditability and user control |

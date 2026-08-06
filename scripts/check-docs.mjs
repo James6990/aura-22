@@ -19,6 +19,7 @@ const requiredFiles = [
   "docs/roadmap/master-roadmap.md",
   "docs/roadmap/feature-stage-map.md",
   "docs/architecture/ai-architecture.md",
+  "docs/architecture/ai-evolution-roadmap.md",
   "docs/architecture/decision-memory.md",
   "docs/architecture/event-system.md",
   "docs/architecture/database.md",

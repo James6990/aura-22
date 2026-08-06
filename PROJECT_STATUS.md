@@ -200,4 +200,25 @@ long-term personal growth.
 
 This vision does not change the active build order.
 
-The current build target is Offline Cache Synchronization Integration.
+The current build target is Event Analytics History and Comparison.
+
+## Approved future AI foundation expansion
+
+The long-term Apex AI foundation now permanently includes:
+
+- Goal Hierarchy Engine;
+- Trust Engine;
+- Personal World Model;
+- Curiosity Engine;
+- Identity and Coaching Relationship Model;
+- Life Graph;
+- safety-gated Autonomous Learning.
+
+The dependency order, responsibilities, and safeguards are defined in:
+
+`docs/architecture/ai-evolution-roadmap.md`
+
+These additions do not change the active build target. Development continues
+with Event Analytics History and Comparison, followed by Trend Interpretation
+and Memory Consolidation.
+
