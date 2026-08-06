@@ -62,8 +62,8 @@ Passing:
 
 Offline Cache Synchronization Integration
 
-The Offline Cache foundation and synchronization-pipeline checkpoint are
-complete and verified.
+The Offline Cache foundation, synchronization pipeline, conflict mapping, and
+safe retry boundaries are complete and verified.
 
 Completed work:
 
@@ -75,6 +75,7 @@ Completed work:
 - idempotent persistence;
 - platform-neutral storage port;
 - explicit conflict details;
+- backward-compatible retryability metadata;
 - validated lifecycle transitions;
 - storage-adapter response safeguards;
 - canonical Decision Memory sync-envelope factory;
@@ -84,20 +85,23 @@ Completed work:
 - Decision Memory sync-staging event-sink adapter;
 - deterministic remote-envelope cache application sink;
 - application before Cloud Sync download checkpoint advancement;
-- dedicated synchronization tests;
+- canonical sync-rejection to cache-resolution mapping;
+- acknowledgement reconciliation for accepted, conflicted, and invalid entries;
+- idempotent reconciliation;
+- safe continuation after partial reconciliation failure;
+- dedicated synchronization and retry tests;
 - expanded `apex:offline-cache:quick` verification;
 - documented Chat ↔ Termux development workflow.
 
-The next focused checkpoint adds conflict mapping and safe retry boundaries
-without duplicating the existing Cloud Sync outbox or checkpoint lifecycle.
+The next focused checkpoint plans shared IndexedDB and SQLite adapter
+responsibilities without weakening the platform-neutral repository boundary.
 
 ## Next tasks
 
-1. Conflict mapping and safe retry boundaries
-2. Platform adapter planning for IndexedDB and SQLite
-3. Event Analytics
-4. Memory Consolidation Engine
-5. Autonomous Learning Engine
+1. Platform adapter planning for IndexedDB and SQLite
+2. Event Analytics
+3. Memory Consolidation Engine
+4. Autonomous Learning Engine
 
 ## Known issues
 

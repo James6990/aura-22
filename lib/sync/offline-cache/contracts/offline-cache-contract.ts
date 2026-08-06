@@ -35,6 +35,9 @@ export type OfflineCacheConflict = {
 
   relatedEnvelopeId:
     string | null;
+
+  retryable?:
+    boolean;
 };
 
 export type OfflineCacheEntry<
@@ -187,6 +190,17 @@ function validateConflict(
     requireIdentifier(
       conflict.relatedEnvelopeId,
       "Offline Cache conflict related envelope id",
+    );
+  }
+
+  if (
+    conflict.retryable !==
+      undefined &&
+    typeof conflict.retryable !==
+      "boolean"
+  ) {
+    throw new Error(
+      "Offline Cache conflict retryable must be a boolean when provided.",
     );
   }
 }

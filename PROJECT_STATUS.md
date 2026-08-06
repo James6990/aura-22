@@ -65,8 +65,8 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 Offline Cache Synchronization Integration
 
-The Offline Cache foundation and first synchronization integration checkpoint
-are complete.
+The Offline Cache foundation, synchronization integration, conflict mapping,
+and safe retry boundaries are complete.
 
 Completed capabilities include:
 
@@ -78,6 +78,7 @@ Completed capabilities include:
 - idempotent repository saves;
 - platform-neutral storage boundaries;
 - explicit conflict details;
+- backward-compatible retryability metadata;
 - validated lifecycle transitions;
 - protection against invalid storage-adapter responses;
 - canonical Decision Memory sync-envelope creation;
@@ -86,10 +87,14 @@ Completed capabilities include:
 - sync-aware Decision Memory event-sink composition;
 - deterministic remote-envelope cache application;
 - download checkpoint advancement only after successful application;
-- dedicated Offline Cache synchronization verification.
+- canonical synchronization-rejection mapping;
+- acknowledgement reconciliation for accepted and rejected envelopes;
+- idempotent reconciliation;
+- safe continuation after partial reconciliation failure;
+- dedicated Offline Cache synchronization and retry verification.
 
-The next checkpoint adds conflict mapping and safe retry boundaries without
-introducing a second outbox, checkpoint model, or source of truth.
+The next checkpoint plans shared IndexedDB and SQLite adapter boundaries while
+preserving the platform-neutral repository and service architecture.
 
 ## Agreed next development order
 

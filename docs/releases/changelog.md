@@ -89,6 +89,39 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Offline Cache Conflict Resolution and Retry Foundation
+
+### Added
+
+- Canonical synchronization-rejection to Offline Cache resolution mapping.
+- Applied, conflicted, and invalid acknowledgement reconciliation.
+- Backward-compatible retryability metadata on Offline Cache conflicts.
+- Idempotent acknowledgement reconciliation.
+- Focused partial-failure and safe-retry verification.
+
+### Architecture
+
+- Keeps Offline Cache reconciliation separate from Cloud Sync acknowledgement
+  persistence.
+- Allows reconciliation to be retried independently after a partial failure.
+- Avoids introducing distributed transaction assumptions between repositories.
+- Preserves accepted lifecycle transitions already completed during a retry.
+- Distinguishes invalid envelopes from retryable and non-retryable conflicts.
+- Maps duplicate divergence into an explicit remote-divergence conflict.
+
+### Verification
+
+- Offline Cache conflict-mapping tests passing.
+- Offline Cache acknowledgement-reconciliation tests passing.
+- Partial reconciliation retry-boundary tests passing.
+- Full focused Offline Cache verification passing.
+- TypeScript typecheck passing.
+- Git diff check passing.
+
+### Next
+
+Platform adapter planning for IndexedDB and SQLite.
+
 ## Offline Cache Synchronization Pipeline Foundation
 
 ### Added
