@@ -88,6 +88,44 @@ Cloud Sync Service
   lifestyle-planning concepts.
 - Preserved Cloud Sync Service as the active implementation milestone.
 
+
+## Offline Cache Synchronization Pipeline Foundation
+
+### Added
+
+- Canonical Decision Memory sync-envelope factory.
+- Local Envelope Staging Service.
+- Decision Memory sync-staging event-sink adapter.
+- Deterministic remote-envelope Offline Cache application sink.
+- Focused tests for envelope creation, local staging, event-sink composition,
+  and remote cache application.
+- Chat ↔ Termux workflow guidance in the Developer Handbook.
+
+### Architecture
+
+- Persists local envelopes in the Offline Cache before enqueueing them through
+  the existing Cloud Sync repository.
+- Reuses the existing Cloud Sync outbox rather than creating another queue.
+- Keeps device identity and sequence allocation outside the domain publisher.
+- Applies downloaded envelopes before advancing the Cloud Sync checkpoint.
+- Uses deterministic cache ordering for remote envelopes.
+- Preserves platform-neutral service and repository boundaries.
+
+### Verification
+
+- Offline Cache contract tests passing.
+- Offline Cache repository tests passing.
+- Local Envelope Staging Service tests passing.
+- Decision Memory sync-envelope tests passing.
+- Decision Memory sync-staging sink tests passing.
+- Remote-envelope cache application tests passing.
+- TypeScript typecheck passing.
+- Git diff check passing.
+
+### Next
+
+Conflict mapping and safe retry boundaries.
+
 ## Offline Cache Foundation
 
 ### Added

@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.7.1-dev`
+`Apex Foundation 0.7.2-dev`
 
 ## Current branch
 
@@ -14,19 +14,27 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Offline Cache Foundation
+Offline Cache Synchronization Pipeline Foundation
 
 ## Current build target
 
 Offline Cache Synchronization Integration
 
-Versioned Offline Cache contracts, runtime validation, deterministic ordering,
-conflict visibility, lifecycle transitions, idempotent persistence, and the
-platform-neutral repository boundary are complete.
+The Offline Cache foundation is now connected to the existing Cloud Sync
+architecture through verified outbound and inbound synchronization paths.
 
-The next checkpoint connects this cache foundation to the existing Cloud Sync
-services without creating a second outbox, competing checkpoint model, or
-alternative source of truth.
+Completed integration includes:
+
+- canonical Decision Memory sync-envelope creation;
+- local envelope staging before Cloud Sync enqueue;
+- reuse of the existing Cloud Sync outbox;
+- sync-aware Decision Memory event-sink composition;
+- deterministic remote-envelope cache application;
+- checkpoint advancement only after successful application;
+- platform-neutral repository and service boundaries.
+
+The next checkpoint adds explicit conflict mapping and safe retry boundaries
+without introducing another queue, checkpoint model, or source of truth.
 
 ## Latest known test state
 
@@ -57,14 +65,14 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Build Offline Cache synchronization integration on top of the completed cache
-foundation and Cloud Sync Service.
+Build Offline Cache conflict mapping and safe retry boundaries on top of the
+verified synchronization pipeline.
 
-The integration must:
+The next checkpoint must:
 
-- stage valid local sync envelopes safely;
-- apply remote envelopes deterministically;
+- map repository and synchronization failures to explicit cache conflicts;
+- preserve retryable evidence without advancing download checkpoints;
+- distinguish invalid data from retryable conflicts;
 - preserve per-user and per-device ownership;
-- expose conflicts rather than silently overwriting evidence;
-- reuse the existing Cloud Sync outbox and checkpoint lifecycle;
+- avoid silently overwriting divergent evidence;
 - remain independent of any specific IndexedDB or SQLite adapter.

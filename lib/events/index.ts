@@ -5,3 +5,5 @@ export * from "./contracts";
 export * from "./validation";
 export * from "./create-validating-decision-memory-event-sink";
 export * from "./replay";
+
+export * from "./create-sync-staging-decision-memory-event-sink";

@@ -65,7 +65,8 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 Offline Cache Synchronization Integration
 
-The first Offline Cache foundation checkpoint is complete.
+The Offline Cache foundation and first synchronization integration checkpoint
+are complete.
 
 Completed capabilities include:
 
@@ -79,10 +80,16 @@ Completed capabilities include:
 - explicit conflict details;
 - validated lifecycle transitions;
 - protection against invalid storage-adapter responses;
-- dedicated Offline Cache verification commands.
+- canonical Decision Memory sync-envelope creation;
+- local cache staging before Cloud Sync enqueue;
+- reuse of the existing Cloud Sync outbox;
+- sync-aware Decision Memory event-sink composition;
+- deterministic remote-envelope cache application;
+- download checkpoint advancement only after successful application;
+- dedicated Offline Cache synchronization verification.
 
-The next checkpoint connects the cache foundation to the existing Cloud Sync
-services without introducing a second outbox or checkpoint model.
+The next checkpoint adds conflict mapping and safe retry boundaries without
+introducing a second outbox, checkpoint model, or source of truth.
 
 ## Agreed next development order
 

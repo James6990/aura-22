@@ -62,9 +62,10 @@ Passing:
 
 Offline Cache Synchronization Integration
 
-The first Offline Cache foundation checkpoint is complete and verified.
+The Offline Cache foundation and synchronization-pipeline checkpoint are
+complete and verified.
 
-Completed foundation work:
+Completed work:
 
 - versioned cache-entry contracts;
 - local and remote origin tracking;
@@ -76,23 +77,27 @@ Completed foundation work:
 - explicit conflict details;
 - validated lifecycle transitions;
 - storage-adapter response safeguards;
-- dedicated contract and repository tests;
-- `apex:offline-cache:quick` and `apex:offline-cache` commands.
+- canonical Decision Memory sync-envelope factory;
+- Local Envelope Staging Service;
+- Offline Cache persistence before Cloud Sync enqueue;
+- reuse of the existing Cloud Sync outbox;
+- Decision Memory sync-staging event-sink adapter;
+- deterministic remote-envelope cache application sink;
+- application before Cloud Sync download checkpoint advancement;
+- dedicated synchronization tests;
+- expanded `apex:offline-cache:quick` verification;
+- documented Chat ↔ Termux development workflow.
 
-The next focused checkpoint connects this foundation to the existing Cloud
-Sync upload and download services without duplicating their outbox or
-checkpoint lifecycle.
+The next focused checkpoint adds conflict mapping and safe retry boundaries
+without duplicating the existing Cloud Sync outbox or checkpoint lifecycle.
 
 ## Next tasks
 
-1. Local-envelope staging into the Offline Cache
-2. Deterministic remote-envelope cache application
-3. Cache-to-Cloud-Sync repository integration
-4. Conflict mapping and safe retry boundaries
-5. Platform adapter planning for IndexedDB and SQLite
-6. Event Analytics
-7. Memory Consolidation Engine
-8. Autonomous Learning Engine
+1. Conflict mapping and safe retry boundaries
+2. Platform adapter planning for IndexedDB and SQLite
+3. Event Analytics
+4. Memory Consolidation Engine
+5. Autonomous Learning Engine
 
 ## Known issues
 
