@@ -65,28 +65,32 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 Offline Cache Synchronization Integration
 
-The Offline Cache foundation, synchronization integration, conflict handling,
-migration framework, and first concrete platform adapter are complete.
+The Offline Cache foundation is complete across browser, PWA, Android, and iOS
+storage environments.
 
 Completed capabilities include:
 
-- all previously completed Offline Cache contracts, repositories, services,
+- all Offline Cache contracts, repositories, synchronization services,
   conflict handling, retry boundaries, and migrations;
 - the platform-neutral `OfflineCacheStorage` contract;
 - reusable storage-adapter conformance testing;
-- deliberate selection of `idb` for the browser and PWA adapter;
-- an IndexedDB database, entry store, and compound indexes;
-- row serialization and defensive deserialization;
+- the `idb`-based IndexedDB adapter;
+- the Capacitor 7-compatible SQLite adapter;
+- IndexedDB object-store and compound-index initialization;
+- SQLite table and compound-index initialization;
+- defensive serialization and deserialization for both platforms;
 - identity lookup, inserts, updates, highest-sequence lookup, and scoped lists;
 - duplicate-key and missing-update safeguards;
+- parameterized SQLite SQL;
 - user and source-device isolation;
 - deterministic global ordering before result limiting;
 - defensive-copy verification;
-- focused IndexedDB database and operation tests;
-- full shared conformance verification against the real IndexedDB adapter.
+- focused database and operation tests for both adapters;
+- full shared conformance verification against IndexedDB and SQLite;
+- platform-neutral migration planning, execution, and version coordination.
 
-The next checkpoint prepares the native SQLite adapter using the same storage,
-migration, and conformance foundations.
+The next checkpoint is Cross-Platform Offline Cache Stabilisation before Event
+Analytics begins.
 
 The next checkpoint implements the first real platform adapter without changing
 the existing repository, synchronization, or domain contracts.

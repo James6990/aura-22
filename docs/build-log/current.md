@@ -62,35 +62,37 @@ Passing:
 
 Offline Cache Synchronization Integration
 
-The IndexedDB Offline Cache adapter is complete and verified.
+The cross-platform Offline Cache persistence foundation is complete and
+verified.
 
 Completed work now includes:
 
-- all previously completed Offline Cache foundations;
-- deliberate selection of `idb` for browser and PWA persistence;
-- `fake-indexeddb` for automated adapter verification;
+- all previously completed Offline Cache contracts, repositories, services,
+  synchronization, conflict, retry, and migration systems;
+- the `idb`-based IndexedDB browser and PWA adapter;
+- the Capacitor 7-compatible SQLite native adapter;
+- deliberate dependency selection and version compatibility checks;
 - IndexedDB database creation and deletion boundaries;
-- an Offline Cache object store keyed by entry id;
-- compound ownership/sequence and ownership/status/sequence indexes;
-- IndexedDB row mapping with defensive cloning;
-- `getById`;
-- atomic `insert`;
-- protected `update`;
-- `getHighestSequence`;
-- ownership- and status-scoped `list`;
-- deterministic ordering across all selected statuses;
-- global limit application after ordering;
-- duplicate-key and missing-update verification;
-- user and device isolation;
-- the full shared storage-conformance suite passing against IndexedDB;
+- SQLite connection-provider and database initialization boundaries;
+- IndexedDB object-store and SQLite table creation;
+- ownership/sequence and ownership/status/sequence indexes on both platforms;
+- defensive IndexedDB and SQLite row mapping;
+- `getById`, `insert`, `update`, `getHighestSequence`, and `list` on both
+  adapters;
+- parameterized SQLite SQL;
+- duplicate-key and missing-update protection;
+- deterministic ordering across selected statuses;
+- global result limiting after ordering;
+- user and source-device isolation;
+- defensive-copy guarantees;
+- shared storage-conformance verification for IndexedDB and SQLite;
 - expanded focused Offline Cache verification.
 
-The next focused checkpoint prepares and implements the native SQLite adapter
-against the same storage, migration, and conformance foundations.
+The next focused checkpoint is Cross-Platform Offline Cache Stabilisation.
 
 ## Next tasks
 
-1. Native SQLite Offline Cache adapter
+1. Cross-Platform Offline Cache Stabilisation
 2. Event Analytics
 3. Memory Consolidation Engine
 4. Autonomous Learning Engine

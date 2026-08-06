@@ -89,6 +89,51 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Native SQLite Offline Cache Adapter
+
+### Added
+
+- `@capacitor-community/sqlite@7.0.3` for Capacitor 7 native persistence.
+- Injectable SQLite connection-provider boundary.
+- Production Capacitor SQLite connection provider.
+- Native Offline Cache database and schema initialization.
+- SQLite Offline Cache table and compound indexes.
+- SQLite row serialization, JSON parsing, and validation.
+- SQLite implementations of all `OfflineCacheStorage` operations.
+- Focused database, read, write, sequence, list, and conformance tests.
+
+### Architecture
+
+- Keeps Capacitor SQLite APIs behind `OfflineCacheStorage`.
+- Uses a dedicated `offline_cache_entries` table.
+- Uses parameterized SQL for reads and writes.
+- Preserves user and source-device ownership isolation.
+- Enforces deterministic ordering before result limiting.
+- Returns defensive copies of persisted evidence.
+- Propagates duplicate constraints and storage failures.
+- Closes failed database initialization safely.
+- Leaves domain, event, synchronization, repository, and service contracts
+  unchanged.
+- Uses the same storage-conformance suite as IndexedDB.
+
+### Verification
+
+- SQLite database initialization tests passing.
+- SQLite `getById` tests passing.
+- SQLite insert and update tests passing.
+- SQLite sequence tests passing.
+- SQLite list and ordering tests passing.
+- Shared Offline Cache storage-conformance suite passing against SQLite.
+- Focused Offline Cache verification passing.
+- Full Apex checkpoint passing.
+- TypeScript typecheck passing.
+- Documentation check passing.
+- Git diff check passing.
+
+### Next
+
+Cross-Platform Offline Cache Stabilisation.
+
 ## IndexedDB Offline Cache Adapter
 
 ### Added
