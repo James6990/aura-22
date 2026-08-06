@@ -1,6 +1,9 @@
 import {
   createDecisionMemoryEventAnalyticsSnapshot,
   createEmptyDecisionMemoryEventTypeCounts,
+  decisionMemoryEventAnalyticsAlgorithm,
+  decisionMemoryEventAnalyticsAlgorithmVersion,
+  decisionMemoryEventAnalyticsReplayEngine,
   eventAnalyticsSchemaVersion,
   type DecisionMemoryEventAnalyticsSnapshot,
   type EventAnalyticsTimeWindow,
@@ -152,6 +155,21 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
     DecisionMemoryDomainEvent[] =
       [];
 
+  const excludedEvents: {
+    eventId:
+      string;
+
+    eventIndex:
+      number;
+
+    reason:
+      "different-user" |
+      "outside-window";
+
+    message:
+      string;
+  }[] = [];
+
   for (
     let index = 0;
     index < events.length;
@@ -172,6 +190,21 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
       result.event.userId !==
       resolvedUserId
     ) {
+      excludedEvents.push({
+        eventId:
+          result.event.payload
+            .eventId,
+
+        eventIndex:
+          index,
+
+        reason:
+          "different-user",
+
+        message:
+          `Event belongs to user "${result.event.userId}" rather than analytics owner "${resolvedUserId}".`,
+      });
+
       continue;
     }
 
@@ -185,6 +218,21 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
       occurredAt >
         endAt.getTime()
     ) {
+      excludedEvents.push({
+        eventId:
+          result.event.payload
+            .eventId,
+
+        eventIndex:
+          index,
+
+        reason:
+          "outside-window",
+
+        message:
+          `Event occurred at "${result.event.occurredAt.toISOString()}" outside the analytics window.`,
+      });
+
       continue;
     }
 
@@ -313,10 +361,28 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
   let invalidLifecycleCount =
     0;
 
+  const replayedMemoryIds:
+    string[] = [];
+
+  const completedMemoryIds:
+    string[] = [];
+
+  const incompleteMemoryIds:
+    string[] = [];
+
+  const invalidMemoryIds:
+    string[] = [];
+
   for (
-    const memoryEvents of
-    eventsByMemory.values()
+    const [
+      memoryId,
+      memoryEvents,
+    ] of
+    eventsByMemory.entries()
   ) {
+    replayedMemoryIds.push(
+      memoryId,
+    );
     const replay =
       replayDecisionMemoryEvents(
         memoryEvents,
@@ -326,6 +392,10 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
       invalidLifecycleCount +=
         1;
 
+      invalidMemoryIds.push(
+        memoryId,
+      );
+
       continue;
     }
 
@@ -334,9 +404,17 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
     ) {
       completedCount +=
         1;
+
+      completedMemoryIds.push(
+        memoryId,
+      );
     } else {
       incompleteCount +=
         1;
+
+      incompleteMemoryIds.push(
+        memoryId,
+      );
     }
   }
 
@@ -436,6 +514,58 @@ export function buildDecisionMemoryEventAnalyticsSnapshot({
       insufficientCount,
 
       requiresMoreEvidenceCount,
+    },
+
+    provenance: {
+      algorithm:
+        decisionMemoryEventAnalyticsAlgorithm,
+
+      algorithmVersion:
+        decisionMemoryEventAnalyticsAlgorithmVersion,
+
+      replayEngine:
+        decisionMemoryEventAnalyticsReplayEngine,
+
+      producedAt:
+        new Date(
+          generatedAt,
+        ).toISOString(),
+
+      inputEventCount:
+        events.length,
+
+      includedEventCount:
+        orderedEvents.length,
+
+      excludedEventCount:
+        excludedEvents.length,
+
+      excludedEvents:
+        excludedEvents
+          .sort(
+            (
+              first,
+              second,
+            ) =>
+              first.eventIndex -
+              second.eventIndex,
+          ),
+
+      replayedMemoryIds:
+        replayedMemoryIds
+          .sort(),
+
+      completedMemoryIds:
+        completedMemoryIds
+          .sort(),
+
+      incompleteMemoryIds:
+        incompleteMemoryIds
+          .sort(),
+
+      invalidMemoryIds:
+        invalidMemoryIds
+          .sort(),
     },
 
     sourceEventIds:

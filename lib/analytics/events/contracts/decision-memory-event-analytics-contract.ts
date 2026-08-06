@@ -6,6 +6,15 @@ import {
 export const eventAnalyticsSchemaVersion =
   1 as const;
 
+export const decisionMemoryEventAnalyticsAlgorithm =
+  "decision-memory-event-analytics" as const;
+
+export const decisionMemoryEventAnalyticsAlgorithmVersion =
+  1 as const;
+
+export const decisionMemoryEventAnalyticsReplayEngine =
+  "replay-decision-memory-events" as const;
+
 export type EventAnalyticsTimeWindow = {
   startAt:
     string;
@@ -59,6 +68,62 @@ export type DecisionMemoryLifecycleSummary = {
     number;
 };
 
+export type EventAnalyticsExclusionReason =
+  | "different-user"
+  | "outside-window";
+
+export type EventAnalyticsExcludedEvent = {
+  eventId:
+    string;
+
+  eventIndex:
+    number;
+
+  reason:
+    EventAnalyticsExclusionReason;
+
+  message:
+    string;
+};
+
+export type DecisionMemoryEventAnalyticsProvenance = {
+  algorithm:
+    typeof decisionMemoryEventAnalyticsAlgorithm;
+
+  algorithmVersion:
+    typeof decisionMemoryEventAnalyticsAlgorithmVersion;
+
+  replayEngine:
+    typeof decisionMemoryEventAnalyticsReplayEngine;
+
+  producedAt:
+    string;
+
+  inputEventCount:
+    number;
+
+  includedEventCount:
+    number;
+
+  excludedEventCount:
+    number;
+
+  excludedEvents:
+    EventAnalyticsExcludedEvent[];
+
+  replayedMemoryIds:
+    string[];
+
+  completedMemoryIds:
+    string[];
+
+  incompleteMemoryIds:
+    string[];
+
+  invalidMemoryIds:
+    string[];
+};
+
 export type DecisionMemoryEventAnalyticsSnapshot = {
   id:
     string;
@@ -95,6 +160,9 @@ export type DecisionMemoryEventAnalyticsSnapshot = {
 
   evidence:
     DecisionMemoryEvidenceSummary;
+
+  provenance:
+    DecisionMemoryEventAnalyticsProvenance;
 
   sourceEventIds:
     string[];
@@ -422,6 +490,190 @@ export function validateDecisionMemoryEventAnalyticsSnapshot(
       .requiresMoreEvidenceCount,
     "Event Analytics requires-more-evidence count",
   );
+
+  if (
+    snapshot.provenance.algorithm !==
+    decisionMemoryEventAnalyticsAlgorithm
+  ) {
+    throw new Error(
+      "Event Analytics provenance uses an unsupported algorithm.",
+    );
+  }
+
+  if (
+    snapshot.provenance.algorithmVersion !==
+    decisionMemoryEventAnalyticsAlgorithmVersion
+  ) {
+    throw new Error(
+      "Event Analytics provenance uses an unsupported algorithm version.",
+    );
+  }
+
+  if (
+    snapshot.provenance.replayEngine !==
+    decisionMemoryEventAnalyticsReplayEngine
+  ) {
+    throw new Error(
+      "Event Analytics provenance uses an unsupported replay engine.",
+    );
+  }
+
+  requireIsoDate(
+    snapshot.provenance.producedAt,
+    "Event Analytics provenance producedAt",
+  );
+
+  requireNonNegativeInteger(
+    snapshot.provenance.inputEventCount,
+    "Event Analytics provenance input event count",
+  );
+
+  requireNonNegativeInteger(
+    snapshot.provenance.includedEventCount,
+    "Event Analytics provenance included event count",
+  );
+
+  requireNonNegativeInteger(
+    snapshot.provenance.excludedEventCount,
+    "Event Analytics provenance excluded event count",
+  );
+
+  if (
+    snapshot.provenance.includedEventCount +
+      snapshot.provenance.excludedEventCount !==
+    snapshot.provenance.inputEventCount
+  ) {
+    throw new Error(
+      "Event Analytics provenance input count must equal included and excluded counts.",
+    );
+  }
+
+  if (
+    snapshot.provenance.includedEventCount !==
+    snapshot.totalEventCount
+  ) {
+    throw new Error(
+      "Event Analytics provenance included count must equal the total event count.",
+    );
+  }
+
+  if (
+    snapshot.provenance.excludedEventCount !==
+    snapshot.provenance.excludedEvents.length
+  ) {
+    throw new Error(
+      "Event Analytics provenance excluded count must match exclusion records.",
+    );
+  }
+
+  const excludedIndexes =
+    new Set<number>();
+
+  for (
+    const exclusion of
+    snapshot.provenance.excludedEvents
+  ) {
+    requireIdentifier(
+      exclusion.eventId,
+      "Event Analytics excluded event id",
+    );
+
+    requireNonNegativeInteger(
+      exclusion.eventIndex,
+      "Event Analytics excluded event index",
+    );
+
+    if (
+      excludedIndexes.has(
+        exclusion.eventIndex,
+      )
+    ) {
+      throw new Error(
+        "Event Analytics exclusion indexes must be unique.",
+      );
+    }
+
+    excludedIndexes.add(
+      exclusion.eventIndex,
+    );
+
+    if (
+      exclusion.reason !==
+        "different-user" &&
+      exclusion.reason !==
+        "outside-window"
+    ) {
+      throw new Error(
+        "Event Analytics exclusion reason is unsupported.",
+      );
+    }
+
+    requireIdentifier(
+      exclusion.message,
+      "Event Analytics exclusion message",
+    );
+  }
+
+  validateUniqueIdentifiers(
+    snapshot.provenance.replayedMemoryIds,
+    "Event Analytics replayed memory id",
+  );
+
+  validateUniqueIdentifiers(
+    snapshot.provenance.completedMemoryIds,
+    "Event Analytics completed memory id",
+  );
+
+  validateUniqueIdentifiers(
+    snapshot.provenance.incompleteMemoryIds,
+    "Event Analytics incomplete memory id",
+  );
+
+  validateUniqueIdentifiers(
+    snapshot.provenance.invalidMemoryIds,
+    "Event Analytics invalid memory id",
+  );
+
+  const classifiedMemoryIds = [
+    ...snapshot.provenance.completedMemoryIds,
+    ...snapshot.provenance.incompleteMemoryIds,
+    ...snapshot.provenance.invalidMemoryIds,
+  ];
+
+  if (
+    new Set(
+      classifiedMemoryIds,
+    ).size !==
+    classifiedMemoryIds.length
+  ) {
+    throw new Error(
+      "Event Analytics provenance memory classifications must not overlap.",
+    );
+  }
+
+  if (
+    snapshot.provenance.replayedMemoryIds.length !==
+    classifiedMemoryIds.length
+  ) {
+    throw new Error(
+      "Event Analytics replayed memories must match lifecycle classifications.",
+    );
+  }
+
+  for (
+    const memoryId of
+    classifiedMemoryIds
+  ) {
+    if (
+      !snapshot.provenance.replayedMemoryIds.includes(
+        memoryId,
+      )
+    ) {
+      throw new Error(
+        "Event Analytics lifecycle classification contains an unreplayed memory.",
+      );
+    }
+  }
 
   validateUniqueIdentifiers(
     snapshot.sourceEventIds,

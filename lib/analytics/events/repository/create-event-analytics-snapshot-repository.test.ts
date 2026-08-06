@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 
 import {
   createEmptyDecisionMemoryEventTypeCounts,
+  decisionMemoryEventAnalyticsAlgorithm,
+  decisionMemoryEventAnalyticsAlgorithmVersion,
+  decisionMemoryEventAnalyticsReplayEngine,
   eventAnalyticsSchemaVersion,
   type DecisionMemoryEventAnalyticsSnapshot,
 } from "@/lib/analytics/events/contracts";
@@ -88,6 +91,44 @@ function createSnapshot({
 
       requiresMoreEvidenceCount:
         0,
+    },
+
+    provenance: {
+      algorithm:
+        decisionMemoryEventAnalyticsAlgorithm,
+
+      algorithmVersion:
+        decisionMemoryEventAnalyticsAlgorithmVersion,
+
+      replayEngine:
+        decisionMemoryEventAnalyticsReplayEngine,
+
+      producedAt:
+        generatedAt,
+
+      inputEventCount:
+        0,
+
+      includedEventCount:
+        0,
+
+      excludedEventCount:
+        0,
+
+      excludedEvents:
+        [],
+
+      replayedMemoryIds:
+        [],
+
+      completedMemoryIds:
+        [],
+
+      incompleteMemoryIds:
+        [],
+
+      invalidMemoryIds:
+        [],
     },
 
     sourceEventIds:

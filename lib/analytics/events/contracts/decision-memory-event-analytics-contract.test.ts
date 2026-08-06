@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import {
   createDecisionMemoryEventAnalyticsSnapshot,
   createEmptyDecisionMemoryEventTypeCounts,
+  decisionMemoryEventAnalyticsAlgorithm,
+  decisionMemoryEventAnalyticsAlgorithmVersion,
+  decisionMemoryEventAnalyticsReplayEngine,
   eventAnalyticsSchemaVersion,
   validateDecisionMemoryEventAnalyticsSnapshot,
   type DecisionMemoryEventAnalyticsSnapshot,
@@ -87,6 +90,46 @@ function createSnapshot():
 
       requiresMoreEvidenceCount:
         1,
+    },
+
+    provenance: {
+      algorithm:
+        decisionMemoryEventAnalyticsAlgorithm,
+
+      algorithmVersion:
+        decisionMemoryEventAnalyticsAlgorithmVersion,
+
+      replayEngine:
+        decisionMemoryEventAnalyticsReplayEngine,
+
+      producedAt:
+        "2026-08-08T00:00:00.000Z",
+
+      inputEventCount:
+        2,
+
+      includedEventCount:
+        2,
+
+      excludedEventCount:
+        0,
+
+      excludedEvents:
+        [],
+
+      replayedMemoryIds: [
+        "memory-1",
+      ],
+
+      completedMemoryIds: [
+        "memory-1",
+      ],
+
+      incompleteMemoryIds:
+        [],
+
+      invalidMemoryIds:
+        [],
     },
 
     sourceEventIds: [

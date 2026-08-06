@@ -334,6 +334,64 @@ function run() {
     },
   );
 
+  assert.deepEqual(
+    snapshot.provenance,
+    {
+      algorithm:
+        "decision-memory-event-analytics",
+
+      algorithmVersion:
+        1,
+
+      replayEngine:
+        "replay-decision-memory-events",
+
+      producedAt:
+        "2026-08-08T00:00:00.000Z",
+
+      inputEventCount:
+        4,
+
+      includedEventCount:
+        3,
+
+      excludedEventCount:
+        1,
+
+      excludedEvents: [
+        {
+          eventId:
+            "outside-window",
+
+          eventIndex:
+            3,
+
+          reason:
+            "outside-window",
+
+          message:
+            'Event occurred at "2026-07-01T10:00:00.000Z" outside the analytics window.',
+        },
+      ],
+
+      replayedMemoryIds: [
+        "memory-1",
+        "memory-2",
+      ],
+
+      completedMemoryIds: [
+        "memory-1",
+      ],
+
+      incompleteMemoryIds: [
+        "memory-2",
+      ],
+
+      invalidMemoryIds:
+        [],
+    },
+  );
+
   const empty =
     buildDecisionMemoryEventAnalyticsSnapshot({
       snapshotId:
