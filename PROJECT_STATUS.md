@@ -105,7 +105,29 @@ Additional completed capabilities include:
 - already-current database no-op behaviour;
 - dedicated lifecycle and platform migration tests.
 
-The next checkpoint begins Event Analytics.
+The initial Event Analytics foundation is complete.
+
+Completed Event Analytics capabilities include:
+
+- versioned immutable analytics snapshots;
+- explicit time-window ownership boundaries;
+- Decision Memory event-type counts;
+- unique memory and decision totals;
+- deterministic source-event ordering;
+- replay-based lifecycle completion, incompletion, and invalid-history counts;
+- confidence and evidence summaries;
+- complete source-event traceability;
+- duplicate source-event rejection;
+- safe empty-window analytics;
+- platform-neutral snapshot repository boundaries;
+- immutable save and hydration behaviour;
+- idempotent identical retries;
+- snapshot-identifier conflict protection;
+- ownership-scoped reads and lists;
+- deterministic window listing and result limits;
+- dedicated Event Analytics quick verification.
+
+The next checkpoint builds PostgreSQL Event Analytics snapshot persistence.
 
 The next checkpoint implements the first real platform adapter without changing
 the existing repository, synchronization, or domain contracts.

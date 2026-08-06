@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.7.7-dev`
+`Apex Foundation 0.8.0-dev`
 
 ## Current branch
 
@@ -14,7 +14,7 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Cross-Platform Offline Cache Stabilisation
+Event Analytics Foundation
 
 ## Current build target
 
@@ -58,8 +58,32 @@ Completed stabilisation includes:
 - no-op reopening for already-current databases;
 - focused lifecycle and migration integration tests.
 
-The next checkpoint begins Event Analytics on top of the completed
-cross-platform persistence foundation.
+The initial Event Analytics foundation is complete.
+
+Completed capabilities include:
+
+- a versioned immutable Decision Memory Event Analytics snapshot contract;
+- explicit analytics time windows;
+- deterministic event-type counts;
+- unique Decision Memory and decision totals;
+- replay-based lifecycle completion analysis;
+- confidence minimum, maximum, average, and sample totals;
+- evidence-sufficiency summaries;
+- source-event, memory, decision, and schema-version traceability;
+- user and time-window filtering;
+- deterministic event ordering;
+- duplicate source-event protection;
+- empty-window analytics support;
+- a platform-neutral Analytics Snapshot Repository;
+- immutable and defensively cloned repository results;
+- idempotent identical snapshot saves;
+- protection against reused snapshot identifiers with different evidence;
+- ownership-scoped lookup and listing;
+- deterministic snapshot window ordering;
+- focused Event Analytics verification.
+
+The next checkpoint builds the first concrete Event Analytics snapshot
+persistence adapter.
 
 ## Latest known test state
 
@@ -90,15 +114,17 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Build the Event Analytics foundation.
+Build PostgreSQL Event Analytics snapshot persistence.
 
 The next checkpoint must:
 
-- inspect the existing event contracts and replay boundaries;
-- define versioned, platform-neutral analytics contracts;
-- preserve user ownership and source evidence;
-- aggregate without mutating or replacing event history;
-- support deterministic time-window and event-type summaries;
-- expose explainable metrics suitable for dashboards and coaching;
-- remain independent of IndexedDB, SQLite, and PostgreSQL adapters;
-- add focused tests before analytics influences coaching decisions.
+- add a versioned Analytics Snapshot database schema;
+- implement the existing platform-neutral storage contract;
+- preserve immutable snapshot evidence;
+- enforce snapshot identity and user ownership;
+- support deterministic time-window queries;
+- validate stored row and snapshot consistency;
+- keep analytics aggregation independent of PostgreSQL;
+- add focused repository-adapter tests;
+- avoid connecting analytics to coaching decisions or dashboards until
+  persistence is verified.

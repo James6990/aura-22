@@ -106,13 +106,39 @@ Completed stabilisation work includes:
 - no-op reopening for current schemas;
 - focused lifecycle and migration tests registered in the Offline Cache suite.
 
-The next focused checkpoint begins the Event Analytics foundation.
+The initial Event Analytics foundation is complete and verified.
+
+Completed work includes:
+
+- the `lib/analytics` module boundary;
+- immutable Decision Memory Event Analytics snapshot contracts;
+- analytics schema versioning;
+- explicit ISO time windows;
+- event-type, lifecycle, confidence, and evidence summaries;
+- source-event, memory, decision, and schema-version traceability;
+- deterministic user- and window-scoped aggregation;
+- validation of all source events;
+- replay-based lifecycle analysis;
+- duplicate event-id rejection;
+- empty-window analytics;
+- platform-neutral Analytics Snapshot Repository contracts;
+- row and snapshot consistency checks;
+- idempotent identical persistence retries;
+- reused-identifier conflict rejection;
+- user ownership protection;
+- deterministic snapshot listing;
+- focused Event Analytics tests registered in `test:apex`;
+- dedicated `apex:event-analytics:quick` verification.
+
+The next focused checkpoint builds PostgreSQL Event Analytics snapshot
+persistence.
 
 ## Next tasks
 
-1. Event Analytics
-2. Memory Consolidation Engine
-3. Autonomous Learning Engine
+1. PostgreSQL Event Analytics snapshot persistence
+2. Event Analytics application service
+3. Memory Consolidation Engine
+4. Autonomous Learning Engine
 
 ## Known issues
 

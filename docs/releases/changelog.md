@@ -89,6 +89,48 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Event Analytics Foundation
+
+### Added
+
+- Versioned immutable Decision Memory Event Analytics snapshot contract.
+- Explicit analytics time-window contract.
+- Event-type count summaries.
+- Lifecycle completion, incompletion, and invalid-history summaries.
+- Confidence minimum, maximum, average, and sample summaries.
+- Evidence-sufficiency summaries.
+- Source-event, memory, decision, and schema-version traceability.
+- Deterministic Decision Memory Event Analytics aggregator.
+- Platform-neutral Event Analytics Snapshot Repository.
+- Dedicated `apex:event-analytics:quick` verification.
+
+### Architecture
+
+- Analytics reads event evidence without mutating event history.
+- Decision Memory lifecycles are evaluated through the existing replay engine.
+- Analytics remains independent of PostgreSQL, IndexedDB, and SQLite.
+- Generated snapshots are immutable and versioned.
+- Snapshot identifiers cannot be reused for different evidence.
+- Identical persistence retries are idempotent.
+- Repository reads and lists enforce user ownership.
+- Snapshot lists use deterministic window and generation ordering.
+- Source event identifiers preserve explainable analytics provenance.
+
+### Verification
+
+- Event Analytics contract tests passing.
+- Event Analytics aggregation tests passing.
+- Event Analytics repository tests passing.
+- Dedicated Event Analytics quick verification passing.
+- Full Apex checkpoint passing.
+- TypeScript typecheck passing.
+- Documentation check passing.
+- Git diff check passing.
+
+### Next
+
+PostgreSQL Event Analytics snapshot persistence.
+
 ## Cross-Platform Offline Cache Stabilisation
 
 ### Added
