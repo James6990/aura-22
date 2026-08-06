@@ -14,35 +14,32 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-PostgreSQL Event Analytics Persistence
+Event Analytics Application Service
 
 ## Current build target
 
-Event Analytics Application Service
+Event Analytics History and Comparison
 
-The Event Analytics foundation and PostgreSQL persistence layer are complete.
+The Event Analytics application service is complete.
 
 Completed capabilities include:
 
-- immutable, versioned Decision Memory Event Analytics snapshots;
-- deterministic user- and time-window aggregation;
-- replay-based lifecycle analysis;
-- event-type, confidence, and evidence summaries;
-- complete source-event and lifecycle provenance;
-- explicit exclusion reasons;
-- platform-neutral Analytics Snapshot Repository boundaries;
-- immutable and idempotent snapshot persistence;
-- PostgreSQL analytics snapshot schema;
-- Drizzle migration `0010_add_event_analytics_snapshots`;
-- PostgreSQL row mapping and consistency validation;
-- ownership-scoped snapshot lookup;
-- deterministic overlapping-window queries;
-- provenance-preserving hydration;
-- focused Event Analytics and PostgreSQL persistence verification.
+- one platform-neutral analytics use-case boundary;
+- validated snapshot identity, ownership, window, and generation time;
+- deterministic aggregation and provenance coordination;
+- persistence through the platform-neutral snapshot repository;
+- immutable persisted returns;
+- safe idempotent retries;
+- analytics lookup and history retrieval;
+- prevention of persistence after aggregation failure;
+- repository failure propagation;
+- builder and repository response identity validation;
+- no PostgreSQL or Drizzle dependency in application logic;
+- focused orchestration and failure-boundary verification.
 
-The next checkpoint builds the Event Analytics application service, providing
-one use-case boundary for aggregation, provenance generation, persistence, and
-retrieval.
+The next checkpoint builds Event Analytics history and comparison contracts,
+allowing Apex to compare immutable analytics windows without mutating their
+source evidence.
 
 ## Latest known test state
 
@@ -73,18 +70,15 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Build the Event Analytics application service.
+Build Event Analytics history and comparison.
 
 The next checkpoint must:
 
-- accept an explicit snapshot identity, user, time window, generation time,
-  and source-event collection;
-- call the existing deterministic aggregator;
-- persist through the platform-neutral snapshot repository;
-- return immutable persisted evidence;
-- support safe idempotent retries;
-- preserve analytics provenance without recomputation drift;
-- keep PostgreSQL and other storage APIs outside the service;
-- add focused orchestration and failure-boundary tests;
-- avoid connecting analytics to coaching or dashboards until the service is
-  verified.
+- compare two immutable analytics snapshots for the same user;
+- validate compatible ownership and schema boundaries;
+- calculate deterministic count and confidence deltas;
+- distinguish improvement, decline, stability, and insufficient evidence;
+- preserve both source snapshot identifiers and provenance;
+- avoid treating correlation as causation;
+- remain independent of PostgreSQL and presentation code;
+- add focused comparison and failure-boundary tests.

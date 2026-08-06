@@ -89,6 +89,44 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Event Analytics Application Service
+
+### Added
+
+- Platform-neutral Event Analytics application service.
+- Aggregate-and-save analytics orchestration.
+- Immutable snapshot lookup.
+- User- and window-scoped history retrieval.
+- Injectable analytics snapshot-builder boundary.
+- Focused orchestration and failure-boundary tests.
+
+### Architecture
+
+- Coordinates aggregation, provenance, persistence, and retrieval through one
+  use-case boundary.
+- Keeps PostgreSQL and Drizzle outside application logic.
+- Preserves deterministic Analytics Provenance.
+- Supports safe idempotent generation retries.
+- Validates generated and persisted snapshot identity.
+- Returns defensive snapshot copies.
+- Prevents persistence when aggregation fails.
+- Propagates repository failures without hiding them.
+
+### Verification
+
+- Application-service orchestration tests passing.
+- Aggregation-failure write-prevention test passing.
+- Repository-failure propagation test passing.
+- Snapshot identity-boundary tests passing.
+- Event Analytics quick verification passing.
+- Full Apex checkpoint passing.
+- TypeScript typecheck passing.
+- Documentation and diff checks passing.
+
+### Next
+
+Event Analytics history and comparison.
+
 ## PostgreSQL Event Analytics Persistence
 
 ### Added

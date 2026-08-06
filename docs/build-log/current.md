@@ -60,46 +60,39 @@ Passing:
 
 ## Current task
 
-Event Analytics Application Service
+Event Analytics History and Comparison
 
-The Event Analytics foundation, Analytics Provenance, and PostgreSQL snapshot
-persistence are complete and verified.
+The Event Analytics application service is complete and verified.
 
 Completed work now includes:
 
-- the `lib/analytics` module boundary;
-- immutable, versioned Event Analytics snapshot contracts;
-- deterministic user- and time-window aggregation;
-- Decision Memory replay integration;
-- lifecycle completion, incompletion, and invalid-history summaries;
-- confidence and evidence summaries;
-- complete source-event, memory, decision, and schema-version provenance;
-- aggregation algorithm and replay-engine identification;
-- deterministic exclusion records and reasons;
-- platform-neutral Analytics Snapshot Repository contracts;
-- defensive cloning and storage-response validation;
-- idempotent identical persistence retries;
-- conflicting snapshot-id protection;
-- PostgreSQL analytics snapshot schema;
-- Drizzle migration `0010_add_event_analytics_snapshots`;
-- PostgreSQL timestamp and snapshot row mapping;
-- row and snapshot consistency enforcement;
-- ownership-scoped snapshot lookup;
-- immutable inserts and safe concurrent retry handling;
-- deterministic overlapping-window listing;
-- provenance-preserving PostgreSQL hydration;
-- focused mapper and storage-adapter tests;
-- permanent Event Analytics verification in `test:apex` and
+- `createEventAnalyticsApplicationService`;
+- platform-neutral repository dependency injection;
+- injectable snapshot-builder boundary;
+- request identity and ISO-window validation;
+- aggregate-and-save orchestration;
+- automatic Analytics Provenance preservation;
+- immutable persisted results;
+- idempotent retry support through the repository;
+- snapshot lookup;
+- user- and window-scoped history retrieval;
+- prevention of repository writes after aggregation failure;
+- repository error propagation;
+- generated-snapshot identity validation;
+- persisted-snapshot identity validation;
+- ownership validation for history responses;
+- defensive cloning at the service boundary;
+- focused orchestration and failure tests;
+- permanent registration in `test:apex` and
   `apex:event-analytics:quick`.
 
-The next focused checkpoint builds the Event Analytics application service,
-coordinating validated aggregation, provenance generation, persistence, and
-immutable retrieval without exposing PostgreSQL to application logic.
+The next focused checkpoint builds Event Analytics history and comparison
+contracts over immutable snapshots.
 
 ## Next tasks
 
-1. Event Analytics application service
-2. Event Analytics history and comparison queries
+1. Event Analytics history and comparison
+2. Event Analytics trend interpretation
 3. Memory Consolidation Engine
 4. Autonomous Learning Engine
 

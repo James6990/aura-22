@@ -63,36 +63,27 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 ## Current build target
 
-Event Analytics Application Service
+Event Analytics History and Comparison
 
-The Event Analytics foundation, Analytics Provenance, and PostgreSQL snapshot
-persistence are complete.
+The Event Analytics application-service boundary is complete and verified.
 
 Completed capabilities include:
 
-- versioned, immutable Decision Memory Event Analytics snapshots;
-- explicit analytics time windows;
-- deterministic user- and window-scoped event aggregation;
-- replay-based complete, incomplete, and invalid lifecycle classification;
-- event-type, confidence, and evidence summaries;
-- source-event, memory, decision, and schema-version traceability;
-- aggregation algorithm and replay-engine provenance;
-- deterministic exclusion records with explicit reasons;
-- platform-neutral Analytics Snapshot Repository boundaries;
-- defensive cloning and row consistency validation;
-- idempotent identical snapshot persistence;
-- conflicting snapshot-identifier protection;
-- ownership-scoped reads and overlapping-window queries;
-- PostgreSQL `apex_event_analytics_snapshots` persistence;
-- Drizzle migration `0010_add_event_analytics_snapshots`;
-- PostgreSQL row mapping and provenance-preserving hydration;
-- immutable insert and safe conflict-retry behaviour;
-- deterministic PostgreSQL window ordering;
-- focused Event Analytics and PostgreSQL verification.
+- platform-neutral analytics orchestration;
+- validated snapshot generation requests;
+- deterministic aggregation and provenance production;
+- repository-based immutable persistence;
+- safe identical retries;
+- immutable snapshot lookup;
+- user- and window-scoped history retrieval;
+- prevention of storage writes after aggregation failure;
+- transparent repository failure propagation;
+- identity validation for generated and persisted snapshots;
+- defensive result cloning;
+- permanent application-service verification in the Apex suite.
 
-The next checkpoint builds the Event Analytics application service. It will
-provide one platform-neutral use-case boundary for aggregation, provenance,
-persistence, and immutable retrieval.
+The next checkpoint builds deterministic history and comparison contracts over
+persisted analytics snapshots.
 
 ## Agreed next development order
 
