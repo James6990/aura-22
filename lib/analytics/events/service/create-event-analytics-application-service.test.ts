@@ -1066,3 +1066,158 @@ runComparisonTests().catch(
     process.exitCode = 1;
   },
 );
+
+async function runTrendInterpretationTests() {
+  const repository =
+    createRepository();
+
+  const baseline =
+    createSnapshot({
+      id:
+        "trend-snapshot-1",
+
+      startAt:
+        "2026-08-01T00:00:00.000Z",
+
+      endAt:
+        "2026-08-07T23:59:59.999Z",
+    });
+
+  const comparisonSnapshot =
+    createSnapshot({
+      id:
+        "trend-snapshot-2",
+
+      startAt:
+        "2026-08-08T00:00:00.000Z",
+
+      endAt:
+        "2026-08-14T23:59:59.999Z",
+
+      generatedAt:
+        "2026-08-15T00:00:00.000Z",
+    });
+
+  repository.rows.set(
+    baseline.id,
+    structuredClone(
+      baseline,
+    ),
+  );
+
+  repository.rows.set(
+    comparisonSnapshot.id,
+    structuredClone(
+      comparisonSnapshot,
+    ),
+  );
+
+  const service =
+    createEventAnalyticsApplicationService({
+      repository,
+    });
+
+  const comparison =
+    await service.compareHistory({
+      comparisonId:
+        "trend-comparison-1",
+
+      userId:
+        "user-1",
+
+      baselineSnapshotId:
+        baseline.id,
+
+      comparisonSnapshotId:
+        comparisonSnapshot.id,
+
+      generatedAt:
+        "2026-08-16T00:00:00.000Z",
+    });
+
+  const interpretation =
+    await service.interpretTrend({
+      interpretationId:
+        "trend-interpretation-1",
+
+      userId:
+        "user-1",
+
+      generatedAt:
+        "2026-08-17T00:00:00.000Z",
+
+      comparisons: [
+        comparison,
+      ],
+    });
+
+  assert.equal(
+    interpretation.id,
+    "trend-interpretation-1",
+  );
+
+  assert.equal(
+    interpretation.userId,
+    "user-1",
+  );
+
+  assert.equal(
+    interpretation.totalEventCount.direction,
+    "stable",
+  );
+
+  assert.deepEqual(
+    interpretation.provenance.sourceComparisonIds,
+    [
+      "trend-comparison-1",
+    ],
+  );
+
+  interpretation.provenance.sourceSnapshotIds.push(
+    "mutated",
+  );
+
+  assert.deepEqual(
+    comparison.provenance.baselineSnapshotId,
+    baseline.id,
+  );
+
+  await assert.rejects(
+    () =>
+      service.interpretTrend({
+        interpretationId:
+          "cross-user-trend",
+
+        userId:
+          "user-1",
+
+        generatedAt:
+          "2026-08-17T00:00:00.000Z",
+
+        comparisons: [
+          {
+            ...comparison,
+
+            userId:
+              "user-2",
+          },
+        ],
+      }),
+
+    (error: unknown) =>
+      error instanceof Error &&
+      error.message ===
+        "Event Analytics trend comparisons do not belong to this user.",
+  );
+
+  console.log(
+    "Event Analytics trend interpretation service tests passed.",
+  );
+}
+
+runTrendInterpretationTests().catch(
+  (error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  },
+);

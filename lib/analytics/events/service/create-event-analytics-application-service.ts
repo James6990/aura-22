@@ -1,15 +1,19 @@
 import {
   buildDecisionMemoryEventAnalyticsSnapshot,
   buildEventAnalyticsHistoryComparison,
+  buildEventAnalyticsTrendInterpretation,
   type BuildDecisionMemoryEventAnalyticsSnapshotInput,
   type BuildEventAnalyticsHistoryComparisonInput,
+  type BuildEventAnalyticsTrendInterpretationInput,
 } from "@/lib/analytics/events/aggregation";
 
 import {
   createDecisionMemoryEventAnalyticsSnapshot,
   createEventAnalyticsHistoryComparison,
+  createEventAnalyticsTrendInterpretation,
   type DecisionMemoryEventAnalyticsSnapshot,
   type EventAnalyticsHistoryComparison,
+  type EventAnalyticsTrendInterpretation,
   type EventAnalyticsTimeWindow,
 } from "@/lib/analytics/events/contracts";
 
@@ -73,6 +77,20 @@ export type CompareEventAnalyticsHistoryInput = {
     string;
 };
 
+export type ExecuteEventAnalyticsTrendInterpretationInput = {
+  interpretationId:
+    string;
+
+  userId:
+    string;
+
+  generatedAt:
+    string;
+
+  comparisons:
+    readonly EventAnalyticsHistoryComparison[];
+};
+
 export type EventAnalyticsApplicationService = {
   generateAndSave(
     input:
@@ -101,6 +119,13 @@ export type EventAnalyticsApplicationService = {
   ): Promise<
     EventAnalyticsHistoryComparison
   >;
+
+  interpretTrend(
+    input:
+      ExecuteEventAnalyticsTrendInterpretationInput,
+  ): Promise<
+    EventAnalyticsTrendInterpretation
+  >;
 };
 
 export type EventAnalyticsSnapshotBuilder = (
@@ -115,6 +140,12 @@ export type EventAnalyticsHistoryComparisonBuilder = (
 ) =>
   EventAnalyticsHistoryComparison;
 
+export type EventAnalyticsTrendInterpretationBuilder = (
+  input:
+    BuildEventAnalyticsTrendInterpretationInput,
+) =>
+  EventAnalyticsTrendInterpretation;
+
 export type EventAnalyticsApplicationServiceDependencies = {
   repository:
     EventAnalyticsSnapshotRepository;
@@ -124,6 +155,9 @@ export type EventAnalyticsApplicationServiceDependencies = {
 
   buildComparison?:
     EventAnalyticsHistoryComparisonBuilder;
+
+  buildTrendInterpretation?:
+    EventAnalyticsTrendInterpretationBuilder;
 };
 
 function requireIdentifier(
@@ -225,12 +259,23 @@ function cloneComparison(
   );
 }
 
+function cloneTrendInterpretation(
+  interpretation:
+    EventAnalyticsTrendInterpretation,
+) {
+  return createEventAnalyticsTrendInterpretation(
+    interpretation,
+  );
+}
+
 export function createEventAnalyticsApplicationService({
   repository,
   buildSnapshot =
     buildDecisionMemoryEventAnalyticsSnapshot,
   buildComparison =
     buildEventAnalyticsHistoryComparison,
+  buildTrendInterpretation =
+    buildEventAnalyticsTrendInterpretation,
 }: EventAnalyticsApplicationServiceDependencies):
   EventAnalyticsApplicationService {
   return {
@@ -524,6 +569,80 @@ export function createEventAnalyticsApplicationService({
       }
 
       return cloneComparison(
+        result,
+      );
+    },
+
+    async interpretTrend({
+      interpretationId,
+      userId,
+      generatedAt,
+      comparisons,
+    }) {
+      const resolvedInterpretationId =
+        requireIdentifier(
+          interpretationId,
+          "Event Analytics trend interpretation id",
+        );
+
+      const resolvedUserId =
+        requireIdentifier(
+          userId,
+          "Event Analytics user id",
+        );
+
+      const resolvedGeneratedAt =
+        requireIsoDate(
+          generatedAt,
+          "Event Analytics trend interpretation generatedAt",
+        );
+
+      const clonedComparisons =
+        comparisons.map(
+          (comparison) =>
+            structuredClone(
+              comparison,
+            ),
+        );
+
+      for (
+        const comparison of
+        clonedComparisons
+      ) {
+        if (
+          comparison.userId !==
+          resolvedUserId
+        ) {
+          throw new Error(
+            "Event Analytics trend comparisons do not belong to this user.",
+          );
+        }
+      }
+
+      const result =
+        buildTrendInterpretation({
+          interpretationId:
+            resolvedInterpretationId,
+
+          generatedAt:
+            resolvedGeneratedAt,
+
+          comparisons:
+            clonedComparisons,
+        });
+
+      if (
+        result.id !==
+          resolvedInterpretationId ||
+        result.userId !==
+          resolvedUserId
+      ) {
+        throw new Error(
+          "Event Analytics trend interpretation builder returned mismatched identity.",
+        );
+      }
+
+      return cloneTrendInterpretation(
         result,
       );
     },
