@@ -18,6 +18,9 @@ import type {
   ApexSyncEnvelope,
   ApexSyncRejection,
 } from "@/lib/sync/contracts"
+import type {
+  DecisionMemoryEventAnalyticsSnapshot,
+} from "@/lib/analytics/events/contracts"
 
 // --- Better Auth required tables -------------------------------------------
 // Column names are camelCase to match Better Auth's defaults. Do not rename.
@@ -752,6 +755,80 @@ export const apexDecisionMemories = pgTable(
     ).on(
       table.userId,
       table.lastUpdatedAt,
+    ),
+  ],
+);
+
+// --- APEX EVENT ANALYTICS PERSISTENCE --------------------------------------
+
+// Immutable, versioned analytics snapshots generated from event evidence.
+// Source events remain authoritative and snapshots can be regenerated.
+export const apexEventAnalyticsSnapshots = pgTable(
+  "apex_event_analytics_snapshots",
+  {
+    id: text("id").primaryKey(),
+
+    userId: text("userId")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+
+    windowStartAt: timestamp(
+      "windowStartAt",
+    ).notNull(),
+
+    windowEndAt: timestamp(
+      "windowEndAt",
+    ).notNull(),
+
+    generatedAt: timestamp(
+      "generatedAt",
+    ).notNull(),
+
+    schemaVersion: integer(
+      "schemaVersion",
+    )
+      .notNull()
+      .default(1),
+
+    snapshot: jsonb("snapshot")
+      .$type<
+        DecisionMemoryEventAnalyticsSnapshot
+      >()
+      .notNull(),
+
+    createdAt: timestamp("createdAt")
+      .notNull()
+      .defaultNow(),
+
+    updatedAt: timestamp("updatedAt")
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index(
+      "apex_event_analytics_user_window_idx",
+    ).on(
+      table.userId,
+      table.windowStartAt,
+      table.windowEndAt,
+    ),
+
+    index(
+      "apex_event_analytics_user_generated_idx",
+    ).on(
+      table.userId,
+      table.generatedAt,
+    ),
+
+    index(
+      "apex_event_analytics_user_window_generated_idx",
+    ).on(
+      table.userId,
+      table.windowStartAt,
+      table.windowEndAt,
+      table.generatedAt,
     ),
   ],
 );
