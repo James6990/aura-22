@@ -63,74 +63,36 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 ## Current build target
 
-Offline Cache Synchronization Integration
+Event Analytics Application Service
 
-The Offline Cache foundation is complete across browser, PWA, Android, and iOS
-storage environments.
+The Event Analytics foundation, Analytics Provenance, and PostgreSQL snapshot
+persistence are complete.
 
 Completed capabilities include:
 
-- all Offline Cache contracts, repositories, synchronization services,
-  conflict handling, retry boundaries, and migrations;
-- the platform-neutral `OfflineCacheStorage` contract;
-- reusable storage-adapter conformance testing;
-- the `idb`-based IndexedDB adapter;
-- the Capacitor 7-compatible SQLite adapter;
-- IndexedDB object-store and compound-index initialization;
-- SQLite table and compound-index initialization;
-- defensive serialization and deserialization for both platforms;
-- identity lookup, inserts, updates, highest-sequence lookup, and scoped lists;
-- duplicate-key and missing-update safeguards;
-- parameterized SQLite SQL;
-- user and source-device isolation;
-- deterministic global ordering before result limiting;
-- defensive-copy verification;
-- focused database and operation tests for both adapters;
-- full shared conformance verification against IndexedDB and SQLite;
-- platform-neutral migration planning, execution, and version coordination.
+- versioned, immutable Decision Memory Event Analytics snapshots;
+- explicit analytics time windows;
+- deterministic user- and window-scoped event aggregation;
+- replay-based complete, incomplete, and invalid lifecycle classification;
+- event-type, confidence, and evidence summaries;
+- source-event, memory, decision, and schema-version traceability;
+- aggregation algorithm and replay-engine provenance;
+- deterministic exclusion records with explicit reasons;
+- platform-neutral Analytics Snapshot Repository boundaries;
+- defensive cloning and row consistency validation;
+- idempotent identical snapshot persistence;
+- conflicting snapshot-identifier protection;
+- ownership-scoped reads and overlapping-window queries;
+- PostgreSQL `apex_event_analytics_snapshots` persistence;
+- Drizzle migration `0010_add_event_analytics_snapshots`;
+- PostgreSQL row mapping and provenance-preserving hydration;
+- immutable insert and safe conflict-retry behaviour;
+- deterministic PostgreSQL window ordering;
+- focused Event Analytics and PostgreSQL verification.
 
-Cross-Platform Offline Cache Stabilisation is complete.
-
-Additional completed capabilities include:
-
-- one cached connection promise per storage instance;
-- safe retry after failed IndexedDB or SQLite initialisation;
-- removal of SQLite `this`-dependent internal method calls;
-- bootstrap migration planning from schema version `0`;
-- SQLite schema metadata persistence;
-- transactional SQLite migrations and rollback;
-- resumable SQLite upgrades from the last committed version;
-- IndexedDB schema migration execution inside native upgrade transactions;
-- explicit initial schema migrations for both adapters;
-- already-current database no-op behaviour;
-- dedicated lifecycle and platform migration tests.
-
-The initial Event Analytics foundation is complete.
-
-Completed Event Analytics capabilities include:
-
-- versioned immutable analytics snapshots;
-- explicit time-window ownership boundaries;
-- Decision Memory event-type counts;
-- unique memory and decision totals;
-- deterministic source-event ordering;
-- replay-based lifecycle completion, incompletion, and invalid-history counts;
-- confidence and evidence summaries;
-- complete source-event traceability;
-- duplicate source-event rejection;
-- safe empty-window analytics;
-- platform-neutral snapshot repository boundaries;
-- immutable save and hydration behaviour;
-- idempotent identical retries;
-- snapshot-identifier conflict protection;
-- ownership-scoped reads and lists;
-- deterministic window listing and result limits;
-- dedicated Event Analytics quick verification.
-
-The next checkpoint builds PostgreSQL Event Analytics snapshot persistence.
-
-The next checkpoint implements the first real platform adapter without changing
-the existing repository, synchronization, or domain contracts.
+The next checkpoint builds the Event Analytics application service. It will
+provide one platform-neutral use-case boundary for aggregation, provenance,
+persistence, and immutable retrieval.
 
 ## Agreed next development order
 

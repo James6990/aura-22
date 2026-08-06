@@ -60,83 +60,46 @@ Passing:
 
 ## Current task
 
-Offline Cache Synchronization Integration
+Event Analytics Application Service
 
-The cross-platform Offline Cache persistence foundation is complete and
-verified.
+The Event Analytics foundation, Analytics Provenance, and PostgreSQL snapshot
+persistence are complete and verified.
 
 Completed work now includes:
 
-- all previously completed Offline Cache contracts, repositories, services,
-  synchronization, conflict, retry, and migration systems;
-- the `idb`-based IndexedDB browser and PWA adapter;
-- the Capacitor 7-compatible SQLite native adapter;
-- deliberate dependency selection and version compatibility checks;
-- IndexedDB database creation and deletion boundaries;
-- SQLite connection-provider and database initialization boundaries;
-- IndexedDB object-store and SQLite table creation;
-- ownership/sequence and ownership/status/sequence indexes on both platforms;
-- defensive IndexedDB and SQLite row mapping;
-- `getById`, `insert`, `update`, `getHighestSequence`, and `list` on both
-  adapters;
-- parameterized SQLite SQL;
-- duplicate-key and missing-update protection;
-- deterministic ordering across selected statuses;
-- global result limiting after ordering;
-- user and source-device isolation;
-- defensive-copy guarantees;
-- shared storage-conformance verification for IndexedDB and SQLite;
-- expanded focused Offline Cache verification.
-
-Cross-Platform Offline Cache Stabilisation is complete and verified.
-
-Completed stabilisation work includes:
-
-- cached connection promises for IndexedDB and SQLite;
-- concurrent initialisation deduplication;
-- failed-initialisation retry boundaries;
-- SQLite internal read helpers without `this` binding;
-- migration planner support for schema version `0`;
-- SQLite metadata-table schema versioning;
-- per-migration SQLite transactions;
-- rollback without schema-version advancement;
-- durable SQLite migration resume;
-- IndexedDB migration execution in the native versionchange transaction;
-- explicit `0 → 1` migrations for both adapters;
-- no-op reopening for current schemas;
-- focused lifecycle and migration tests registered in the Offline Cache suite.
-
-The initial Event Analytics foundation is complete and verified.
-
-Completed work includes:
-
 - the `lib/analytics` module boundary;
-- immutable Decision Memory Event Analytics snapshot contracts;
-- analytics schema versioning;
-- explicit ISO time windows;
-- event-type, lifecycle, confidence, and evidence summaries;
-- source-event, memory, decision, and schema-version traceability;
-- deterministic user- and window-scoped aggregation;
-- validation of all source events;
-- replay-based lifecycle analysis;
-- duplicate event-id rejection;
-- empty-window analytics;
+- immutable, versioned Event Analytics snapshot contracts;
+- deterministic user- and time-window aggregation;
+- Decision Memory replay integration;
+- lifecycle completion, incompletion, and invalid-history summaries;
+- confidence and evidence summaries;
+- complete source-event, memory, decision, and schema-version provenance;
+- aggregation algorithm and replay-engine identification;
+- deterministic exclusion records and reasons;
 - platform-neutral Analytics Snapshot Repository contracts;
-- row and snapshot consistency checks;
+- defensive cloning and storage-response validation;
 - idempotent identical persistence retries;
-- reused-identifier conflict rejection;
-- user ownership protection;
-- deterministic snapshot listing;
-- focused Event Analytics tests registered in `test:apex`;
-- dedicated `apex:event-analytics:quick` verification.
+- conflicting snapshot-id protection;
+- PostgreSQL analytics snapshot schema;
+- Drizzle migration `0010_add_event_analytics_snapshots`;
+- PostgreSQL timestamp and snapshot row mapping;
+- row and snapshot consistency enforcement;
+- ownership-scoped snapshot lookup;
+- immutable inserts and safe concurrent retry handling;
+- deterministic overlapping-window listing;
+- provenance-preserving PostgreSQL hydration;
+- focused mapper and storage-adapter tests;
+- permanent Event Analytics verification in `test:apex` and
+  `apex:event-analytics:quick`.
 
-The next focused checkpoint builds PostgreSQL Event Analytics snapshot
-persistence.
+The next focused checkpoint builds the Event Analytics application service,
+coordinating validated aggregation, provenance generation, persistence, and
+immutable retrieval without exposing PostgreSQL to application logic.
 
 ## Next tasks
 
-1. PostgreSQL Event Analytics snapshot persistence
-2. Event Analytics application service
+1. Event Analytics application service
+2. Event Analytics history and comparison queries
 3. Memory Consolidation Engine
 4. Autonomous Learning Engine
 

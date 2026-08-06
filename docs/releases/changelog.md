@@ -89,6 +89,48 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## PostgreSQL Event Analytics Persistence
+
+### Added
+
+- PostgreSQL `apex_event_analytics_snapshots` table.
+- Drizzle migration `0010_add_event_analytics_snapshots`.
+- User/window, user/generated-time, and combined analytics indexes.
+- PostgreSQL Event Analytics row mapper.
+- PostgreSQL Event Analytics storage adapter.
+- PostgreSQL Event Analytics repository composition.
+- Focused row-mapping and storage-adapter tests.
+
+### Architecture
+
+- Stores immutable, versioned analytics snapshots while source events remain
+  authoritative.
+- Preserves complete Analytics Provenance inside JSONB snapshots.
+- Uses snapshot id as the immutable identity and conflict boundary.
+- Allows legitimate rebuilds for the same time window.
+- Uses insert conflict handling for safe concurrent retries.
+- Keeps Drizzle and PostgreSQL APIs behind the platform-neutral repository.
+- Enforces row and snapshot identity, ownership, window, generation-time, and
+  schema-version consistency.
+- Supports ownership-scoped retrieval and deterministic overlapping-window
+  queries.
+- Preserves defensive data boundaries during PostgreSQL hydration.
+
+### Verification
+
+- PostgreSQL Event Analytics row-mapping tests passing.
+- PostgreSQL Event Analytics storage tests passing.
+- Event Analytics quick verification passing.
+- Full Apex checkpoint passing.
+- TypeScript typecheck passing.
+- Drizzle migration generated and inspected.
+- Documentation check passing.
+- Git diff check passing.
+
+### Next
+
+Event Analytics application service.
+
 ## Event Analytics Foundation
 
 ### Added
