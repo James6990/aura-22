@@ -65,8 +65,8 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 Offline Cache Synchronization Integration
 
-The Offline Cache foundation, synchronization integration, conflict mapping,
-and safe retry boundaries are complete.
+The Offline Cache foundation, synchronization integration, conflict handling,
+platform-adapter planning, and migration framework are complete.
 
 Completed capabilities include:
 
@@ -77,8 +77,7 @@ Completed capabilities include:
 - deterministic cache ordering;
 - idempotent repository saves;
 - platform-neutral storage boundaries;
-- explicit conflict details;
-- backward-compatible retryability metadata;
+- explicit conflict and retry details;
 - validated lifecycle transitions;
 - protection against invalid storage-adapter responses;
 - canonical Decision Memory sync-envelope creation;
@@ -89,12 +88,15 @@ Completed capabilities include:
 - download checkpoint advancement only after successful application;
 - canonical synchronization-rejection mapping;
 - acknowledgement reconciliation for accepted and rejected envelopes;
-- idempotent reconciliation;
-- safe continuation after partial reconciliation failure;
-- dedicated Offline Cache synchronization and retry verification.
+- idempotent and partially retryable reconciliation;
+- reusable storage-adapter conformance testing;
+- documented IndexedDB and SQLite adapter requirements;
+- migration planning, execution, and schema-version coordination;
+- prevention of schema-version advancement after failed migrations;
+- dedicated Offline Cache platform and migration verification.
 
-The next checkpoint plans shared IndexedDB and SQLite adapter boundaries while
-preserving the platform-neutral repository and service architecture.
+The next checkpoint implements the first real platform adapter without changing
+the existing repository, synchronization, or domain contracts.
 
 ## Agreed next development order
 

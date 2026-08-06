@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.7.3-dev`
+`Apex Foundation 0.7.4-dev`
 
 ## Current branch
 
@@ -14,32 +14,32 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Offline Cache Conflict Resolution and Retry Foundation
+Offline Cache Platform Adapter and Migration Foundation
 
 ## Current build target
 
 Offline Cache Synchronization Integration
 
-The Offline Cache foundation, synchronization pipeline, conflict mapping, and
-safe acknowledgement-reconciliation boundaries are complete.
+The Offline Cache platform-adapter and migration foundation is complete.
 
-Completed integration includes:
+Completed capabilities include:
 
-- canonical Decision Memory sync-envelope creation;
-- local envelope staging before Cloud Sync enqueue;
-- reuse of the existing Cloud Sync outbox;
-- sync-aware Decision Memory event-sink composition;
-- deterministic remote-envelope cache application;
-- checkpoint advancement only after successful application;
-- canonical synchronization-rejection mapping;
-- applied, conflicted, and invalid acknowledgement reconciliation;
-- persisted retryability metadata;
-- idempotent reconciliation;
-- safe continuation after partial reconciliation failure;
-- platform-neutral repository and service boundaries.
+- the platform-neutral `OfflineCacheStorage` boundary;
+- a reusable storage-adapter conformance suite;
+- ownership, filtering, limits, sequence, update, and defensive-copy checks;
+- IndexedDB and SQLite architecture requirements;
+- shared transaction, migration, corruption, and recovery expectations;
+- a deterministic migration planner;
+- ordered migration execution;
+- persisted schema-version coordination;
+- no version advancement after failed migrations;
+- no-op handling when storage is already current;
+- platform-independent repository and service boundaries.
 
-The next checkpoint plans the IndexedDB and SQLite adapter boundaries without
-coupling domain, synchronization, or cache services to a specific platform.
+No concrete IndexedDB or SQLite library has been selected yet.
+
+The next checkpoint builds the first real platform adapter against the shared
+storage conformance and migration foundations.
 
 ## Latest known test state
 
@@ -70,15 +70,16 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Plan the platform-specific Offline Cache adapters for IndexedDB and SQLite.
+Build the first concrete Offline Cache platform adapter.
 
 The next checkpoint must:
 
-- define shared adapter responsibilities and transaction boundaries;
-- preserve deterministic ordering and idempotent persistence;
-- support per-user and per-device ownership queries;
-- protect lifecycle transitions and retry metadata;
-- avoid leaking platform details into domain or synchronization services;
-- document migration, recovery, and corruption-handling expectations;
-- defer concrete platform implementation until the adapter contracts are
-  reviewed and verified.
+- select the first target platform deliberately;
+- verify any library choice against current Capacitor and browser requirements;
+- implement the existing `OfflineCacheStorage` contract;
+- pass the shared storage conformance suite;
+- use the shared migration framework;
+- preserve ownership, deterministic ordering, retry metadata, and defensive
+  data boundaries;
+- keep platform-specific APIs outside domain and synchronization services;
+- document the library choice, tradeoffs, and recovery behaviour.

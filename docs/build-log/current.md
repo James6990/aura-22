@@ -62,43 +62,34 @@ Passing:
 
 Offline Cache Synchronization Integration
 
-The Offline Cache foundation, synchronization pipeline, conflict mapping, and
-safe retry boundaries are complete and verified.
+The Offline Cache platform-adapter planning and migration foundation is
+complete and verified.
 
-Completed work:
+Completed work now includes:
 
-- versioned cache-entry contracts;
-- local and remote origin tracking;
-- staged, applied, conflicted, and invalid lifecycle states;
-- runtime schema and ownership validation;
-- deterministic ordering;
-- idempotent persistence;
-- platform-neutral storage port;
-- explicit conflict details;
-- backward-compatible retryability metadata;
-- validated lifecycle transitions;
-- storage-adapter response safeguards;
-- canonical Decision Memory sync-envelope factory;
-- Local Envelope Staging Service;
-- Offline Cache persistence before Cloud Sync enqueue;
-- reuse of the existing Cloud Sync outbox;
-- Decision Memory sync-staging event-sink adapter;
-- deterministic remote-envelope cache application sink;
-- application before Cloud Sync download checkpoint advancement;
-- canonical sync-rejection to cache-resolution mapping;
-- acknowledgement reconciliation for accepted, conflicted, and invalid entries;
-- idempotent reconciliation;
-- safe continuation after partial reconciliation failure;
-- dedicated synchronization and retry tests;
-- expanded `apex:offline-cache:quick` verification;
-- documented Chat ↔ Termux development workflow.
+- all previously completed cache, synchronization, conflict, and retry systems;
+- the reusable `OfflineCacheStorage` conformance suite;
+- identity lookup and highest-sequence conformance checks;
+- ownership-scoped list filtering and limit checks;
+- insert and update behavioural verification;
+- defensive-copy verification for returned persisted data;
+- IndexedDB and SQLite architecture planning;
+- transaction, schema-version, migration, corruption, and recovery standards;
+- deliberate deferral of concrete storage-library selection;
+- deterministic migration planning;
+- rejection of schema downgrades and discontinuous migration paths;
+- ordered migration execution;
+- resumable execution from the last persisted schema version;
+- persisted version updates only after successful migration completion;
+- already-current no-op behaviour;
+- expanded focused Offline Cache verification.
 
-The next focused checkpoint plans shared IndexedDB and SQLite adapter
-responsibilities without weakening the platform-neutral repository boundary.
+The next focused checkpoint implements the first concrete platform adapter
+against these shared contracts and verification standards.
 
 ## Next tasks
 
-1. Platform adapter planning for IndexedDB and SQLite
+1. First concrete Offline Cache platform adapter
 2. Event Analytics
 3. Memory Consolidation Engine
 4. Autonomous Learning Engine

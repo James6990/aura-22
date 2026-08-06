@@ -89,6 +89,45 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Offline Cache Platform Adapter and Migration Foundation
+
+### Added
+
+- Reusable `OfflineCacheStorage` conformance suite.
+- Reference in-memory conformance verification.
+- Offline Cache platform-adapter architecture for IndexedDB and SQLite.
+- Deterministic Offline Cache migration planner.
+- Ordered migration executor.
+- Platform-neutral migration runner and schema-version storage boundary.
+- Focused migration failure and resume tests.
+
+### Architecture
+
+- Keeps platform APIs behind the existing `OfflineCacheStorage` port.
+- Requires future adapters to pass one shared behavioural standard.
+- Defers concrete IndexedDB and SQLite library selection.
+- Defines ownership, transaction, defensive-copy, migration, corruption, and
+  recovery expectations.
+- Rejects downgrades, missing migration steps, duplicate steps, and skipped
+  schema versions.
+- Persists a target schema version only after all planned migrations succeed.
+- Allows migration recovery to resume from the last durable schema version.
+
+### Verification
+
+- Offline Cache storage-conformance tests passing.
+- Migration planner tests passing.
+- Migration executor tests passing.
+- Migration runner tests passing.
+- Focused Offline Cache verification passing.
+- TypeScript typecheck passing.
+- Documentation check passing.
+- Git diff check passing.
+
+### Next
+
+First concrete Offline Cache platform adapter.
+
 ## Offline Cache Conflict Resolution and Retry Foundation
 
 ### Added
