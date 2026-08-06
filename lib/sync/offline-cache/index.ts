@@ -4,3 +4,5 @@ export * from "./repository";
 export * from "./service";
 
 export * from "./migrations";
+
+export * from "./platform";

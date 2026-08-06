@@ -62,34 +62,35 @@ Passing:
 
 Offline Cache Synchronization Integration
 
-The Offline Cache platform-adapter planning and migration foundation is
-complete and verified.
+The IndexedDB Offline Cache adapter is complete and verified.
 
 Completed work now includes:
 
-- all previously completed cache, synchronization, conflict, and retry systems;
-- the reusable `OfflineCacheStorage` conformance suite;
-- identity lookup and highest-sequence conformance checks;
-- ownership-scoped list filtering and limit checks;
-- insert and update behavioural verification;
-- defensive-copy verification for returned persisted data;
-- IndexedDB and SQLite architecture planning;
-- transaction, schema-version, migration, corruption, and recovery standards;
-- deliberate deferral of concrete storage-library selection;
-- deterministic migration planning;
-- rejection of schema downgrades and discontinuous migration paths;
-- ordered migration execution;
-- resumable execution from the last persisted schema version;
-- persisted version updates only after successful migration completion;
-- already-current no-op behaviour;
+- all previously completed Offline Cache foundations;
+- deliberate selection of `idb` for browser and PWA persistence;
+- `fake-indexeddb` for automated adapter verification;
+- IndexedDB database creation and deletion boundaries;
+- an Offline Cache object store keyed by entry id;
+- compound ownership/sequence and ownership/status/sequence indexes;
+- IndexedDB row mapping with defensive cloning;
+- `getById`;
+- atomic `insert`;
+- protected `update`;
+- `getHighestSequence`;
+- ownership- and status-scoped `list`;
+- deterministic ordering across all selected statuses;
+- global limit application after ordering;
+- duplicate-key and missing-update verification;
+- user and device isolation;
+- the full shared storage-conformance suite passing against IndexedDB;
 - expanded focused Offline Cache verification.
 
-The next focused checkpoint implements the first concrete platform adapter
-against these shared contracts and verification standards.
+The next focused checkpoint prepares and implements the native SQLite adapter
+against the same storage, migration, and conformance foundations.
 
 ## Next tasks
 
-1. First concrete Offline Cache platform adapter
+1. Native SQLite Offline Cache adapter
 2. Event Analytics
 3. Memory Consolidation Engine
 4. Autonomous Learning Engine

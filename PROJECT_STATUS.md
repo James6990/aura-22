@@ -66,34 +66,27 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 Offline Cache Synchronization Integration
 
 The Offline Cache foundation, synchronization integration, conflict handling,
-platform-adapter planning, and migration framework are complete.
+migration framework, and first concrete platform adapter are complete.
 
 Completed capabilities include:
 
-- versioned Offline Cache entry contracts;
-- local and remote entry origin;
-- staged, applied, conflicted, and invalid lifecycle states;
-- runtime ownership and schema validation;
-- deterministic cache ordering;
-- idempotent repository saves;
-- platform-neutral storage boundaries;
-- explicit conflict and retry details;
-- validated lifecycle transitions;
-- protection against invalid storage-adapter responses;
-- canonical Decision Memory sync-envelope creation;
-- local cache staging before Cloud Sync enqueue;
-- reuse of the existing Cloud Sync outbox;
-- sync-aware Decision Memory event-sink composition;
-- deterministic remote-envelope cache application;
-- download checkpoint advancement only after successful application;
-- canonical synchronization-rejection mapping;
-- acknowledgement reconciliation for accepted and rejected envelopes;
-- idempotent and partially retryable reconciliation;
+- all previously completed Offline Cache contracts, repositories, services,
+  conflict handling, retry boundaries, and migrations;
+- the platform-neutral `OfflineCacheStorage` contract;
 - reusable storage-adapter conformance testing;
-- documented IndexedDB and SQLite adapter requirements;
-- migration planning, execution, and schema-version coordination;
-- prevention of schema-version advancement after failed migrations;
-- dedicated Offline Cache platform and migration verification.
+- deliberate selection of `idb` for the browser and PWA adapter;
+- an IndexedDB database, entry store, and compound indexes;
+- row serialization and defensive deserialization;
+- identity lookup, inserts, updates, highest-sequence lookup, and scoped lists;
+- duplicate-key and missing-update safeguards;
+- user and source-device isolation;
+- deterministic global ordering before result limiting;
+- defensive-copy verification;
+- focused IndexedDB database and operation tests;
+- full shared conformance verification against the real IndexedDB adapter.
+
+The next checkpoint prepares the native SQLite adapter using the same storage,
+migration, and conformance foundations.
 
 The next checkpoint implements the first real platform adapter without changing
 the existing repository, synchronization, or domain contracts.

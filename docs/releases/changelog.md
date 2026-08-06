@@ -89,6 +89,44 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## IndexedDB Offline Cache Adapter
+
+### Added
+
+- `idb` as the browser and PWA IndexedDB boundary.
+- `fake-indexeddb` for automated adapter verification.
+- IndexedDB Offline Cache database factory and deletion helper.
+- Offline Cache object store and compound indexes.
+- IndexedDB row serialization and deserialization.
+- IndexedDB implementations of all `OfflineCacheStorage` operations.
+- Focused database, read, write, sequence, list, and conformance tests.
+
+### Architecture
+
+- Keeps IndexedDB-specific APIs behind `OfflineCacheStorage`.
+- Uses entry id as the object-store primary key.
+- Indexes ownership, status, and sequence for efficient scoped access.
+- Preserves user and source-device isolation.
+- Sorts globally before applying list limits.
+- Returns defensive copies of persisted evidence.
+- Leaves domain, synchronization, repository, and service contracts unchanged.
+
+### Verification
+
+- IndexedDB database tests passing.
+- IndexedDB `getById` tests passing.
+- IndexedDB insert and update tests passing.
+- IndexedDB sequence tests passing.
+- IndexedDB list and deterministic-limit tests passing.
+- Shared Offline Cache storage-conformance suite passing against IndexedDB.
+- Focused Offline Cache verification passing.
+- TypeScript typecheck passing.
+- Git diff check passing.
+
+### Next
+
+Native SQLite Offline Cache adapter.
+
 ## Offline Cache Platform Adapter and Migration Foundation
 
 ### Added

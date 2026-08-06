@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.7.4-dev`
+`Apex Foundation 0.7.5-dev`
 
 ## Current branch
 
@@ -14,32 +14,34 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Offline Cache Platform Adapter and Migration Foundation
+IndexedDB Offline Cache Adapter
 
 ## Current build target
 
 Offline Cache Synchronization Integration
 
-The Offline Cache platform-adapter and migration foundation is complete.
+The first concrete Offline Cache platform adapter is complete.
 
-Completed capabilities include:
+The IndexedDB adapter now provides:
 
-- the platform-neutral `OfflineCacheStorage` boundary;
-- a reusable storage-adapter conformance suite;
-- ownership, filtering, limits, sequence, update, and defensive-copy checks;
-- IndexedDB and SQLite architecture requirements;
-- shared transaction, migration, corruption, and recovery expectations;
-- a deterministic migration planner;
-- ordered migration execution;
-- persisted schema-version coordination;
-- no version advancement after failed migrations;
-- no-op handling when storage is already current;
-- platform-independent repository and service boundaries.
+- an `idb`-based database boundary;
+- an Offline Cache entry object store;
+- ownership, status, and sequence indexes;
+- defensive row serialization and deserialization;
+- identity lookup;
+- atomic inserts and updates;
+- duplicate-key protection;
+- missing-entry update protection;
+- highest-sequence lookup by user and source device;
+- ownership- and status-scoped listing;
+- deterministic ordering before applying result limits;
+- defensive-copy guarantees;
+- full shared storage-conformance verification.
 
-No concrete IndexedDB or SQLite library has been selected yet.
+`fake-indexeddb` provides automated adapter verification outside the browser.
 
-The next checkpoint builds the first real platform adapter against the shared
-storage conformance and migration foundations.
+The next checkpoint prepares the native SQLite adapter without changing the
+existing Offline Cache storage, repository, migration, or service contracts.
 
 ## Latest known test state
 
@@ -70,16 +72,17 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Build the first concrete Offline Cache platform adapter.
+Prepare and implement the native SQLite Offline Cache adapter.
 
 The next checkpoint must:
 
-- select the first target platform deliberately;
-- verify any library choice against current Capacitor and browser requirements;
+- verify the current Capacitor-compatible SQLite options;
+- record the library decision and tradeoffs;
 - implement the existing `OfflineCacheStorage` contract;
-- pass the shared storage conformance suite;
-- use the shared migration framework;
+- use explicit tables, indexes, and transactions;
+- pass the shared storage-conformance suite;
+- integrate the shared migration framework;
 - preserve ownership, deterministic ordering, retry metadata, and defensive
   data boundaries;
-- keep platform-specific APIs outside domain and synchronization services;
-- document the library choice, tradeoffs, and recovery behaviour.
+- define native corruption, lock, interruption, and low-storage recovery;
+- keep SQLite-specific APIs outside domain and synchronization services.
