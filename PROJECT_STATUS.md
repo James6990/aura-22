@@ -63,27 +63,31 @@ Reasoning, Decision Memory, Decision Memory Manager, and Decision Memory Service
 
 ## Current build target
 
-Event Analytics History and Comparison
+Event Analytics Trend Interpretation
 
-The Event Analytics application-service boundary is complete and verified.
+Event Analytics History and Comparison is complete and verified.
 
 Completed capabilities include:
 
-- platform-neutral analytics orchestration;
-- validated snapshot generation requests;
-- deterministic aggregation and provenance production;
-- repository-based immutable persistence;
-- safe identical retries;
-- immutable snapshot lookup;
-- user- and window-scoped history retrieval;
-- prevention of storage writes after aggregation failure;
-- transparent repository failure propagation;
-- identity validation for generated and persisted snapshots;
-- defensive result cloning;
-- permanent application-service verification in the Apex suite.
+- immutable history-comparison contracts;
+- deterministic comparison across two analytics snapshots;
+- same-user and schema compatibility checks;
+- non-overlapping chronological window validation;
+- total-event, memory, and decision-count deltas;
+- per-event-type delta calculation;
+- lifecycle, confidence, and evidence comparisons;
+- increased, decreased, stable, and insufficient-evidence directions;
+- deterministic six-decimal rounding;
+- comparison algorithm and source-snapshot provenance;
+- defensive cloning and immutable comparison results;
+- platform-neutral `compareHistory` application-service orchestration;
+- missing-baseline and missing-comparison safeguards;
+- comparison-builder identity validation;
+- permanent comparison verification in `test:apex` and
+  `apex:event-analytics:quick`.
 
-The next checkpoint builds deterministic history and comparison contracts over
-persisted analytics snapshots.
+The next checkpoint builds deterministic Event Analytics Trend Interpretation
+over ordered history comparisons.
 
 ## Agreed next development order
 
@@ -200,7 +204,7 @@ long-term personal growth.
 
 This vision does not change the active build order.
 
-The current build target is Event Analytics History and Comparison.
+The current build target is Event Analytics Trend Interpretation.
 
 ## Approved future AI foundation expansion
 

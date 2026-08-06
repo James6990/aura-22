@@ -60,41 +60,44 @@ Passing:
 
 ## Current task
 
-Event Analytics History and Comparison
+Event Analytics Trend Interpretation
 
-The Event Analytics application service is complete and verified.
+Event Analytics History and Comparison is complete and verified.
 
 Completed work now includes:
 
-- `createEventAnalyticsApplicationService`;
-- platform-neutral repository dependency injection;
-- injectable snapshot-builder boundary;
-- request identity and ISO-window validation;
-- aggregate-and-save orchestration;
-- automatic Analytics Provenance preservation;
-- immutable persisted results;
-- idempotent retry support through the repository;
-- snapshot lookup;
-- user- and window-scoped history retrieval;
-- prevention of repository writes after aggregation failure;
-- repository error propagation;
-- generated-snapshot identity validation;
-- persisted-snapshot identity validation;
-- ownership validation for history responses;
-- defensive cloning at the service boundary;
-- focused orchestration and failure tests;
-- permanent registration in `test:apex` and
+- the versioned Event Analytics history-comparison contract;
+- factual numeric delta modelling;
+- increased, decreased, stable, and insufficient-evidence directions;
+- deterministic six-decimal rounding;
+- same-user comparison validation;
+- compatible analytics-schema validation;
+- unique baseline and comparison snapshot identities;
+- chronological, non-overlapping window enforcement;
+- total-event, unique-memory, and unique-decision comparisons;
+- per-event-type comparisons;
+- lifecycle comparisons;
+- confidence comparisons with null-aware evidence handling;
+- evidence-sufficiency comparisons;
+- comparison algorithm and source-snapshot provenance;
+- defensive comparison cloning;
+- deterministic comparison aggregation;
+- platform-neutral `compareHistory` application-service orchestration;
+- repository lookup of both immutable source snapshots;
+- missing-source and mismatched-identity protection;
+- focused contract, aggregation, and service tests;
+- permanent verification in `test:apex` and
   `apex:event-analytics:quick`.
 
-The next focused checkpoint builds Event Analytics history and comparison
-contracts over immutable snapshots.
+The next focused checkpoint builds Event Analytics Trend Interpretation over
+ordered immutable history comparisons without introducing causal claims.
 
 ## Next tasks
 
-1. Event Analytics history and comparison
-2. Event Analytics trend interpretation
-3. Memory Consolidation Engine
-4. Autonomous Learning Engine
+1. Event Analytics trend interpretation
+2. Memory Consolidation Engine
+3. Goal Hierarchy Engine
+4. Trust Engine
 
 ## Known issues
 

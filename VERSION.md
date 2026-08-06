@@ -18,28 +18,30 @@ Event Analytics Application Service
 
 ## Current build target
 
-Event Analytics History and Comparison
+Event Analytics Trend Interpretation
 
-The Event Analytics application service is complete.
+Event Analytics History and Comparison is complete and verified.
 
 Completed capabilities include:
 
-- one platform-neutral analytics use-case boundary;
-- validated snapshot identity, ownership, window, and generation time;
-- deterministic aggregation and provenance coordination;
-- persistence through the platform-neutral snapshot repository;
-- immutable persisted returns;
-- safe idempotent retries;
-- analytics lookup and history retrieval;
-- prevention of persistence after aggregation failure;
-- repository failure propagation;
-- builder and repository response identity validation;
-- no PostgreSQL or Drizzle dependency in application logic;
-- focused orchestration and failure-boundary verification.
+- immutable, versioned history-comparison contracts;
+- deterministic comparison of two analytics snapshots;
+- same-user and compatible-schema validation;
+- chronological, non-overlapping window enforcement;
+- total-event, memory, and decision-count deltas;
+- per-event-type deltas;
+- lifecycle, confidence, and evidence deltas;
+- increased, decreased, stable, and insufficient-evidence directions;
+- six-decimal deterministic metric rounding;
+- comparison algorithm and source-snapshot provenance;
+- defensive cloning and immutable results;
+- platform-neutral `compareHistory` application-service orchestration;
+- missing-snapshot and identity-boundary protection;
+- permanent comparison verification in the Apex test suites.
 
-The next checkpoint builds Event Analytics history and comparison contracts,
-allowing Apex to compare immutable analytics windows without mutating their
-source evidence.
+The next checkpoint builds Event Analytics Trend Interpretation over ordered,
+immutable history comparisons. It must identify patterns without claiming
+unsupported causation.
 
 ## Latest known test state
 
@@ -70,15 +72,17 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Build Event Analytics history and comparison.
+Build Event Analytics Trend Interpretation.
 
 The next checkpoint must:
 
-- compare two immutable analytics snapshots for the same user;
-- validate compatible ownership and schema boundaries;
-- calculate deterministic count and confidence deltas;
-- distinguish improvement, decline, stability, and insufficient evidence;
-- preserve both source snapshot identifiers and provenance;
-- avoid treating correlation as causation;
+- accept an ordered collection of immutable history comparisons;
+- validate user, schema, chronology, and comparison continuity;
+- distinguish improving, declining, stable, mixed, and
+  insufficient-evidence trends;
+- calculate deterministic trend strength and evidence coverage;
+- preserve all source comparison and snapshot identifiers;
+- separate factual trend detection from coaching interpretation;
+- avoid causal claims;
 - remain independent of PostgreSQL and presentation code;
-- add focused comparison and failure-boundary tests.
+- add focused chronology, mixed-pattern, and failure-boundary tests.

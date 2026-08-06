@@ -1,11 +1,15 @@
 import {
   buildDecisionMemoryEventAnalyticsSnapshot,
+  buildEventAnalyticsHistoryComparison,
   type BuildDecisionMemoryEventAnalyticsSnapshotInput,
+  type BuildEventAnalyticsHistoryComparisonInput,
 } from "@/lib/analytics/events/aggregation";
 
 import {
   createDecisionMemoryEventAnalyticsSnapshot,
+  createEventAnalyticsHistoryComparison,
   type DecisionMemoryEventAnalyticsSnapshot,
+  type EventAnalyticsHistoryComparison,
   type EventAnalyticsTimeWindow,
 } from "@/lib/analytics/events/contracts";
 
@@ -52,6 +56,23 @@ export type ListEventAnalyticsHistoryInput = {
     number;
 };
 
+export type CompareEventAnalyticsHistoryInput = {
+  comparisonId:
+    string;
+
+  userId:
+    string;
+
+  baselineSnapshotId:
+    string;
+
+  comparisonSnapshotId:
+    string;
+
+  generatedAt:
+    string;
+};
+
 export type EventAnalyticsApplicationService = {
   generateAndSave(
     input:
@@ -73,6 +94,13 @@ export type EventAnalyticsApplicationService = {
   ): Promise<
     DecisionMemoryEventAnalyticsSnapshot[]
   >;
+
+  compareHistory(
+    input:
+      CompareEventAnalyticsHistoryInput,
+  ): Promise<
+    EventAnalyticsHistoryComparison
+  >;
 };
 
 export type EventAnalyticsSnapshotBuilder = (
@@ -81,12 +109,21 @@ export type EventAnalyticsSnapshotBuilder = (
 ) =>
   DecisionMemoryEventAnalyticsSnapshot;
 
+export type EventAnalyticsHistoryComparisonBuilder = (
+  input:
+    BuildEventAnalyticsHistoryComparisonInput,
+) =>
+  EventAnalyticsHistoryComparison;
+
 export type EventAnalyticsApplicationServiceDependencies = {
   repository:
     EventAnalyticsSnapshotRepository;
 
   buildSnapshot?:
     EventAnalyticsSnapshotBuilder;
+
+  buildComparison?:
+    EventAnalyticsHistoryComparisonBuilder;
 };
 
 function requireIdentifier(
@@ -179,10 +216,21 @@ function cloneSnapshot(
   );
 }
 
+function cloneComparison(
+  comparison:
+    EventAnalyticsHistoryComparison,
+) {
+  return createEventAnalyticsHistoryComparison(
+    comparison,
+  );
+}
+
 export function createEventAnalyticsApplicationService({
   repository,
   buildSnapshot =
     buildDecisionMemoryEventAnalyticsSnapshot,
+  buildComparison =
+    buildEventAnalyticsHistoryComparison,
 }: EventAnalyticsApplicationServiceDependencies):
   EventAnalyticsApplicationService {
   return {
@@ -360,6 +408,123 @@ export function createEventAnalyticsApplicationService({
 
       return snapshots.map(
         cloneSnapshot,
+      );
+    },
+
+    async compareHistory({
+      comparisonId,
+      userId,
+      baselineSnapshotId,
+      comparisonSnapshotId,
+      generatedAt,
+    }) {
+      const resolvedComparisonId =
+        requireIdentifier(
+          comparisonId,
+          "Event Analytics comparison id",
+        );
+
+      const resolvedUserId =
+        requireIdentifier(
+          userId,
+          "Event Analytics user id",
+        );
+
+      const resolvedBaselineSnapshotId =
+        requireIdentifier(
+          baselineSnapshotId,
+          "Event Analytics baseline snapshot id",
+        );
+
+      const resolvedComparisonSnapshotId =
+        requireIdentifier(
+          comparisonSnapshotId,
+          "Event Analytics comparison snapshot id",
+        );
+
+      const resolvedGeneratedAt =
+        requireIsoDate(
+          generatedAt,
+          "Event Analytics comparison generatedAt",
+        );
+
+      const baseline =
+        await repository.getById({
+          snapshotId:
+            resolvedBaselineSnapshotId,
+
+          userId:
+            resolvedUserId,
+        });
+
+      if (!baseline) {
+        throw new Error(
+          "Event Analytics baseline snapshot was not found.",
+        );
+      }
+
+      const comparison =
+        await repository.getById({
+          snapshotId:
+            resolvedComparisonSnapshotId,
+
+          userId:
+            resolvedUserId,
+        });
+
+      if (!comparison) {
+        throw new Error(
+          "Event Analytics comparison snapshot was not found.",
+        );
+      }
+
+      if (
+        baseline.userId !==
+          resolvedUserId ||
+        comparison.userId !==
+          resolvedUserId
+      ) {
+        throw new Error(
+          "Event Analytics comparison snapshots do not belong to this user.",
+        );
+      }
+
+      const result =
+        buildComparison({
+          comparisonId:
+            resolvedComparisonId,
+
+          generatedAt:
+            resolvedGeneratedAt,
+
+          baseline:
+            cloneSnapshot(
+              baseline,
+            ),
+
+          comparison:
+            cloneSnapshot(
+              comparison,
+            ),
+        });
+
+      if (
+        result.id !==
+          resolvedComparisonId ||
+        result.userId !==
+          resolvedUserId ||
+        result.baselineSnapshotId !==
+          resolvedBaselineSnapshotId ||
+        result.comparisonSnapshotId !==
+          resolvedComparisonSnapshotId
+      ) {
+        throw new Error(
+          "Event Analytics comparison builder returned mismatched identity.",
+        );
+      }
+
+      return cloneComparison(
+        result,
       );
     },
   };

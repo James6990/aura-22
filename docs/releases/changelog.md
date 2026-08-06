@@ -89,6 +89,44 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Event Analytics History and Comparison
+
+### Added
+
+- Immutable Event Analytics history-comparison contract.
+- Deterministic comparison aggregation engine.
+- Total-event, memory, and decision-count deltas.
+- Per-event-type comparison deltas.
+- Lifecycle, confidence, and evidence comparisons.
+- Platform-neutral `compareHistory` application-service use case.
+- Focused contract, aggregation, and service tests.
+
+### Architecture
+
+- Compares two immutable analytics snapshots without mutating either source.
+- Requires matching user ownership and compatible analytics schemas.
+- Requires unique source snapshot identities.
+- Enforces chronological, non-overlapping analytics windows.
+- Distinguishes increased, decreased, stable, and insufficient-evidence values.
+- Uses deterministic six-decimal rounding.
+- Preserves comparison algorithm and source-snapshot provenance.
+- Keeps PostgreSQL and presentation concerns outside comparison logic.
+- Avoids trend or causal interpretation at this stage.
+
+### Verification
+
+- History-comparison contract tests passing.
+- History-comparison aggregation tests passing.
+- Application-service comparison tests passing.
+- Event Analytics quick verification passing.
+- Full Apex checkpoint passing.
+- TypeScript typecheck passing.
+- Documentation and diff checks passing.
+
+### Next
+
+Event Analytics Trend Interpretation.
+
 ## Event Analytics Application Service
 
 ### Added

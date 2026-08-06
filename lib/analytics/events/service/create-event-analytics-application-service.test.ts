@@ -615,3 +615,454 @@ run().catch(
     process.exitCode = 1;
   },
 );
+
+async function runComparisonTests() {
+  const repository =
+    createRepository();
+
+  const baseline =
+    createSnapshot({
+      id:
+        "snapshot-baseline",
+
+      startAt:
+        "2026-08-01T00:00:00.000Z",
+
+      endAt:
+        "2026-08-07T23:59:59.999Z",
+
+      generatedAt:
+        "2026-08-08T00:00:00.000Z",
+    });
+
+  const comparison =
+    createSnapshot({
+      id:
+        "snapshot-comparison",
+
+      startAt:
+        "2026-08-08T00:00:00.000Z",
+
+      endAt:
+        "2026-08-14T23:59:59.999Z",
+
+      generatedAt:
+        "2026-08-15T00:00:00.000Z",
+    });
+
+  repository.rows.set(
+    baseline.id,
+    structuredClone(
+      baseline,
+    ),
+  );
+
+  repository.rows.set(
+    comparison.id,
+    structuredClone(
+      comparison,
+    ),
+  );
+
+  let comparisonBuilderCalls =
+    0;
+
+  const service =
+    createEventAnalyticsApplicationService({
+      repository,
+
+      buildComparison(
+        input,
+      ) {
+        comparisonBuilderCalls +=
+          1;
+
+        assert.equal(
+          input.comparisonId,
+          "comparison-1",
+        );
+
+        assert.equal(
+          input.baseline.id,
+          baseline.id,
+        );
+
+        assert.equal(
+          input.comparison.id,
+          comparison.id,
+        );
+
+        return {
+          id:
+            "comparison-1",
+
+          userId:
+            "user-1",
+
+          generatedAt:
+            "2026-08-16T00:00:00.000Z",
+
+          schemaVersion:
+            1,
+
+          baselineSnapshotId:
+            baseline.id,
+
+          comparisonSnapshotId:
+            comparison.id,
+
+          baselineWindow:
+            structuredClone(
+              baseline.window,
+            ),
+
+          comparisonWindow:
+            structuredClone(
+              comparison.window,
+            ),
+
+          totalEventCount: {
+            baseline:
+              0,
+
+            comparison:
+              0,
+
+            absolute:
+              0,
+
+            direction:
+              "stable",
+          },
+
+          uniqueMemoryCount: {
+            baseline:
+              0,
+
+            comparison:
+              0,
+
+            absolute:
+              0,
+
+            direction:
+              "stable",
+          },
+
+          uniqueDecisionCount: {
+            baseline:
+              0,
+
+            comparison:
+              0,
+
+            absolute:
+              0,
+
+            direction:
+              "stable",
+          },
+
+          eventTypeCounts:
+            Object.fromEntries(
+              Object.keys(
+                baseline.eventTypeCounts,
+              ).map(
+                (type) => [
+                  type,
+                  {
+                    baseline:
+                      0,
+
+                    comparison:
+                      0,
+
+                    absolute:
+                      0,
+
+                    direction:
+                      "stable",
+                  },
+                ],
+              ),
+            ) as never,
+
+          lifecycle: {
+            createdCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+
+            completedCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+
+            incompleteCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+
+            invalidLifecycleCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+          },
+
+          confidence: {
+            sampleCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+
+            minimum: {
+              baseline:
+                null,
+
+              comparison:
+                null,
+
+              absolute:
+                null,
+
+              direction:
+                "insufficient-evidence",
+            },
+
+            maximum: {
+              baseline:
+                null,
+
+              comparison:
+                null,
+
+              absolute:
+                null,
+
+              direction:
+                "insufficient-evidence",
+            },
+
+            average: {
+              baseline:
+                null,
+
+              comparison:
+                null,
+
+              absolute:
+                null,
+
+              direction:
+                "insufficient-evidence",
+            },
+          },
+
+          evidence: {
+            sufficientCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+
+            insufficientCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+
+            requiresMoreEvidenceCount: {
+              baseline:
+                0,
+
+              comparison:
+                0,
+
+              absolute:
+                0,
+
+              direction:
+                "stable",
+            },
+          },
+
+          provenance: {
+            algorithm:
+              "event-analytics-history-comparison",
+
+            algorithmVersion:
+              1,
+
+            producedAt:
+              "2026-08-16T00:00:00.000Z",
+
+            baselineSnapshotId:
+              baseline.id,
+
+            comparisonSnapshotId:
+              comparison.id,
+
+            baselineSchemaVersion:
+              1,
+
+            comparisonSchemaVersion:
+              1,
+          },
+        };
+      },
+    });
+
+  const result =
+    await service.compareHistory({
+      comparisonId:
+        "comparison-1",
+
+      userId:
+        "user-1",
+
+      baselineSnapshotId:
+        baseline.id,
+
+      comparisonSnapshotId:
+        comparison.id,
+
+      generatedAt:
+        "2026-08-16T00:00:00.000Z",
+    });
+
+  assert.equal(
+    comparisonBuilderCalls,
+    1,
+  );
+
+  assert.equal(
+    result.baselineSnapshotId,
+    baseline.id,
+  );
+
+  result.baselineWindow.startAt =
+    "mutated";
+
+  assert.equal(
+    baseline.window.startAt,
+    "2026-08-01T00:00:00.000Z",
+  );
+
+  await assert.rejects(
+    () =>
+      service.compareHistory({
+        comparisonId:
+          "missing-baseline",
+
+        userId:
+          "user-1",
+
+        baselineSnapshotId:
+          "not-found",
+
+        comparisonSnapshotId:
+          comparison.id,
+
+        generatedAt:
+          "2026-08-16T00:00:00.000Z",
+      }),
+
+    (error: unknown) =>
+      error instanceof Error &&
+      error.message ===
+        "Event Analytics baseline snapshot was not found.",
+  );
+
+  await assert.rejects(
+    () =>
+      service.compareHistory({
+        comparisonId:
+          "missing-comparison",
+
+        userId:
+          "user-1",
+
+        baselineSnapshotId:
+          baseline.id,
+
+        comparisonSnapshotId:
+          "not-found",
+
+        generatedAt:
+          "2026-08-16T00:00:00.000Z",
+      }),
+
+    (error: unknown) =>
+      error instanceof Error &&
+      error.message ===
+        "Event Analytics comparison snapshot was not found.",
+  );
+}
+
+runComparisonTests().catch(
+  (error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  },
+);
