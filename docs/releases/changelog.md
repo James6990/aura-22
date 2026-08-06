@@ -89,6 +89,50 @@ Cloud Sync Service
 - Preserved Cloud Sync Service as the active implementation milestone.
 
 
+## Cross-Platform Offline Cache Stabilisation
+
+### Added
+
+- IndexedDB and SQLite lifecycle regression tests.
+- IndexedDB native migration integration.
+- SQLite transactional migration integration.
+- Bootstrap migration support from schema version `0`.
+- SQLite schema metadata persistence.
+
+### Improved
+
+- Cached one database connection promise per storage instance.
+- Prevented duplicate concurrent adapter initialisation.
+- Allowed retry after temporary initialisation failure.
+- Removed SQLite reliance on `this.getById()`.
+- Converted both initial platform schemas into explicit `0 → 1` migrations.
+- Added already-current database no-op verification.
+
+### Safety
+
+- SQLite schema changes and version advancement now share one transaction.
+- Failed SQLite migrations roll back without advancing the durable version.
+- SQLite migrations resume from the last committed version.
+- IndexedDB schema changes remain inside the native upgrade transaction.
+- Executable migration callbacks remain internal and are not returned as
+  migration evidence.
+
+### Verification
+
+- IndexedDB lifecycle tests passing.
+- SQLite lifecycle tests passing.
+- IndexedDB migration integration tests passing.
+- SQLite migration integration tests passing.
+- IndexedDB and SQLite database migration tests passing.
+- Shared storage conformance tests passing for both adapters.
+- Focused Offline Cache verification passing.
+- TypeScript typecheck passing.
+- Git diff check passing.
+
+### Next
+
+Event Analytics.
+
 ## Native SQLite Offline Cache Adapter
 
 ### Added

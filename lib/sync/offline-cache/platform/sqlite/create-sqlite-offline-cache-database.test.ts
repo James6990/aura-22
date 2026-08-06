@@ -12,7 +12,14 @@ async function run() {
   const calls:
     string[] = [];
 
-  let executedSql =
+  let durableVersion =
+    0;
+
+  let pendingVersion:
+    number | null =
+      null;
+
+  let schemaSql =
     "";
 
   const connection: SQLiteOfflineCacheConnection = {
@@ -32,14 +39,26 @@ async function run() {
       statements,
       transaction,
     ) {
-      calls.push(
-        `execute:${String(
-          transaction,
-        )}`,
-      );
+      if (
+        statements.includes(
+          "offline_cache_metadata",
+        )
+      ) {
+        calls.push(
+          `metadata:init:${String(
+            transaction,
+          )}`,
+        );
+      } else {
+        calls.push(
+          `schema:execute:${String(
+            transaction,
+          )}`,
+        );
 
-      executedSql =
-        statements;
+        schemaSql =
+          statements;
+      }
 
       return {
         changes: {
@@ -49,34 +68,113 @@ async function run() {
       };
     },
 
-    async query() {
-      throw new Error(
-        "query not expected",
+    async query(
+      statement,
+    ) {
+      assert.match(
+        statement,
+        /SELECT schema_version/,
       );
+
+      calls.push(
+        "metadata:read",
+      );
+
+      return {
+        values: [
+          {
+            schema_version:
+              durableVersion,
+          },
+        ],
+      };
     },
 
-    async run() {
-      throw new Error(
-        "run not expected",
+    async run(
+      statement,
+      values,
+      transaction,
+    ) {
+      assert.match(
+        statement,
+        /UPDATE offline_cache_metadata/,
       );
+
+      calls.push(
+        `metadata:write:${String(
+          values?.[0],
+        )}:${String(
+          transaction,
+        )}`,
+      );
+
+      pendingVersion =
+        Number(
+          values?.[0],
+        );
+
+      return {
+        changes: {
+          changes:
+            1,
+        },
+      };
     },
 
     async beginTransaction() {
-      throw new Error(
-        "beginTransaction not expected",
+      calls.push(
+        "transaction:begin",
       );
+
+      pendingVersion =
+        durableVersion;
+
+      return {
+        changes: {
+          changes:
+            0,
+        },
+      };
     },
 
     async commitTransaction() {
-      throw new Error(
-        "commitTransaction not expected",
+      calls.push(
+        "transaction:commit",
       );
+
+      if (
+        pendingVersion !==
+        null
+      ) {
+        durableVersion =
+          pendingVersion;
+      }
+
+      pendingVersion =
+        null;
+
+      return {
+        changes: {
+          changes:
+            0,
+        },
+      };
     },
 
     async rollbackTransaction() {
-      throw new Error(
-        "rollbackTransaction not expected",
+      calls.push(
+        "transaction:rollback",
       );
+
+      pendingVersion =
+        null;
+
+      return {
+        changes: {
+          changes:
+            0,
+        },
+      };
     },
   };
 
@@ -108,34 +206,75 @@ async function run() {
     connection,
   );
 
+  assert.equal(
+    durableVersion,
+    sqliteOfflineCacheDatabaseVersion,
+  );
+
   assert.deepEqual(
     calls,
     [
       `create:apex-offline-cache-test:${sqliteOfflineCacheDatabaseVersion}`,
       "open",
-      "execute:true",
+      "metadata:init:true",
+      "metadata:read",
+      "transaction:begin",
+      "schema:execute:false",
+      `metadata:write:${sqliteOfflineCacheDatabaseVersion}:false`,
+      "transaction:commit",
     ],
   );
 
   assert.match(
-    executedSql,
+    schemaSql,
     new RegExp(
       `CREATE TABLE IF NOT EXISTS ${sqliteOfflineCacheTableName}`,
     ),
   );
 
   assert.match(
-    executedSql,
+    schemaSql,
     /idx_offline_cache_ownership_sequence/,
   );
 
   assert.match(
-    executedSql,
+    schemaSql,
     /idx_offline_cache_ownership_status_sequence/,
+  );
+
+  calls.length =
+    0;
+
+  const reopened =
+    await createSQLiteOfflineCacheDatabase({
+      connectionProvider:
+        provider,
+
+      databaseName:
+        "apex-offline-cache-test",
+    });
+
+  assert.equal(
+    reopened,
+    connection,
+  );
+
+  assert.deepEqual(
+    calls,
+    [
+      `create:apex-offline-cache-test:${sqliteOfflineCacheDatabaseVersion}`,
+      "open",
+      "metadata:init:true",
+      "metadata:read",
+    ],
   );
 
   const failureCalls:
     string[] = [];
+
+  let failurePendingVersion:
+    number | null =
+      null;
 
   const failingConnection: SQLiteOfflineCacheConnection = {
     ...connection,
@@ -152,13 +291,98 @@ async function run() {
       );
     },
 
-    async execute() {
+    async execute(
+      statements,
+    ) {
+      if (
+        statements.includes(
+          "offline_cache_metadata",
+        )
+      ) {
+        failureCalls.push(
+          "metadata:init",
+        );
+
+        return {
+          changes: {
+            changes:
+              0,
+          },
+        };
+      }
+
       failureCalls.push(
-        "execute",
+        "schema:execute",
       );
 
       throw new Error(
-        "SQLite schema failure.",
+        "SQLite schema migration failure.",
+      );
+    },
+
+    async query() {
+      failureCalls.push(
+        "metadata:read",
+      );
+
+      return {
+        values: [
+          {
+            schema_version:
+              0,
+          },
+        ],
+      };
+    },
+
+    async beginTransaction() {
+      failureCalls.push(
+        "transaction:begin",
+      );
+
+      failurePendingVersion =
+        0;
+
+      return {
+        changes: {
+          changes:
+            0,
+        },
+      };
+    },
+
+    async commitTransaction() {
+      failureCalls.push(
+        "transaction:commit",
+      );
+
+      return {
+        changes: {
+          changes:
+            0,
+        },
+      };
+    },
+
+    async rollbackTransaction() {
+      failureCalls.push(
+        "transaction:rollback",
+      );
+
+      failurePendingVersion =
+        null;
+
+      return {
+        changes: {
+          changes:
+            0,
+        },
+      };
+    },
+
+    async run() {
+      throw new Error(
+        "Schema version must not be written after migration failure.",
       );
     },
   };
@@ -176,20 +400,29 @@ async function run() {
     (error: unknown) =>
       error instanceof Error &&
       error.message ===
-        "SQLite schema failure.",
+        "SQLite schema migration failure.",
+  );
+
+  assert.equal(
+    failurePendingVersion,
+    null,
   );
 
   assert.deepEqual(
     failureCalls,
     [
       "open",
-      "execute",
+      "metadata:init",
+      "metadata:read",
+      "transaction:begin",
+      "schema:execute",
+      "transaction:rollback",
       "close",
     ],
   );
 
   console.log(
-    "SQLite Offline Cache database tests passed.",
+    "SQLite Offline Cache database migration tests passed.",
   );
 }
 

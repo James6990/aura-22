@@ -89,8 +89,23 @@ Completed capabilities include:
 - full shared conformance verification against IndexedDB and SQLite;
 - platform-neutral migration planning, execution, and version coordination.
 
-The next checkpoint is Cross-Platform Offline Cache Stabilisation before Event
-Analytics begins.
+Cross-Platform Offline Cache Stabilisation is complete.
+
+Additional completed capabilities include:
+
+- one cached connection promise per storage instance;
+- safe retry after failed IndexedDB or SQLite initialisation;
+- removal of SQLite `this`-dependent internal method calls;
+- bootstrap migration planning from schema version `0`;
+- SQLite schema metadata persistence;
+- transactional SQLite migrations and rollback;
+- resumable SQLite upgrades from the last committed version;
+- IndexedDB schema migration execution inside native upgrade transactions;
+- explicit initial schema migrations for both adapters;
+- already-current database no-op behaviour;
+- dedicated lifecycle and platform migration tests.
+
+The next checkpoint begins Event Analytics.
 
 The next checkpoint implements the first real platform adapter without changing
 the existing repository, synchronization, or domain contracts.

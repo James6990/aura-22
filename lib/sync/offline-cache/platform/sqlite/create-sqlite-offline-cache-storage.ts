@@ -26,26 +26,44 @@ export function createSQLiteOfflineCacheStorage({
   databaseName,
 }: CreateSQLiteOfflineCacheStorageOptions = {}):
   OfflineCacheStorage {
-  async function getConnection() {
-    return (
-      connection ??
-      createSQLiteOfflineCacheDatabase({
-        connectionProvider,
-        databaseName,
-      })
-    );
+  let connectionPromise:
+    Promise<
+      SQLiteOfflineCacheConnection
+    > | null =
+      connection
+        ? Promise.resolve(
+            connection,
+          )
+        : null;
+
+  function getConnection() {
+    if (!connectionPromise) {
+      connectionPromise =
+        createSQLiteOfflineCacheDatabase({
+          connectionProvider,
+          databaseName,
+        }).catch(
+          (error: unknown) => {
+            connectionPromise =
+              null;
+
+            throw error;
+          },
+        );
+    }
+
+    return connectionPromise;
   }
 
-  return {
-    async getById(
-      entryId,
-    ) {
-      const resolvedConnection =
-        await getConnection();
+  async function readEntryById(
+    entryId: string,
+  ) {
+    const resolvedConnection =
+      await getConnection();
 
-      const result =
-        await resolvedConnection.query(
-          `
+    const result =
+      await resolvedConnection.query(
+        `
 SELECT
   id,
   user_id,
@@ -62,19 +80,28 @@ FROM ${sqliteOfflineCacheTableName}
 WHERE id = ?
 LIMIT 1;
 `,
-          [
-            entryId,
-          ],
-        );
+        [
+          entryId,
+        ],
+      );
 
-      const row =
-        result.values?.[0];
+    const row =
+      result.values?.[0];
 
-      return row
-        ? offlineCacheEntryFromSQLiteRow(
-            row,
-          )
-        : null;
+    return row
+      ? offlineCacheEntryFromSQLiteRow(
+          row,
+        )
+      : null;
+  }
+
+  return {
+    async getById(
+      entryId,
+    ) {
+      return readEntryById(
+        entryId,
+      );
     },
 
     async getHighestSequence({
@@ -172,7 +199,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
       );
 
       const stored =
-        await this.getById(
+        await readEntryById(
           entry.id,
         );
 
@@ -242,7 +269,7 @@ WHERE id = ?;
       }
 
       const stored =
-        await this.getById(
+        await readEntryById(
           entry.id,
         );
 

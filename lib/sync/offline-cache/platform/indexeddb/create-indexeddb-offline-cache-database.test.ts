@@ -5,6 +5,7 @@ import assert from "node:assert/strict";
 import {
   createIndexedDbOfflineCacheDatabase,
   deleteIndexedDbOfflineCacheDatabase,
+  indexedDbOfflineCacheDatabaseVersion,
   indexedDbOfflineCacheEntryStore,
   indexedDbOfflineCacheOwnershipSequenceIndex,
   indexedDbOfflineCacheOwnershipStatusSequenceIndex,
@@ -12,7 +13,7 @@ import {
 
 async function run() {
   const databaseName =
-    "apex-offline-cache-database-test";
+    "apex-offline-cache-database-migration-test";
 
   await deleteIndexedDbOfflineCacheDatabase({
     databaseName,
@@ -22,6 +23,11 @@ async function run() {
     await createIndexedDbOfflineCacheDatabase({
       databaseName,
     });
+
+  assert.equal(
+    database.version,
+    indexedDbOfflineCacheDatabaseVersion,
+  );
 
   assert.equal(
     database.objectStoreNames.contains(
@@ -59,12 +65,31 @@ async function run() {
 
   database.close();
 
+  const reopened =
+    await createIndexedDbOfflineCacheDatabase({
+      databaseName,
+    });
+
+  assert.equal(
+    reopened.version,
+    indexedDbOfflineCacheDatabaseVersion,
+  );
+
+  assert.equal(
+    reopened.objectStoreNames.contains(
+      indexedDbOfflineCacheEntryStore,
+    ),
+    true,
+  );
+
+  reopened.close();
+
   await deleteIndexedDbOfflineCacheDatabase({
     databaseName,
   });
 
   console.log(
-    "IndexedDB Offline Cache database tests passed.",
+    "IndexedDB Offline Cache database migration tests passed.",
   );
 }
 

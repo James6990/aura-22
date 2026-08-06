@@ -20,20 +20,48 @@ export type CreateIndexedDbOfflineCacheStorageOptions =
   CreateIndexedDbOfflineCacheDatabaseOptions & {
     database?:
       IndexedDbOfflineCacheDatabase;
+
+    createDatabase?(
+      options:
+        CreateIndexedDbOfflineCacheDatabaseOptions,
+    ): Promise<
+      IndexedDbOfflineCacheDatabase
+    >;
   };
 
 export function createIndexedDbOfflineCacheStorage({
   database,
   databaseName,
+  createDatabase =
+    createIndexedDbOfflineCacheDatabase,
 }: CreateIndexedDbOfflineCacheStorageOptions = {}):
   OfflineCacheStorage {
-  async function getDatabase() {
-    return (
-      database ??
-      createIndexedDbOfflineCacheDatabase({
-        databaseName,
-      })
-    );
+  let databasePromise:
+    Promise<
+      IndexedDbOfflineCacheDatabase
+    > | null =
+      database
+        ? Promise.resolve(
+            database,
+          )
+        : null;
+
+  function getDatabase() {
+    if (!databasePromise) {
+      databasePromise =
+        createDatabase({
+          databaseName,
+        }).catch(
+          (error: unknown) => {
+            databasePromise =
+              null;
+
+            throw error;
+          },
+        );
+    }
+
+    return databasePromise;
   }
 
   return {

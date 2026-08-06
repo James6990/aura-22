@@ -10,6 +10,11 @@ import type {
   OfflineCacheEntryStatus,
 } from "@/lib/sync/offline-cache/contracts";
 
+import {
+  runIndexedDbOfflineCacheMigrations,
+  type IndexedDbOfflineCacheMigration,
+} from "./run-indexeddb-offline-cache-migrations";
+
 export const indexedDbOfflineCacheDatabaseVersion =
   1 as const;
 
@@ -96,41 +101,77 @@ export async function createIndexedDbOfflineCacheDatabase({
     {
       upgrade(
         database,
+        oldVersion,
+        newVersion,
+        transaction,
       ) {
-        if (
-          !database.objectStoreNames
-            .contains(
-              indexedDbOfflineCacheEntryStore,
-            )
-        ) {
-          const store =
-            database.createObjectStore(
-              indexedDbOfflineCacheEntryStore,
-              {
-                keyPath:
-                  "id",
+        const migrations:
+          IndexedDbOfflineCacheMigration[] = [
+            {
+              fromVersion:
+                0,
+
+              toVersion:
+                indexedDbOfflineCacheDatabaseVersion,
+
+              description:
+                "Create the initial IndexedDB Offline Cache schema.",
+
+              execute({
+                database:
+                  migrationDatabase,
+              }) {
+                if (
+                  migrationDatabase
+                    .objectStoreNames
+                    .contains(
+                      indexedDbOfflineCacheEntryStore,
+                    )
+                ) {
+                  throw new Error(
+                    "IndexedDB Offline Cache entry store already exists during initial migration.",
+                  );
+                }
+
+                const store =
+                  migrationDatabase
+                    .createObjectStore(
+                      indexedDbOfflineCacheEntryStore,
+                      {
+                        keyPath:
+                          "id",
+                      },
+                    );
+
+                store.createIndex(
+                  indexedDbOfflineCacheOwnershipSequenceIndex,
+                  [
+                    "userId",
+                    "deviceId",
+                    "sequence",
+                  ],
+                );
+
+                store.createIndex(
+                  indexedDbOfflineCacheOwnershipStatusSequenceIndex,
+                  [
+                    "userId",
+                    "deviceId",
+                    "status",
+                    "sequence",
+                  ],
+                );
               },
-            );
+            },
+          ];
 
-          store.createIndex(
-            indexedDbOfflineCacheOwnershipSequenceIndex,
-            [
-              "userId",
-              "deviceId",
-              "sequence",
-            ],
-          );
-
-          store.createIndex(
-            indexedDbOfflineCacheOwnershipStatusSequenceIndex,
-            [
-              "userId",
-              "deviceId",
-              "status",
-              "sequence",
-            ],
-          );
-        }
+        runIndexedDbOfflineCacheMigrations({
+          database,
+          transaction,
+          oldVersion,
+          newVersion,
+          migrations,
+        });
       },
     },
   );

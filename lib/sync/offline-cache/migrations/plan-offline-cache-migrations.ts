@@ -12,13 +12,21 @@ export type OfflineCacheMigration = {
 function requireSchemaVersion(
   value: number,
   label: string,
+  allowUninitialised = false,
 ) {
+  const minimum =
+    allowUninitialised
+      ? 0
+      : 1;
+
   if (
     !Number.isInteger(value) ||
-    value < 1
+    value < minimum
   ) {
     throw new Error(
-      `${label} must be a positive integer.`,
+      allowUninitialised
+        ? `${label} must be a non-negative integer.`
+        : `${label} must be a positive integer.`,
     );
   }
 
@@ -58,6 +66,7 @@ export function planOfflineCacheMigrations({
     requireSchemaVersion(
       currentVersion,
       "Offline Cache current schema version",
+      true,
     );
 
   const resolvedTargetVersion =
@@ -95,6 +104,7 @@ export function planOfflineCacheMigrations({
       requireSchemaVersion(
         migration.fromVersion,
         "Offline Cache migration fromVersion",
+        true,
       );
 
     const toVersion =

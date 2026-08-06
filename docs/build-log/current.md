@@ -88,14 +88,31 @@ Completed work now includes:
 - shared storage-conformance verification for IndexedDB and SQLite;
 - expanded focused Offline Cache verification.
 
-The next focused checkpoint is Cross-Platform Offline Cache Stabilisation.
+Cross-Platform Offline Cache Stabilisation is complete and verified.
+
+Completed stabilisation work includes:
+
+- cached connection promises for IndexedDB and SQLite;
+- concurrent initialisation deduplication;
+- failed-initialisation retry boundaries;
+- SQLite internal read helpers without `this` binding;
+- migration planner support for schema version `0`;
+- SQLite metadata-table schema versioning;
+- per-migration SQLite transactions;
+- rollback without schema-version advancement;
+- durable SQLite migration resume;
+- IndexedDB migration execution in the native versionchange transaction;
+- explicit `0 → 1` migrations for both adapters;
+- no-op reopening for current schemas;
+- focused lifecycle and migration tests registered in the Offline Cache suite.
+
+The next focused checkpoint begins the Event Analytics foundation.
 
 ## Next tasks
 
-1. Cross-Platform Offline Cache Stabilisation
-2. Event Analytics
-3. Memory Consolidation Engine
-4. Autonomous Learning Engine
+1. Event Analytics
+2. Memory Consolidation Engine
+3. Autonomous Learning Engine
 
 ## Known issues
 

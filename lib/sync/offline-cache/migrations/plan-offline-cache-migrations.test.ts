@@ -20,6 +20,35 @@ function expectError(
 }
 
 function run() {
+  const bootstrapMigration:
+    OfflineCacheMigration = {
+      fromVersion:
+        0,
+
+      toVersion:
+        1,
+
+      description:
+        "Create the initial Offline Cache schema.",
+    };
+
+  assert.deepEqual(
+    planOfflineCacheMigrations({
+      currentVersion:
+        0,
+
+      targetVersion:
+        1,
+
+      migrations: [
+        bootstrapMigration,
+      ],
+    }),
+    [
+      bootstrapMigration,
+    ],
+  );
+
   const migrations:
     OfflineCacheMigration[] = [
       {

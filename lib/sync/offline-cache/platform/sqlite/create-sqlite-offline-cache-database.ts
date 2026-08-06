@@ -4,6 +4,11 @@ import {
   type SQLiteDBConnection,
 } from "@capacitor-community/sqlite";
 
+import {
+  runSQLiteOfflineCacheMigrations,
+  type SQLiteOfflineCacheMigration,
+} from "./run-sqlite-offline-cache-migrations";
+
 export const sqliteOfflineCacheDatabaseName =
   "apex_offline_cache";
 
@@ -136,11 +141,38 @@ export async function createSQLiteOfflineCacheDatabase({
 
   await connection.open();
 
+  const migrations:
+    SQLiteOfflineCacheMigration[] = [
+      {
+        fromVersion:
+          0,
+
+        toVersion:
+          sqliteOfflineCacheDatabaseVersion,
+
+        description:
+          "Create the initial SQLite Offline Cache schema.",
+
+        async execute(
+          migrationConnection,
+        ) {
+          await migrationConnection.execute(
+            createSchemaSql,
+            false,
+          );
+        },
+      },
+    ];
+
   try {
-    await connection.execute(
-      createSchemaSql,
-      true,
-    );
+    await runSQLiteOfflineCacheMigrations({
+      connection,
+
+      targetVersion:
+        sqliteOfflineCacheDatabaseVersion,
+
+      migrations,
+    });
   } catch (error) {
     await connection.close();
     throw error;

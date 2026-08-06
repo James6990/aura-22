@@ -2,7 +2,7 @@
 
 ## Current version
 
-`Apex Foundation 0.7.6-dev`
+`Apex Foundation 0.7.7-dev`
 
 ## Current branch
 
@@ -14,7 +14,7 @@ Decision Memory and Event-Driven Intelligence Foundations
 
 ## Latest stable capability
 
-Cross-Platform Offline Cache Adapters
+Cross-Platform Offline Cache Stabilisation
 
 ## Current build target
 
@@ -41,8 +41,25 @@ Completed cross-platform persistence includes:
 - platform-neutral migration planning, execution, and version coordination;
 - full shared conformance verification for IndexedDB and SQLite.
 
-The next checkpoint is Cross-Platform Offline Cache Stabilisation before Event
-Analytics begins.
+Cross-Platform Offline Cache Stabilisation is complete.
+
+Completed stabilisation includes:
+
+- cached IndexedDB and SQLite connection promises;
+- prevention of duplicate concurrent initialisation;
+- retry after failed database initialisation;
+- removal of method-binding-sensitive SQLite internal reads;
+- migration planning from uninitialised schema version `0`;
+- SQLite metadata-backed schema versioning;
+- transactional SQLite migration execution and rollback;
+- durable migration resume from the last committed version;
+- IndexedDB native upgrade-transaction migration execution;
+- explicit `0 → 1` schema migrations on both platforms;
+- no-op reopening for already-current databases;
+- focused lifecycle and migration integration tests.
+
+The next checkpoint begins Event Analytics on top of the completed
+cross-platform persistence foundation.
 
 ## Latest known test state
 
@@ -73,15 +90,15 @@ Until Apex Foundation 1.0:
 
 ## Next planned milestone
 
-Complete Cross-Platform Offline Cache Stabilisation.
+Build the Event Analytics foundation.
 
 The next checkpoint must:
 
-- cache and reuse adapter connections safely;
-- replace method-binding-sensitive internal calls;
-- connect the shared migration framework to both concrete adapters;
-- document native device smoke-test requirements;
-- review dependency warnings and install-script approvals;
-- document SQLite encryption and recovery expectations;
-- keep browser and native behaviour aligned;
-- run the full checkpoint before Event Analytics begins.
+- inspect the existing event contracts and replay boundaries;
+- define versioned, platform-neutral analytics contracts;
+- preserve user ownership and source evidence;
+- aggregate without mutating or replacing event history;
+- support deterministic time-window and event-type summaries;
+- expose explainable metrics suitable for dashboards and coaching;
+- remain independent of IndexedDB, SQLite, and PostgreSQL adapters;
+- add focused tests before analytics influences coaching decisions.
